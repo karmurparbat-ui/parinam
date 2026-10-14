@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>શાળાકીય માહિતી</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="db.js"></script>
+    <script>
+        const currentStd = getUrlParam('std', '8');
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans Gujarati', sans-serif; background-color: #e0e0e0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        .main-container { display: flex; gap: 20px; width: 100%; max-width: 1200px; }
+        .form-container { flex: 1; background-color: #fff; border: 1px solid #000; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden; }
+        .form-table { width: 100%; border-collapse: collapse; font-size: 18px; }
+        .form-table td { border: 1px solid #000; padding: 10px 15px; }
+        .title-row { background-color: #FFFF00; color: #FF0000; text-align: center; font-size: 26px; font-weight: 700; padding: 15px !important; }
+        .title-row input { text-align: center; font-size: 26px; font-weight: 700; color: #FF0000; background: transparent; border: none; width: 100%; font-family: 'Noto Sans Gujarati', sans-serif; }
+        .label-col { background-color: #FFF9E6; width: 45%; text-align: right; font-weight: 600; color: #000; }
+        .value-col { background-color: #FFFFFF; width: 55%; font-weight: 600; color: #000; }
+        .highlight-row .label-col, .highlight-row .value-col { background-color: #FFFF00; }
+        .form-table input[type="text"], .form-table input[type="date"], .form-table input[type="number"], .form-table select { width: 100%; border: none; background: transparent; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 18px; font-weight: 600; color: #000; outline: none; padding: 2px; }
+        .form-table input:focus, .form-table select:focus { background-color: #f0f8ff; border-bottom: 1px dashed #007bff; }
+        .form-table input[type="file"] { font-size: 14px; }
+        .btn { padding: 12px 25px; border: 1px solid #000; border-radius: 8px; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s ease; box-shadow: 3px 3px 0px rgba(0,0,0,0.4); }
+        .btn:active { transform: translate(3px, 3px); box-shadow: none; }
+        .btn-home { background-color: #000; color: #fff; width: 180px; height: 60px; display: flex; justify-content: center; align-items: center; }
+        .btn-save { background-color: #4B854B; color: #fff; margin-top: 15px; width: 100%; }
+        .sidebar { display: flex; flex-direction: column; gap: 10px; width: 200px; }
+        .img-preview { max-width: 120px; max-height: 70px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; display: none; }
+        .std-badge { background: #1A237E; color: #FFD700; padding: 5px 15px; border-radius: 5px; font-weight: 700; text-align: center; font-size: 16px; }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <div class="form-container">
+        <table class="form-table">
+            <tr><td colspan="2" class="title-row"><input type="text" id="schoolName" value="શ્રી કોરાડા વાડી પ્રાથમિક શાળા"></td></tr>
+            <tr><td class="label-col">શાળાનો લોગો :</td><td class="value-col">
+                <input type="file" id="schoolLogoInput" accept="image/*" onchange="uploadImage(event, 'schoolLogo')">
+                <img id="previewLogo" class="img-preview" src="">
+            </td></tr>
+            <tr><td class="label-col">આચાર્યની સહી :</td><td class="value-col">
+                <input type="file" id="principalSignInput" accept="image/*" onchange="uploadImage(event, 'principalSign')">
+                <img id="previewPrincipal" class="img-preview" src="">
+            </td></tr>
+            <tr><td class="label-col">વર્ગ શિક્ષકની સહી :</td><td class="value-col">
+                <input type="file" id="teacherSignInput" accept="image/*" onchange="uploadImage(event, 'teacherSign')">
+                <img id="previewTeacher" class="img-preview" src="">
+            </td></tr>
+            <tr><td class="label-col">શાળાકીય સત્ર :</td><td class="value-col"><input type="text" id="sessionYear" value="2025-'26"></td></tr>
+            <tr><td class="label-col">પરીક્ષા પ્રકાર (પરિણામ માટે) :</td><td class="value-col">
+                <select id="examType">
+                    <option value="Sem1">પ્રથમ સત્ર (Sem 1)</option>
+                    <option value="Annual" selected>વાર્ષિક (Annual)</option>
+                </select>
+            </td></tr>
+            <tr><td class="label-col">ધોરણ :</td><td class="value-col"><input type="text" id="std" value="8"></td></tr>
+            <tr><td class="label-col">વર્ગ :</td><td class="value-col"><input type="text" id="class" value="A"></td></tr>
+            <tr class="highlight-row"><td class="label-col">શાળાનો ડાયસ કોડ :</td><td class="value-col"><input type="text" id="diceCode" value="24290201802"></td></tr>
+            <tr><td class="label-col">શાળાનું સરનામું :</td><td class="value-col"><input type="text" id="address" value="ગું. કોરાડા, તા.ઢ્રારકા, જિ. દેવ. ઢ્રારકા"></td></tr>
+            <tr><td class="label-col">નગર/જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ :</td><td class="value-col"><input type="text" id="educationCommittee" value="દેવ. ધ્રારકા જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ"></td></tr>
+            <tr><td class="label-col">પે. સેન્ટર શાળા :</td><td class="value-col"><input type="text" id="centerSchool" value="શ્રી ઢ્રારકા તાલુકા શાળા -૨"></td></tr>
+            <tr><td class="label-col">સી.આર.સી. :</td><td class="value-col"><input type="text" id="crc" value="બરડિયા"></td></tr>
+            <tr><td class="label-col">વર્ગ શિક્ષકનું નામ :</td><td class="value-col"><input type="text" id="teacherName" value="પરબત કરમુર"></td></tr>
+            <tr><td class="label-col">પરિણામ સ્થળ :</td><td class="value-col"><input type="text" id="resultPlace" value="કોરાડા"></td></tr>
+            <tr><td class="label-col">પ્રથમ પરીક્ષા પરિણામ તારીખ :</td><td class="value-col"><input type="date" id="exam1Date" value="2025-11-15"></td></tr>
+            <tr><td class="label-col">વાર્ષિક પરીક્ષા પરિણામ તારીખ :</td><td class="value-col"><input type="date" id="exam2Date" value="2026-05-02"></td></tr>
+            <tr><td class="label-col">વાર્ષિક પરિણામ માટે કુલ કાર્ય દિવસો :</td><td class="value-col"><input type="number" id="totalDays" value="232"></td></tr>
+        </table>
+    </div>
+    <div class="sidebar">
+        <div class="std-badge">ધોરણ : <span id="stdSide">-</span></div>
+        <button class="btn btn-home" onclick="window.location.href='home.html?std=' + currentStd">Home</button>
+        <button class="btn btn-save" onclick="saveSchoolInfo()">માહિતી સેવ કરો</button>
+    </div>
+</div>
+
+<script>
+    let uploadedImages = { schoolLogo: '', principalSign: '', teacherSign: '' };
+
+    document.getElementById('stdSide').innerText = currentStd;
+
+    function compressImage(file, maxWidth, maxHeight, quality, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width, height = img.height;
+                if (width > height) { if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; } }
+                else { if (height > maxHeight) { width = Math.round((width * maxHeight) / height); height = maxHeight; } }
+                canvas.width = width; canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                callback(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function uploadImage(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
+        compressImage(file, 300, 200, 0.7, function(compressedData) {
+            uploadedImages[type] = compressedData;
+            const imgId = type === 'schoolLogo' ? 'previewLogo' : (type === 'principalSign' ? 'previewPrincipal' : 'previewTeacher');
+            const imgElement = document.getElementById(imgId);
+            imgElement.src = compressedData;
+            imgElement.style.display = 'block';
+        });
+    }
+
+    window.onload = async function() {
+        await openDB();
+        const data = await getSchoolInfoDB(currentStd);
+        if (data) {
+            document.getElementById('schoolName').value = data.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
+            document.getElementById('sessionYear').value = data.sessionYear || "2025-'26";
+            document.getElementById('examType').value = data.examType || "Annual";
+            document.getElementById('std').value = data.std || currentStd;
+            document.getElementById('class').value = data.class || 'A';
+            document.getElementById('diceCode').value = data.diceCode || '24290201802';
+            document.getElementById('address').value = data.address || 'ગું. કોરાડા, તા.ઢ્રારકા, જિ. દેવ. ઢ્રારકા';
+            document.getElementById('educationCommittee').value = data.educationCommittee || 'દેવ. ધ્રારકા જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ';
+            document.getElementById('centerSchool').value = data.centerSchool || 'શ્રી ઢ્રારકા તાલુકા શાળા -૨';
+            document.getElementById('crc').value = data.crc || 'બરડિયા';
+            document.getElementById('teacherName').value = data.teacherName || 'પરબત કરમુર';
+            document.getElementById('resultPlace').value = data.resultPlace || 'કોરાડા';
+            document.getElementById('exam1Date').value = data.exam1Date || '2025-11-15';
+            document.getElementById('exam2Date').value = data.exam2Date || '2026-05-02';
+            document.getElementById('totalDays').value = data.totalDays || '232';
+
+            if (data.schoolLogo) { uploadedImages.schoolLogo = data.schoolLogo; document.getElementById('previewLogo').src = data.schoolLogo; document.getElementById('previewLogo').style.display = 'block'; }
+            if (data.principalSign) { uploadedImages.principalSign = data.principalSign; document.getElementById('previewPrincipal').src = data.principalSign; document.getElementById('previewPrincipal').style.display = 'block'; }
+            if (data.teacherSign) { uploadedImages.teacherSign = data.teacherSign; document.getElementById('previewTeacher').src = data.teacherSign; document.getElementById('previewTeacher').style.display = 'block'; }
+        } else {
+            document.getElementById('std').value = currentStd;
+        }
+    };
+
+    async function saveSchoolInfo() {
+        const schoolData = {
+            schoolName: document.getElementById('schoolName').value,
+            sessionYear: document.getElementById('sessionYear').value,
+            examType: document.getElementById('examType').value,
+            std: document.getElementById('std').value,
+            class: document.getElementById('class').value,
+            diceCode: document.getElementById('diceCode').value,
+            address: document.getElementById('address').value,
+            educationCommittee: document.getElementById('educationCommittee').value,
+            centerSchool: document.getElementById('centerSchool').value,
+            crc: document.getElementById('crc').value,
+            teacherName: document.getElementById('teacherName').value,
+            resultPlace: document.getElementById('resultPlace').value,
+            exam1Date: document.getElementById('exam1Date').value,
+            exam2Date: document.getElementById('exam2Date').value,
+            totalDays: document.getElementById('totalDays').value,
+            schoolLogo: uploadedImages.schoolLogo,
+            principalSign: uploadedImages.principalSign,
+            teacherSign: uploadedImages.teacherSign
+        };
+        await saveSchoolInfoDB(schoolData, currentStd);
+        alert('શાળાકીય માહિતી સફળતાપૂર્વક સેવ થઈ ગઈ છે!');
+    }
+</script>
+</body>
+</html>

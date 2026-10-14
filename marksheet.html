@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>માર્કશીટ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="db.js"></script>
+    <script>
+        const currentStd = getUrlParam('std', '8');
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans Gujarati', sans-serif; background-color: #e0e0e0; padding: 10px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        .main-container { display: flex; gap: 15px; width: 100%; max-width: 1400px; }
+        .marksheet-area { flex: 1; background-color: #fff; border: 5px solid #7B1FA2; padding: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); overflow-x: auto; min-width: 800px; }
+        .header-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px; }
+        .header-left { width: 100px; text-align: center; flex-shrink: 0; }
+        .header-left img { max-width: 100px; max-height: 100px; }
+        .header-left .no-logo { width: 80px; height: 80px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #999; margin: 0 auto; border-radius: 50%; }
+        .header-center { flex: 1; text-align: center; }
+        .header-center h2 { font-size: 15px; font-weight: 600; }
+        .header-center h1 { font-size: 26px; font-weight: 700; color: #D32F2F; margin: 3px 0; }
+        .header-center h3 { font-size: 14px; font-weight: 600; }
+        .header-center .session-badge { margin-top: 5px; background-color: #FFCC80; display: inline-block; padding: 3px 15px; border-radius: 4px; font-weight: 700; font-size: 15px; }
+        .header-right { width: 110px; text-align: center; flex-shrink: 0; }
+        .header-right img { max-width: 100px; max-height: 120px; border: 2px solid #7B1FA2; border-radius: 4px; }
+        .header-right .no-photo { width: 100px; height: 120px; border: 2px solid #7B1FA2; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #999; margin: 0 auto; border-radius: 4px; }
+        .student-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
+        .info-item { display: flex; background-color: #F3E5F5; padding: 4px 8px; border-radius: 4px; }
+        .info-label { width: 130px; color: #4A148C; font-weight: 700; flex-shrink: 0; }
+        .info-value { flex: 1; color: #000; font-weight: 700; }
+        .marks-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        .marks-table th, .marks-table td { border: 1px solid #E91E63; padding: 5px 6px; text-align: center; font-size: 12px; }
+        .marks-table th { background-color: #C8E6C9; font-weight: 700; color: #1B5E20; }
+        .marks-table td { background-color: #FCE4EC; }
+        .marks-table td.subject-name { text-align: left; font-weight: 700; background-color: #E1BEE7; color: #4A148C; }
+        .summary-section { border: 2px solid #FBC02D; border-radius: 5px; background-color: #FFF9C4; padding: 10px; margin-bottom: 12px; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #FBC02D; }
+        .summary-label { font-weight: 600; color: #F57F17; }
+        .summary-value { font-weight: 700; }
+        .summary-center { text-align: center; font-weight: 700; font-size: 15px; color: #D32F2F; margin-top: 6px; padding-top: 6px; border-top: 2px solid #FBC02D; grid-column: span 2; }
+        .signatures { display: flex; justify-content: space-between; margin-top: 25px; font-weight: 700; font-size: 13px; align-items: flex-end; gap: 10px; }
+        .sig-left { flex: 1; }
+        .sig-note { flex: 1; text-align: center; }
+        .signature-box { text-align: center; width: 150px; flex-shrink: 0; }
+        .signature-box img { max-width: 120px; max-height: 50px; display: block; margin: 0 auto 3px auto; }
+        .signature-box .no-sign { height: 40px; border-bottom: 1px solid #000; }
+        .grading-scale { margin-top: 12px; font-size: 11px; text-align: center; background-color: #E1BEE7; padding: 5px; border-radius: 4px; font-weight: 600; color: #4A148C; }
+        .control-panel { width: 220px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+        .btn { padding: 10px; border: 1px solid #000; border-radius: 5px; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; box-shadow: 2px 2px 0px rgba(0,0,0,0.4); transition: all 0.1s ease; }
+        .btn:active { transform: translate(2px, 2px); box-shadow: none; }
+        .btn-black { background-color: #000; color: #fff; }
+        .btn-orange { background-color: #F26C23; color: #fff; }
+        .btn-blue { background-color: #2D72B8; color: #fff; }
+        .btn-green { background-color: #4B854B; color: #fff; }
+        .btn-white { background-color: #fff; color: #000; }
+        .nav-buttons { display: flex; gap: 5px; }
+        .nav-buttons .btn { flex: 1; padding: 8px 2px; font-size: 14px; }
+        .small-btn { padding: 5px; font-size: 12px; border-radius: 3px; }
+        .exam-info { background-color: #FFF2CC; padding: 6px; border-radius: 4px; font-size: 13px; text-align: center; font-weight: 700; border: 1px solid #F57F17; color: #D84315; }
+        .std-badge { background: #1A237E; color: #FFD700; padding: 5px 12px; border-radius: 5px; font-weight: 700; font-size: 14px; text-align: center; }
+        .grade-A { color: green; font-weight: 700; }
+        .grade-F { color: red; font-weight: 700; }
+        .pass { color: green; font-weight: 700; }
+        .fail { color: red; font-weight: 700; }
+        #bulk-print-container { display: none; }
+        @media print {
+            body { background-color: #fff; padding: 0; display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .main-container { display: none !important; }
+            #bulk-print-container { display: block !important; }
+            .print-page { page-break-after: always; padding: 15px; border: 5px solid #7B1FA2; margin-bottom: 10px; }
+            .print-page:last-child { page-break-after: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="marksheet-area" id="print-area"></div>
+    <div class="control-panel">
+        <div class="std-badge">ધોરણ : <span id="stdSide">-</span></div>
+        <button class="btn btn-black" onclick="window.location.href='home.html?std=' + currentStd">Home</button>
+        <div class="exam-info" id="examTypeDisplay">વાર્ષિક</div>
+        <div class="nav-buttons">
+            <button class="btn btn-white" onclick="prevStudent()">◀</button>
+            <button class="btn btn-blue" id="studentIndexDisplay">1 / 1</button>
+            <button class="btn btn-white" onclick="nextStudent()">▶</button>
+        </div>
+        <button class="btn btn-orange" onclick="bulkPDF()">Bulk PDF (Save as PDF)</button>
+        <button class="btn btn-blue" onclick="bulkPrint()">Bulk Prints (All)</button>
+        <button class="btn btn-green" onclick="sendWhatsappCurrent()">Send Whatsapp (Current)</button>
+        <button class="btn btn-green" onclick="sendWhatsappBulk()">Send Whatsapp (Bulk)</button>
+        <button class="btn btn-white small-btn" onclick="editWhatsappMessage()">Whatsapp sms speed Edit</button>
+    </div>
+</div>
+<div id="bulk-print-container"></div>
+
+<script>
+    let students = [];
+    let currentStudentIndex = 0;
+    let schoolInfo = {};
+    let customWhatsappMsg = "";
+    let examType = 'Annual';
+    let subjects = [];
+
+    document.getElementById('stdSide').innerText = currentStd;
+
+    window.onload = async function() {
+        await openDB();
+        subjects = getSubjects(currentStd);
+        const studentsData = await getStudents(currentStd);
+        const schoolData = await getSchoolInfoDB(currentStd);
+
+        if (studentsData.length === 0) {
+            alert('ધોરણ ' + currentStd + ' માં કોઈ ડેટા નથી. પહેલા ડેટા એન્ટ્રી કરો.');
+            return;
+        }
+        students = studentsData;
+        schoolInfo = schoolData || {};
+        const urlExam = getUrlParam('exam', '');
+        examType = urlExam || schoolInfo.examType || 'Annual';
+
+        const examNames = { Sem1: 'પ્રથમ સત્ર પરીક્ષા', Sem2: 'દ્વિતીય સત્ર પરીક્ષા', Annual: 'વાર્ષિક પરીક્ષા' };
+        document.getElementById('examTypeDisplay').innerText = examNames[examType] || 'વાર્ષિક';
+        document.title = `માર્કશીટ_Std${currentStd}_${examType}`;
+
+        calculateRanks();
+        renderMarksheet(0);
+    };
+
+    // ============================================================
+    // MARKS PARSING HELPERS
+    // ============================================================
+    function sem1Parts(student, idx) {
+        return {
+            tri: parseFloat(student.marks[idx]) || 0,
+            sat: (parseFloat(student.marks[idx + 1]) || 0) / 2,
+            swa: parseFloat(student.marks[idx + 2]) || 0
+        };
+    }
+    function sem2Parts(student, idx) {
+        return {
+            tri: parseFloat(student.marks[idx + 3]) || 0,
+            sat: (parseFloat(student.marks[idx + 4]) || 0) / 2,
+            swa: parseFloat(student.marks[idx + 5]) || 0
+        };
+    }
+    function getGrade(pct) {
+        if (pct >= 80) return 'A';
+        if (pct >= 65) return 'B';
+        if (pct >= 50) return 'C';
+        if (pct >= 35) return 'D';
+        return 'E';
+    }
+    function getRemark(g) {
+        if (g === 'A' || g === 'B') return 'ઉત્તમ';
+        if (g === 'C') return 'સારું';
+        return 'સુધારો જરૂરી';
+    }
+    function fmtNum(n) { return (n % 1 === 0) ? n : n.toFixed(1); }
+
+    // ============================================================
+    // TOTAL CALCULATION (Subject-wise + Patrak-B)
+    // ============================================================
+    function getStudentTotal(student) {
+        const pbConfig = getPatrakBConfig(currentStd);
+        const pbMax = pbConfig.maxTotal;
+
+        let total = 0, max = 0;
+
+        // ---- Subject-wise ----
+        for (let i = 0; i < subjects.length; i++) {
+            const subName = subjects[i];
+            const s1 = sem1Parts(student, i * 6);
+            const s2 = sem2Parts(student, i * 6);
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+
+            const sem1Avail = isSubjectInSem(currentStd, subName, 'Sem1');
+            const sem2Avail = isSubjectInSem(currentStd, subName, 'Sem2');
+
+            if (examType === 'Sem1') {
+                if (sem1Avail) { total += t1; max += 100; }
+            } else if (examType === 'Sem2') {
+                if (sem2Avail) { total += t2; max += 100; }
+            } else {
+                // Annual
+                if (sem1Avail) { total += t1; max += 100; }
+                if (sem2Avail) { total += t2; max += 100; }
+            }
+        }
+
+        // ---- Patrak-B ----
+        const pb1 = parseFloat(student.patrakB1) || 0;
+        const pb2 = parseFloat(student.patrakB2) || 0;
+
+        if (examType === 'Sem1') {
+            total += pb1;
+            max += pbMax;
+        } else if (examType === 'Sem2') {
+            total += pb2;
+            max += pbMax;
+        } else {
+            // Annual: (Sem1 + Sem2) / 2
+            total += (pb1 + pb2) / 2;
+            max += pbMax;
+        }
+
+        return { total, max, pct: max > 0 ? (total / max) * 100 : 0 };
+    }
+
+    // ============================================================
+    // PASS/FAIL LOGIC
+    // Std 8: 2+ E grades → FAIL | Std 3-7 → हमेशा PASS
+    // ============================================================
+    function getResultStatus(student) {
+        const stdNum = parseInt(currentStd) || 8;
+        if (stdNum !== 8) return 'PASS';
+
+        let eCount = 0;
+        for (let i = 0; i < subjects.length; i++) {
+            const subName = subjects[i];
+            const s1 = sem1Parts(student, i * 6);
+            const s2 = sem2Parts(student, i * 6);
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+
+            const sem1Avail = isSubjectInSem(currentStd, subName, 'Sem1');
+            const sem2Avail = isSubjectInSem(currentStd, subName, 'Sem2');
+
+            let obtained = 0, max = 0;
+            if (examType === 'Sem1') {
+                if (sem1Avail) { obtained = t1; max = 100; }
+            } else if (examType === 'Sem2') {
+                if (sem2Avail) { obtained = t2; max = 100; }
+            } else {
+                if (sem1Avail) { obtained += t1; max += 100; }
+                if (sem2Avail) { obtained += t2; max += 100; }
+            }
+
+            if (max > 0 && getGrade((obtained / max) * 100) === 'E') eCount++;
+        }
+        return eCount >= 2 ? 'FAIL' : 'PASS';
+    }
+
+    // ============================================================
+    // RANK CALCULATION
+    // ============================================================
+    function calculateRanks() {
+        students.forEach(s => { s._total = getStudentTotal(s).total; });
+        const sorted = [...students].sort((a, b) => b._total - a._total);
+        sorted.forEach((s, i) => {
+            const o = students.find(x => x.roll === s.roll);
+            if (o) o.rank = i + 1;
+        });
+    }
+
+    // ============================================================
+    // MARKSHEET HTML GENERATOR
+    // ============================================================
+    function getMarksheetHTML(student) {
+        let tableBodyHTML = '';
+        let grandTotal = 0, totalObtained = 0;
+
+        // ---- Subjects ----
+        subjects.forEach((subName, idx) => {
+            const marksIdx = idx * 6;
+            const s1 = sem1Parts(student, marksIdx);
+            const s2 = sem2Parts(student, marksIdx);
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+
+            const sem1Avail = isSubjectInSem(currentStd, subName, 'Sem1');
+            const sem2Avail = isSubjectInSem(currentStd, subName, 'Sem2');
+
+            let obtained = 0, max = 0;
+
+            if (examType === 'Sem1') {
+                if (sem1Avail) { obtained = t1; max = 100; }
+                else { return; } // Skip unavailable subject
+            } else if (examType === 'Sem2') {
+                if (sem2Avail) { obtained = t2; max = 100; }
+                else { return; }
+            } else {
+                // Annual
+                if (sem1Avail) { obtained += t1; max += 100; }
+                if (sem2Avail) { obtained += t2; max += 100; }
+                if (max === 0) return;
+            }
+
+            const grade = getGrade((obtained / max) * 100);
+            const gc = (grade === 'E') ? 'grade-F' : 'grade-A';
+            grandTotal += max;
+            totalObtained += obtained;
+
+            tableBodyHTML += `<tr>
+                <td>${idx + 1}</td>
+                <td class="subject-name">${subName}</td>
+                <td>${max}</td>
+                <td style="font-weight:700;">${Math.round(obtained)}</td>
+                <td style="font-weight:700;" class="${gc}">${grade}</td>
+                <td style="text-align:left;">${getRemark(grade)}</td>
+            </tr>`;
+        });
+
+        // ---- Patrak-B ----
+        const pbConfig = getPatrakBConfig(currentStd);
+        const pbMax = pbConfig.maxTotal;
+        const pb1 = parseFloat(student.patrakB1) || 0;
+        const pb2 = parseFloat(student.patrakB2) || 0;
+
+        let pbO = 0;
+        if (examType === 'Sem1') pbO = pb1;
+        else if (examType === 'Sem2') pbO = pb2;
+        else pbO = (pb1 + pb2) / 2;
+
+        const pbGrade = getGrade((pbO / pbMax) * 100);
+        const pbGC = (pbGrade === 'E') ? 'grade-F' : 'grade-A';
+
+        tableBodyHTML += `<tr>
+            <td>${subjects.length + 1}</td>
+            <td class="subject-name">વ્યક્તિત્વ વિકાસ (પત્રક-B)</td>
+            <td>${pbMax}</td>
+            <td style="font-weight:700;">${Math.round(pbO)}</td>
+            <td style="font-weight:700;" class="${pbGC}">${pbGrade}</td>
+            <td style="text-align:left;">${getRemark(pbGrade)}</td>
+        </tr>`;
+        grandTotal += pbMax;
+        totalObtained += pbO;
+
+        // ---- Overall ----
+        const overallPct = ((totalObtained / grandTotal) * 100).toFixed(2);
+        const overallGrade = getGrade(overallPct);
+        const overallGC = (overallGrade === 'E') ? 'grade-F' : 'grade-A';
+        const result = getResultStatus(student);
+        const resultClass = (result === 'PASS') ? 'pass' : 'fail';
+        const totalDays = schoolInfo.totalDays || 234;
+        const presentDays = student.attendance || 0;
+
+        const logoImg = schoolInfo.schoolLogo ? `<img src="${schoolInfo.schoolLogo}">` : `<div class="no-logo">લોગો</div>`;
+        const studentPhoto = student.photo ? `<img src="${student.photo}">` : `<div class="no-photo">ફોટો નથી</div>`;
+        const principalSign = schoolInfo.principalSign ? `<img src="${schoolInfo.principalSign}">` : `<div class="no-sign"></div>`;
+        const teacherSign = schoolInfo.teacherSign ? `<img src="${schoolInfo.teacherSign}">` : `<div class="no-sign"></div>`;
+
+        // ✅ Exam title for all 3 types
+        const examTitle = examType === 'Sem1' ? 'પ્રથમ સત્ર' : (examType === 'Sem2' ? 'દ્વિતીય સત્ર' : 'વાર્ષિક');
+
+        return `
+            <div class="header-container">
+                <div class="header-left">${logoImg}</div>
+                <div class="header-center">
+                    <h2>${schoolInfo.educationCommittee || 'દેવ. ધ્રારકા જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ'}</h2>
+                    <h1>${schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા'}</h1>
+                    <h3>${schoolInfo.address || 'ગું. કોરાડા, તા.ઢ્રારકા, જિ. દેવ. ઢ્રારકા'}</h3>
+                    <div class="session-badge">${examTitle} મૂલ્યાંકન : ${schoolInfo.sessionYear || "2025-'26"}</div>
+                </div>
+                <div class="header-right">${studentPhoto}</div>
+            </div>
+            <div class="student-info">
+                <div class="info-item"><span class="info-label">વિદ્યાર્થીનું નામ :</span><span class="info-value">${student.name || '--'}</span></div>
+                <div class="info-item"><span class="info-label">ધોરણ :</span><span class="info-value">${currentStd}</span> <span class="info-label" style="width:auto;margin-left:10px;">વર્ગ :</span><span class="info-value">${schoolInfo.class || '-'}</span></div>
+                <div class="info-item"><span class="info-label">સરનામું :</span><span class="info-value">${student.address || '--'}</span></div>
+                <div class="info-item"><span class="info-label">હાજરી પત્રક નં. :</span><span class="info-value">${student.roll || '--'}</span></div>
+                <div class="info-item"><span class="info-label">UID નંબર :</span><span class="info-value">${student.uid || '-'}</span></div>
+                <div class="info-item"><span class="info-label">PEN નંબર :</span><span class="info-value">${student.pen || '-'}</span></div>
+                <div class="info-item"><span class="info-label">GR નંબર :</span><span class="info-value">${student.gr || '--'}</span></div>
+                <div class="info-item"><span class="info-label">સંપર્ક નંબર :</span><span class="info-value">${student.contact || '--'}</span></div>
+                <div class="info-item"><span class="info-label">માતાનું નામ :</span><span class="info-value">${student.motherName || '--'}</span></div>
+                <div class="info-item"><span class="info-label">જન્મ તારીખ :</span><span class="info-value">${student.dob || '--'}</span></div>
+            </div>
+            <table class="marks-table">
+                <thead><tr><th>ક્રમ</th><th>વિષય</th><th>કુલ ગુણ</th><th>મેળવેલ ગુણ</th><th>મેળવેલ ગ્રેડ</th><th>વિશેષ નોંધ</th></tr></thead>
+                <tbody>${tableBodyHTML}</tbody>
+            </table>
+            <div class="summary-section">
+                <div class="summary-grid">
+                    <div class="summary-row"><span class="summary-label">એકંદરે કુલ ગુણ :</span><span class="summary-value">${grandTotal}</span></div>
+                    <div class="summary-row"><span class="summary-label">એકંદરે ગ્રેડ :</span><span class="summary-value ${overallGC}">${overallGrade}</span></div>
+                    <div class="summary-row"><span class="summary-label">મેળવેલ ટકાવારી :</span><span class="summary-value">${overallPct} %</span></div>
+                    <div class="summary-row"><span class="summary-label">વર્ગમાં રેન્ક :</span><span class="summary-value">${student.rank || '--'}</span></div>
+                    <div class="summary-row"><span class="summary-label">હાજર દિવસો :</span><span class="summary-value">${totalDays} માંથી ${presentDays}</span></div>
+                    <div class="summary-row"><span class="summary-label">પરિણામ :</span><span class="summary-value ${resultClass}">${result}</span></div>
+                </div>
+                <div class="summary-center">મેળવેલ કુલ ગુણ : ${Math.round(totalObtained)} / ${grandTotal}</div>
+            </div>
+            <div class="signatures">
+                <div class="sig-left">સ્થળ : <span>${schoolInfo.resultPlace || 'કોરાડા'}</span><br>તારીખ : <span>${examType === 'Sem1' ? (schoolInfo.exam1Date || '15/11/2025') : (schoolInfo.exam2Date || '02/05/2026')}</span></div>
+                <div class="sig-note">નોધ : ______________</div>
+                <div class="signature-box">${teacherSign}વર્ગ શિક્ષકની સહી</div>
+                <div class="signature-box">${principalSign}આચાર્યની સહી</div>
+            </div>
+            <div class="grading-scale">100 ગુણના આધારે : 80+ = A, 65-79 = B, 50-64 = C, 35-49 = D, 35 થી નીચે = E</div>
+        `;
+    }
+
+    // ============================================================
+    // RENDER & NAVIGATION
+    // ============================================================
+    function renderMarksheet(index) {
+        if (index < 0 || index >= students.length) return;
+        currentStudentIndex = index;
+        document.getElementById('print-area').innerHTML = getMarksheetHTML(students[index]);
+        document.getElementById('studentIndexDisplay').innerText = `${index + 1} / ${students.length}`;
+    }
+    function nextStudent() { if (currentStudentIndex < students.length - 1) renderMarksheet(currentStudentIndex + 1); }
+    function prevStudent() { if (currentStudentIndex > 0) renderMarksheet(currentStudentIndex - 1); }
+
+    // ============================================================
+    // BULK PRINT / PDF
+    // ============================================================
+    function bulkPrint() {
+        const printContainer = document.getElementById('bulk-print-container');
+        printContainer.innerHTML = '';
+        students.forEach((student) => {
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'print-page';
+            pageDiv.innerHTML = getMarksheetHTML(student);
+            printContainer.appendChild(pageDiv);
+        });
+        document.title = `Marksheet_Std${currentStd}_${examType}`;
+        window.print();
+    }
+    function bulkPDF() { alert("પ્રિન્ટ ડાયલોગ ખુલશે. 'Save as PDF' પસંદ કરો."); bulkPrint(); }
+
+    // ============================================================
+    // WHATSAPP
+    // ============================================================
+    function sendWhatsappCurrent() {
+        const student = students[currentStudentIndex];
+        if (!student || !student.contact) { alert('સંપર્ક નંબર નથી.'); return; }
+        let phone = student.contact.replace(/\D/g, '');
+        if (phone.length === 10) phone = '91' + phone;
+        const calc = getStudentTotal(student);
+        const result = getResultStatus(student);
+        let msg = customWhatsappMsg || `*${schoolInfo.schoolName || 'શાળા'}*\n*ધોરણ:* ${currentStd}\n*વિદ્યાર્થી:* ${student.name}\n*ટકાવારી:* ${calc.pct.toFixed(2)}%\n*પરિણામ:* ${result}\n*વધુ માહિતી માટે શાળાનો સંપર્ક કરો.*`;
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+    function sendWhatsappBulk() {
+        alert("એક પછી એક WhatsApp મેસેજ ખુલશે (2 સેકન્ડના અંતરાલમાં).");
+        students.forEach((s, i) => {
+            if (s.contact) setTimeout(() => { currentStudentIndex = i; sendWhatsappCurrent(); }, i * 2000);
+        });
+    }
+    function editWhatsappMessage() {
+        let m = prompt("WhatsApp મેસેજ બદલો:", customWhatsappMsg);
+        if (m !== null) customWhatsappMsg = m;
+    }
+</script>
+</body>
+</html>

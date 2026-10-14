@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પત્રક-C : પરિણામ પત્રક</title>
+    <!-- ✅ 2 Fonts: Shrikhand (titles) + Rasa (body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Rasa:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="db.js"></script>
+    <script>
+        const currentStd = getUrlParam('std', '8');
+        const urlExam = getUrlParam('exam', 'Annual');
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Rasa', sans-serif;    /* ✅ Default: Rasa */
+            background-color: #d0d0d0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        /* ============ TITLE FONT ============ */
+        .font-title {
+            font-family: 'Shrikhand', cursive;   /* ✅ Titles */
+            letter-spacing: 0.5px;
+        }
+        
+        /* ============ CONTROL BAR ============ */
+        .control-bar {
+            background: linear-gradient(135deg, #1A237E, #283593);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(26, 35, 126, 0.4);
+            max-width: 210mm;
+            width: 100%;
+        }
+        .control-bar .info-badge {
+            background: #FFD700;
+            color: #1A237E;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .control-btn {
+            padding: 8px 16px;
+            border: 2px solid #FFD700;
+            background: rgba(255, 215, 0, 0.15);
+            color: #FFD700;
+            font-family: 'Rasa', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .control-btn:hover {
+            background: #FFD700;
+            color: #1A237E;
+            transform: translateY(-2px);
+        }
+        .control-btn.primary {
+            background: #FFD700;
+            color: #1A237E;
+        }
+        
+        /* ============ A4 PAGE ============ */
+        .page {
+            width: 210mm;
+            height: 297mm;
+            background: #fff;
+            padding: 14mm 12mm;
+            position: relative;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            margin: 0 auto;
+            background-image: url('frame.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .page-inner {
+            width: 100%;
+            height: 100%;
+            padding: 3mm 5mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 2mm;
+        }
+        
+        /* ============ HEADER ============ */
+        .header-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4mm;
+            padding: 1mm 0;
+            flex-shrink: 0;
+        }
+        
+        .saraswati-icon {
+            width: 30mm;
+            height: 30mm;
+            flex-shrink: 0;
+        }
+        
+        .saraswati-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        
+        .header-center {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .sce-title {
+            font-family: 'Shrikhand', cursive;    /* ✅ Shrikhand */
+            font-size: 24px;
+            color: #1A237E;
+            line-height: 1.2;
+            margin-bottom: 2mm;
+            letter-spacing: 0.5px;
+        }
+        
+        .sce-subtitle {
+            font-family: 'Rasa', sans-serif;      /* ✅ Rasa */
+            font-size: 20px;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 2mm;
+            letter-spacing: 2px;
+        }
+        
+        .patrak-c-badge {
+            font-family: 'Shrikhand', cursive;    /* ✅ Shrikhand */
+            display: inline-block;
+            border: 3px solid #C62828;
+            color: #C62828;
+            padding: 2px 25px;
+            font-size: 22px;
+            letter-spacing: 1px;
+            background: #fff;
+            border-radius: 4px;
+        }
+        
+        /* ============ STD/CLASS/YEAR ============ */
+        .info-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 2mm 3mm;
+            font-family: 'Rasa', sans-serif;
+            font-size: 18px;              /* ✅ 16px → 18px */
+            font-weight: 700;
+            color: #1A237E;
+            flex-shrink: 0;
+        }
+        .info-row .val { color: #C62828; }
+        
+        /* ============ PATRAK TITLE ============ */
+        .patrak-title {
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+            margin: 1mm 0;
+        }
+        
+        .patrak-title-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Shrikhand', cursive;    /* ✅ Shrikhand */
+            font-size: 30px;
+            color: #1A237E;
+            letter-spacing: 1px;
+        }
+        
+        .patrak-title .star {
+            color: #C75B12;
+            font-size: 24px;
+        }
+        
+        .title-underline {
+            width: 75%;
+            height: 2.5px;
+            background: linear-gradient(90deg, transparent, #C75B12, #1A237E, #C75B12, transparent);
+            margin: 3px auto 0 auto;
+        }
+        
+        /* ============ SCHOOL INFO ============ */
+        .school-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px 6mm;
+            padding: 2mm 3mm 3mm 3mm;
+            font-family: 'Rasa', sans-serif;      /* ✅ Rasa */
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .info-pair {
+            display: grid;
+            grid-template-columns: 28mm 2mm 1fr;
+            align-items: baseline;
+            gap: 2px;
+            padding: 3px 0;
+        }
+        
+        .info-pair .lbl {
+            color: #1A237E;
+            font-weight: 700;
+            text-align: right;
+            white-space: nowrap;
+            font-size: 16px;              /* ✅ 14px → 16px */
+        }
+        .info-pair .sep {
+            color: #000;
+            text-align: center;
+            font-weight: 700;
+            font-size: 16px;              /* ✅ 14px → 16px */
+        }
+        .info-pair .val {
+            color: #000;
+            font-weight: 600;
+            padding-bottom: 1px;
+            border-bottom: 1px dotted #999;
+            min-height: 19px;             /* ✅ 17px → 19px */
+            font-size: 16px;              /* ✅ 14px → 16px */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* ============ STATS TABLE ============ */
+        .stats-table-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            margin: 6mm 0 1mm 0;
+            min-height: 0;
+        }
+        
+        table.stats-table {
+            width: 100%;
+            height: auto;
+            border-collapse: collapse;
+            font-family: 'Rasa', sans-serif;      /* ✅ Rasa */
+            font-weight: 600;
+            table-layout: fixed;
+        }
+        
+        table.stats-table th,
+        table.stats-table td {
+            border: 1.3px solid #000;
+            padding: 3px 2px;
+            text-align: center;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+        
+        table.stats-table thead th {
+            background: #F5F5F5;
+            color: #000;
+            font-weight: 700;
+        }
+        
+        table.stats-table thead tr.header-1 th {
+            font-size: 16px;              /* ✅ 14px → 16px */
+            padding: 6px 3px;
+        }
+        
+        table.stats-table thead tr.header-2 th {
+            font-size: 15px;              /* ✅ 13px → 15px */
+            padding: 5px 2px;
+        }
+        
+        table.stats-table thead tr.header-3 th {
+            font-size: 14px;              /* ✅ 12px → 14px */
+            padding: 4px 2px;
+            font-weight: 600;
+        }
+        
+        th.h-blue { background: #E3F2FD !important; color: #0D47A1 !important; }
+        th.h-pink { background: #FCE4EC !important; color: #AD1457 !important; }
+        th.h-yellow { background: #FFF9C4 !important; color: #827717 !important; }
+        th.h-grade-A { background: #C8E6C9 !important; color: #1B5E20 !important; }
+        th.h-grade-B { background: #DCEDC8 !important; color: #33691E !important; }
+        th.h-grade-C { background: #FFF9C4 !important; color: #827717 !important; }
+        th.h-grade-D { background: #FFE0B2 !important; color: #E65100 !important; }
+        th.h-grade-E { background: #FFCDD2 !important; color: #B71C1C !important; }
+        
+        table.stats-table tbody tr {
+            background: #fff;
+        }
+        
+        table.stats-table tbody td {
+            font-size: 16px;              /* ✅ 14px → 16px */
+            padding: 5px 2px;
+            height: 36px;                 /* ✅ 32px → 36px */
+            font-weight: 600;
+        }
+        
+        table.stats-table tbody td.jati-cell {
+            text-align: center;
+            padding: 5px 4px;
+            font-size: 15.5px;            /* ✅ 13.5px → 15.5px */
+            font-weight: 700;
+            line-height: 1.25;
+            word-wrap: break-word;
+            white-space: normal;
+            background: #FAFAFA;
+        }
+        
+        table.stats-table tbody tr.total-row td {
+            background: #FFF9C4;
+            font-weight: 700;
+            font-size: 16px;              /* ✅ 14px → 16px */
+            padding: 6px 2px;
+            border-top: 2.5px solid #000;
+            height: 40px;                 /* ✅ 36px → 40px */
+        }
+        
+        table.stats-table tbody tr.total-row td.jati-cell {
+            background: #FFE082;
+            font-size: 17px;              /* ✅ 15px → 17px */
+        }
+        
+        .cell-num.zero { color: #999; }
+        .cell-num.nonzero { color: #000; font-weight: 700; }
+        
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        .footer-section {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            padding: 4mm 6mm 2mm 6mm;
+            font-family: 'Rasa', sans-serif;      /* ✅ Rasa */
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A237E;
+            flex-shrink: 0;
+        }
+        
+        .footer-signatures {
+            display: flex;
+            justify-content: space-between;
+            gap: 5mm;
+            margin-bottom: 5mm;
+        }
+        
+        .sign-box {
+            text-align: center;
+            flex: 1;
+            min-width: 45mm;
+        }
+        
+        .sign-box .sign-space {
+            height: 12mm;
+        }
+        
+        .sign-box .sign-line {
+            border-top: 1.5px solid #000;
+            padding-top: 3px;
+            font-size: 15px;
+            font-weight: 700;
+        }
+        
+        .footer-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15.5px;
+            font-weight: 600;
+            padding: 0 3mm;
+        }
+        
+        /* ============ PRINT ============ */
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body {
+                background: #fff !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+            .control-bar { display: none !important; }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                page-break-after: avoid;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            .saraswati-icon img { display: block !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============ CONTROL BAR ============ -->
+<div class="control-bar">
+    <div class="info-badge">પત્રક-C : પરિણામ પત્રક</div>
+    <div style="font-weight: 700; font-size: 13px;">
+        ધોરણ : <span id="ctrlStd">-</span> |
+        પરીક્ષા : <span id="ctrlExam">-</span>
+    </div>
+    <button class="control-btn" onclick="window.location.href='home.html?std=' + currentStd">🏠 Home</button>
+    <button class="control-btn primary" onclick="window.print()">🖨 પ્રિન્ટ / PDF</button>
+</div>
+
+<!-- ============ A4 PAGE ============ -->
+<div class="page">
+    <div class="page-inner">
+        
+        <!-- HEADER -->
+        <div class="header-section">
+            <div class="saraswati-icon">
+                <img src="saraswati.png" alt="સરસ્વતી માતાજી">
+            </div>
+            <div class="header-center">
+                <div class="sce-title">શાળાકીય સર્વગ્રાહી મૂલ્યાંકન</div>
+                <div class="sce-subtitle">( SCE )</div>
+                <div class="patrak-c-badge">પત્રક-C</div>
+            </div>
+            <div class="saraswati-icon">
+                <img src="saraswati.png" alt="સરસ્વતી માતાજી">
+            </div>
+        </div>
+        
+        <!-- STD/CLASS/YEAR -->
+        <div class="info-row">
+            <span>ધોરણ :- <span class="val" id="infoStd">7</span></span>
+            <span>વર્ગ :- <span class="val" id="infoClass">અ</span></span>
+            <span>વર્ષ :- <span class="val" id="infoYear">2026 - 2027</span></span>
+        </div>
+        
+        <!-- PATRAK TITLE -->
+        <div class="patrak-title">
+            <div class="patrak-title-text">
+                <span class="star">✦</span>
+                <span>પરિણામ પત્રક</span>
+                <span class="star">✦</span>
+            </div>
+            <div class="title-underline"></div>
+        </div>
+        
+        <!-- SCHOOL INFO -->
+        <div class="school-info" id="schoolInfoBox"></div>
+        
+        <!-- STATS TABLE -->
+        <div class="stats-table-wrapper">
+            <table class="stats-table">
+                <colgroup>
+                    <col style="width: 13%">
+                    <col style="width: 4.4%"><col style="width: 4.4%"><col style="width: 4.4%">
+                    <col style="width: 4.4%"><col style="width: 4.4%"><col style="width: 4.4%">
+                    <col style="width: 4.4%"><col style="width: 4.4%"><col style="width: 4.4%">
+                    <col style="width: 4.4%"><col style="width: 4.4%"><col style="width: 4.4%">
+                    <col style="width: 4.4%"><col style="width: 4.4%"><col style="width: 4.4%">
+                    <col style="width: 4.4%"><col style="width: 4.4%"><col style="width: 4.4%">
+                    <col style="width: 8%">
+                </colgroup>
+                <thead>
+                    <tr class="header-1">
+                        <th rowspan="3">જાતિ</th>
+                        <th colspan="3">રજિ. સંખ્યા</th>
+                        <th colspan="15">મેળવેલ એકંદર ગ્રેડ</th>
+                        <th rowspan="3">નોંધ</th>
+                    </tr>
+                    <tr class="header-2">
+                        <th class="h-blue">કુમાર</th>
+                        <th class="h-pink">કન્યા</th>
+                        <th class="h-yellow">કુલ</th>
+                        <th colspan="3" class="h-grade-A">A</th>
+                        <th colspan="3" class="h-grade-B">B</th>
+                        <th colspan="3" class="h-grade-C">C</th>
+                        <th colspan="3" class="h-grade-D">D</th>
+                        <th colspan="3" class="h-grade-E">E</th>
+                    </tr>
+                    <tr class="header-3">
+                        <th class="h-blue">કુમાર</th>
+                        <th class="h-pink">કન્યા</th>
+                        <th class="h-yellow">કુલ</th>
+                        <th class="h-blue">કુમાર</th><th class="h-pink">કન્યા</th><th class="h-yellow">કુલ</th>
+                        <th class="h-blue">કુમાર</th><th class="h-pink">કન્યા</th><th class="h-yellow">કુલ</th>
+                        <th class="h-blue">કુમાર</th><th class="h-pink">કન્યા</th><th class="h-yellow">કુલ</th>
+                        <th class="h-blue">કુમાર</th><th class="h-pink">કન્યા</th><th class="h-yellow">કુલ</th>
+                        <th class="h-blue">કુમાર</th><th class="h-pink">કન્યા</th><th class="h-yellow">કુલ</th>
+                    </tr>
+                </thead>
+                <tbody id="statsTableBody"></tbody>
+            </table>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer-section">
+            <div class="footer-signatures">
+                <div class="sign-box">
+                    <div class="sign-space"></div>
+                    <div class="sign-line">વર્ગ શિક્ષકની સહી</div>
+                </div>
+                <div class="sign-box">
+                    <div class="sign-space"></div>
+                    <div class="sign-line">આચાર્યની સહી</div>
+                </div>
+                <div class="sign-box">
+                    <div class="sign-space"></div>
+                    <div class="sign-line">કેળવણી નિરીક્ષકશ્રીની સહી</div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom-row">
+                <div>સ્થળ : <span id="footPlace">કોરાડા</span></div>
+                <div>તારીખ : <span id="footDate">04-06-2024</span></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    let students = [];
+    let schoolInfo = {};
+    let subjects = [];
+
+    window.onload = async function() {
+        await openDB();
+        subjects = getSubjects(currentStd);
+        students = await getStudents(currentStd);
+        schoolInfo = (await getSchoolInfoDB(currentStd)) || {};
+
+        const examNames = { Sem1: 'પ્રથમ સત્ર', Sem2: 'દ્વિતીય સત્ર', Annual: 'વાર્ષિક' };
+        document.getElementById('ctrlStd').innerText = currentStd;
+        document.getElementById('ctrlExam').innerText = examNames[urlExam] || 'વાર્ષિક';
+
+        renderAll();
+    };
+
+    function renderAll() {
+        renderHeaderInfo();
+        renderSchoolInfo();
+        renderStatsTable();
+    }
+
+    function renderHeaderInfo() {
+        document.getElementById('infoStd').innerText = currentStd;
+
+        const cls = schoolInfo.class || 'A';
+        const clsMap = { 'A': 'અ', 'B': 'બ', 'C': 'ક', 'D': 'ડ', 'E': 'ઇ' };
+        document.getElementById('infoClass').innerText = clsMap[cls] || cls;
+
+        const sessionYear = schoolInfo.sessionYear || "2025-'26";
+        let yearStr = sessionYear;
+        const m = sessionYear.match(/(\d{4})[^\d]*(\d{2,4})/);
+        if (m) {
+            let y1 = m[1];
+            let y2 = m[2].length === 2 ? m[1].substring(0, 2) + m[2] : m[2];
+            yearStr = `${y1} - ${y2}`;
+        }
+        document.getElementById('infoYear').innerText = yearStr;
+    }
+
+    function renderSchoolInfo() {
+        const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
+        const address = schoolInfo.address || '';
+
+        let village = '', taluka = '', district = '';
+        if (address) {
+            const parts = address.split(/[,，]/).map(p => p.trim());
+            parts.forEach(p => {
+                if (p.includes('તા.') || p.toLowerCase().includes('તાલુકા')) {
+                    taluka = p.replace(/^તા\.\s*/, '').trim();
+                } else if (p.includes('જિ.') || p.toLowerCase().includes('જિલ્લ')) {
+                    district = p.replace(/^જિ\.\s*/, '').trim();
+                } else if (p.includes('ગું.') || p.toLowerCase().includes('ગામ')) {
+                    village = p.replace(/^ગું\.\s*/, '').trim();
+                }
+            });
+        }
+        if (!village) village = '---';
+        if (!taluka) taluka = '---';
+        if (!district) district = '---';
+
+        const centerSchool = schoolInfo.centerSchool || '---';
+        const crc = schoolInfo.crc || '---';
+        const teacherName = schoolInfo.teacherName || '---';
+
+        let resultDate = '---';
+        if (urlExam === 'Sem1' && schoolInfo.exam1Date) resultDate = formatDate(schoolInfo.exam1Date);
+        else if (schoolInfo.exam2Date) resultDate = formatDate(schoolInfo.exam2Date);
+
+        const leftItems = [
+            { lbl: 'શાળા', val: schoolName },
+            { lbl: 'ગામ', val: village },
+            { lbl: 'તાલુકો', val: taluka },
+            { lbl: 'જિલ્લો', val: district }
+        ];
+        const rightItems = [
+            { lbl: 'તારીખ', val: resultDate },
+            { lbl: 'વર્ગ શિક્ષક', val: teacherName },
+            { lbl: 'સી.આર.સી.', val: crc },
+            { lbl: 'સેન્ટર', val: centerSchool }
+        ];
+
+        const buildPair = (item) => `
+            <div class="info-pair">
+                <span class="lbl">${item.lbl}</span>
+                <span class="sep">:</span>
+                <span class="val" title="${item.val}">${item.val}</span>
+            </div>
+        `;
+
+        let html = '';
+        for (let i = 0; i < 4; i++) {
+            html += buildPair(leftItems[i]);
+            html += buildPair(rightItems[i]);
+        }
+
+        document.getElementById('schoolInfoBox').innerHTML = html;
+
+        document.getElementById('footPlace').innerText = schoolInfo.resultPlace || 'કોરાડા';
+        document.getElementById('footDate').innerText = resultDate;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '---';
+        if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) return dateStr;
+        const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+        return dateStr;
+    }
+
+    function renderStatsTable() {
+        const categories = [
+            { key: 'SC', name: 'અનુ. જાતિ' },
+            { key: 'ST', name: 'અનુ. જન. જાતિ' },
+            { key: 'OBC', name: 'સામાજિક અને શૈક્ષણિક પછાત' },
+            { key: 'OPEN', name: 'અન્ય' }
+        ];
+
+        const stats = {};
+        categories.forEach(c => {
+            stats[c.key] = {
+                registered: { M: 0, F: 0, T: 0 },
+                grades: {
+                    A: { M: 0, F: 0, T: 0 }, B: { M: 0, F: 0, T: 0 },
+                    C: { M: 0, F: 0, T: 0 }, D: { M: 0, F: 0, T: 0 },
+                    E: { M: 0, F: 0, T: 0 }
+                }
+            };
+        });
+
+        const totalRow = {
+            registered: { M: 0, F: 0, T: 0 },
+            grades: {
+                A: { M: 0, F: 0, T: 0 }, B: { M: 0, F: 0, T: 0 },
+                C: { M: 0, F: 0, T: 0 }, D: { M: 0, F: 0, T: 0 },
+                E: { M: 0, F: 0, T: 0 }
+            }
+        };
+
+        students.forEach(student => {
+            let caste = String(student.caste || 'OPEN').toUpperCase().trim();
+            if (caste === 'GENERAL') caste = 'OPEN';
+            if (!stats[caste]) caste = 'OPEN';
+
+            const gender = (student.gender === 'F') ? 'F' : 'M';
+            const calc = calculateStudentResult(student);
+            const grade = calc.grade;
+
+            stats[caste].registered[gender]++;
+            stats[caste].registered.T++;
+            if (stats[caste].grades[grade]) {
+                stats[caste].grades[grade][gender]++;
+                stats[caste].grades[grade].T++;
+            }
+
+            totalRow.registered[gender]++;
+            totalRow.registered.T++;
+            if (totalRow.grades[grade]) {
+                totalRow.grades[grade][gender]++;
+                totalRow.grades[grade].T++;
+            }
+        });
+
+        let html = '';
+        categories.forEach(cat => {
+            html += buildStatRow(cat.name, stats[cat.key], false);
+        });
+        html += buildStatRow('કુલ', totalRow, true);
+
+        document.getElementById('statsTableBody').innerHTML = html;
+    }
+
+    function buildStatRow(label, data, isTotal) {
+        const fmt = (n) => n > 0 ? `<span class="cell-num nonzero">${n}</span>` : `<span class="cell-num zero">0</span>`;
+
+        let cells = '';
+        cells += `<td>${fmt(data.registered.M)}</td>`;
+        cells += `<td>${fmt(data.registered.F)}</td>`;
+        cells += `<td>${fmt(data.registered.T)}</td>`;
+
+        ['A', 'B', 'C', 'D', 'E'].forEach(g => {
+            const gd = data.grades[g];
+            cells += `<td>${fmt(gd.M)}</td>`;
+            cells += `<td>${fmt(gd.F)}</td>`;
+            cells += `<td>${fmt(gd.T)}</td>`;
+        });
+
+        return `<tr class="${isTotal ? 'total-row' : ''}">
+            <td class="jati-cell">${label}</td>
+            ${cells}
+            <td></td>
+        </tr>`;
+    }
+
+    function calculateStudentResult(student) {
+        const pbConfig = getPatrakBConfig(currentStd);
+        const pbMax = pbConfig.maxTotal;
+
+        let total = 0, max = 0;
+
+        for (let i = 0; i < subjects.length; i++) {
+            const subName = subjects[i];
+            const idx = i * 6;
+
+            const s1 = {
+                tri: parseFloat(student.marks[idx]) || 0,
+                sat: (parseFloat(student.marks[idx + 1]) || 0) / 2,
+                swa: parseFloat(student.marks[idx + 2]) || 0
+            };
+            const s2 = {
+                tri: parseFloat(student.marks[idx + 3]) || 0,
+                sat: (parseFloat(student.marks[idx + 4]) || 0) / 2,
+                swa: parseFloat(student.marks[idx + 5]) || 0
+            };
+
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+
+            const sem1Avail = isSubjectInSem(currentStd, subName, 'Sem1');
+            const sem2Avail = isSubjectInSem(currentStd, subName, 'Sem2');
+
+            if (urlExam === 'Sem1') {
+                if (sem1Avail) { total += t1; max += 100; }
+            } else if (urlExam === 'Sem2') {
+                if (sem2Avail) { total += t2; max += 100; }
+            } else {
+                if (sem1Avail) { total += t1; max += 100; }
+                if (sem2Avail) { total += t2; max += 100; }
+            }
+        }
+
+        const pb1 = parseFloat(student.patrakB1) || 0;
+        const pb2 = parseFloat(student.patrakB2) || 0;
+
+        if (urlExam === 'Sem1') total += pb1;
+        else if (urlExam === 'Sem2') total += pb2;
+        else total += (pb1 + pb2) / 2;
+
+        max += pbMax;
+
+        const pct = max > 0 ? (total / max) * 100 : 0;
+        const grade = getGradeLetter(pct);
+
+        return { total, max, pct, grade };
+    }
+
+    function getGradeLetter(pct) {
+        if (pct >= 80) return 'A';
+        if (pct >= 65) return 'B';
+        if (pct >= 50) return 'C';
+        if (pct >= 35) return 'D';
+        return 'E';
+    }
+</script>
+
+</body>
+</html>

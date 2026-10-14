@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ડેટા અને ગુણ એન્ટ્રી</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="names_dictionary.js"></script>
+    <script src="db.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script>
+        const currentStd = getUrlParam('std', '8');
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans Gujarati', sans-serif; background-color: #e0e0e0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+
+        .top-controls { display: flex; justify-content: space-between; align-items: center; background-color: #fff; padding: 10px 20px; border: 1px solid #000; width: 100%; max-width: 99vw; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        .btn { padding: 8px 15px; border: 1px solid #000; border-radius: 5px; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0px rgba(0,0,0,0.4); }
+        .btn:active { transform: translate(2px, 2px); box-shadow: none; }
+        .btn-black { background-color: #000; color: #fff; }
+        .btn-green { background-color: #4B854B; color: #fff; }
+        .btn-blue { background-color: #2D72B8; color: #fff; }
+        .btn-orange { background-color: #F26C23; color: #fff; }
+        .btn-purple { background-color: #7030A0; color: #fff; }
+        .std-badge { background: #1A237E; color: #FFD700; padding: 5px 12px; border-radius: 5px; font-weight: 700; font-size: 14px; }
+        .save-status { padding: 5px 12px; border-radius: 5px; font-size: 13px; font-weight: 700; background: #E0E0E0; color: #555; transition: all 0.3s; }
+        .save-status.saved { background: #C8E6C9; color: #1B5E20; }
+        .save-status.saving { background: #FFF9C4; color: #F57F17; }
+
+        .table-wrapper { width: 100%; max-width: 99vw; overflow: auto; background-color: #fff; border: 1px solid #000; max-height: 75vh; }
+
+        /* ============================================================
+           TABLE WITH AUTO-FIT + STICKY COLUMNS + ROW HIGHLIGHT
+           ============================================================ */
+        table { 
+            border-collapse: separate;
+            border-spacing: 0;
+            white-space: nowrap; 
+            width: auto; 
+            min-width: 100%;
+        }
+        th, td { 
+            border-right: 1px solid #000; 
+            border-bottom: 1px solid #000;
+            padding: 5px 6px; 
+            text-align: center; 
+            font-size: 13px; 
+            font-weight: 600;
+            vertical-align: middle;
+            background-color: #fff;
+        }
+        th:first-child, td:first-child { border-left: 1px solid #000; }
+        thead tr:first-child th { border-top: 1px solid #000; }
+
+        thead th { 
+            background-color: #FFF2CC; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
+            font-size: 12px; 
+        }
+        .vh { 
+            writing-mode: vertical-rl; 
+            transform: rotate(180deg); 
+            white-space: nowrap; 
+            height: 110px; 
+            vertical-align: middle; 
+            padding: 4px 2px; 
+            font-size: 12px;
+        }
+
+        /* ============================================================
+           STICKY COLUMNS (ક્રમ, રોલ, નામ, ફોટો)
+           ============================================================ */
+        th.sticky-col, td.sticky-col { 
+            position: sticky; 
+            z-index: 5; 
+            background-color: #FFF9C4 !important;
+        }
+        thead th.sticky-col {
+            z-index: 15;
+            background-color: #FFD966 !important;
+        }
+        th.s1, td.s1 { width: 38px; min-width: 38px; max-width: 38px; }
+        th.s2, td.s2 { width: 52px; min-width: 52px; max-width: 52px; }
+        th.s3, td.s3 { width: 230px; min-width: 230px; max-width: 230px; text-align: left; }
+        th.s4, td.s4 { width: 80px; min-width: 80px; max-width: 80px; }
+
+        /* ============================================================
+           ROW HIGHLIGHT
+           ============================================================ */
+        tbody tr:focus-within td {
+            background-color: #E8F5E9 !important;
+        }
+        tbody tr:focus-within td.sticky-col {
+            background-color: #A5D6A7 !important;
+        }
+        tbody tr:hover td {
+            background-color: #FFFDE7;
+        }
+        tbody tr:hover td.sticky-col {
+            background-color: #FFF59D !important;
+        }
+
+        /* ============================================================
+           AUTO-FIT INPUTS
+           ============================================================ */
+        td input, td select {
+            width: auto;
+            min-width: 36px;
+            max-width: 320px;
+            border: none;
+            background: transparent;
+            font-family: 'Noto Sans Gujarati', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+            padding: 2px 4px;
+            field-sizing: content;
+        }
+        td.s3 input { text-align: left; }
+        td input:focus, td select:focus { 
+            background-color: #FFF3E0; 
+            box-shadow: inset 0 0 0 2px #FF6F00;
+            border-radius: 3px;
+        }
+
+        .cm { min-width: 40px; }
+        .ci { min-width: 90px; }
+        .cpb { background-color: #FFE0B2 !important; min-width: 55px; }
+
+        .photo-thumb { max-width: 70px; max-height: 45px; border: 1px solid #ccc; display: none; margin-top: 2px; }
+        input[type="file"] { font-size: 9px; width: 100%; min-width: 65px; }
+
+        .note { color: #D22B2B; font-size: 12px; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="top-controls">
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div class="std-badge">ધોરણ : <span id="stdBadge">-</span></div>
+        <span>વર્ગ :</span>
+        <select id="classSelect" style="padding:4px; font-size:13px;"><option value="A" selected>A</option><option>B</option><option>C</option></select>
+        <span class="note">(40+80+20 = 140 ડેટા એન્ટ્રી)</span>
+        <div class="save-status" id="saveStatus">💾 ઓટો-સેવ</div>
+    </div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn btn-blue" onclick="addNewRow()">+ નવો વિદ્યાર્થી</button>
+        <button class="btn btn-purple" onclick="document.getElementById('photoFolderInput').click()">🖼️ બધા ફોટા એકસાથે</button>
+        <input type="file" id="photoFolderInput" webkitdirectory directory multiple accept="image/*" style="display:none">
+        <button class="btn btn-green" onclick="saveData(true)">💾 ડેટા સેવ કરો</button>
+        <button class="btn btn-orange" onclick="document.getElementById('excelImportInput').click()">📥 Excel Import</button>
+        <button class="btn btn-blue" onclick="document.getElementById('ctsImportInput').click()">📥 CTS ડેટા</button>
+        <input type="file" id="ctsImportInput" accept=".xls,.xlsx" style="display:none">
+        <input type="file" id="excelImportInput" accept=".xlsx,.xls" style="display:none">
+        <button class="btn btn-orange" onclick="exportEntryExcel()">📤 Excel Export</button>
+        <button class="btn btn-black" onclick="window.location.href='home.html?std=' + currentStd">Home</button>
+    </div>
+</div>
+
+<div class="table-wrapper" id="tableWrapper">
+    <table id="marksTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<script>
+    const tableBody = document.getElementById('tableBody');
+    const tableHead = document.getElementById('tableHead');
+    const tableWrapper = document.getElementById('tableWrapper');
+    let subjects = [];
+    let autoSaveTimer = null;
+    let isSaving = false;
+
+    document.getElementById('stdBadge').innerText = currentStd;
+
+    // ============================================================
+    // DATE FORMATTING → Always dd-mm-yyyy
+    // ============================================================
+    function formatDate(val) {
+        if (val === null || val === undefined || val === '') return '';
+        let str = String(val).trim();
+        const numVal = Number(str);
+        if (!isNaN(numVal) && numVal > 20000 && numVal < 60000 && !str.includes('-') && !str.includes('/')) {
+            try {
+                const utc_days = Math.floor(numVal - 25569);
+                const utc_value = utc_days * 86400;
+                const d = new Date(utc_value * 1000);
+                const day = String(d.getUTCDate()).padStart(2, '0');
+                const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const year = d.getUTCFullYear();
+                return `${day}-${month}-${year}`;
+            } catch (e) { /* fall through */ }
+        }
+
+        let day, month, year;
+        let m = str.match(/^(\d{4})[-\/.\s](\d{1,2})[-\/.\s](\d{1,2})/);
+        if (m) { year = m[1]; month = m[2]; day = m[3]; }
+        else {
+            m = str.match(/^(\d{1,2})[-\/.\s](\d{1,2})[-\/.\s](\d{2,4})/);
+            if (m) { day = m[1]; month = m[2]; year = m[3]; }
+            else {
+                m = str.match(/^(\d{2})(\d{2})(\d{4})$/);
+                if (m) { day = m[1]; month = m[2]; year = m[3]; }
+                else {
+                    m = str.match(/^(\d{1,2})[-\/.\s](\d{1,2})[-\/.\s](\d{4})/);
+                    if (m) { day = m[1]; month = m[2]; year = m[3]; }
+                }
+            }
+        }
+        if (!day || !month || !year) return str;
+        day = String(day).padStart(2, '0');
+        month = String(month).padStart(2, '0');
+        if (String(year).length === 2) year = '20' + year;
+        return `${day}-${month}-${year}`;
+    }
+
+    // ============================================================
+    // AUTO-RESIZE INPUT
+    // ============================================================
+    function autoResizeInput(input) {
+        if (!input) return;
+        if (CSS.supports && CSS.supports('field-sizing', 'content')) return;
+        const temp = document.createElement('span');
+        temp.style.visibility = 'hidden';
+        temp.style.position = 'absolute';
+        temp.style.whiteSpace = 'pre';
+        temp.style.font = window.getComputedStyle(input).font;
+        temp.style.fontWeight = '600';
+        temp.textContent = input.value || input.placeholder || '00000';
+        document.body.appendChild(temp);
+        const w = Math.min(Math.max(temp.offsetWidth + 14, 36), 320);
+        input.style.width = w + 'px';
+        temp.remove();
+    }
+
+    function attachAutoResize(tr) {
+        const root = tr || document;
+        root.querySelectorAll('td input').forEach(inp => {
+            autoResizeInput(inp);
+            if (!inp.dataset.autoResizeBound) {
+                inp.dataset.autoResizeBound = '1';
+                inp.addEventListener('input', function() { autoResizeInput(this); });
+            }
+        });
+    }
+
+    // ============================================================
+    // DYNAMIC STICKY COLUMN POSITIONS
+    // ============================================================
+    function updateStickyPositions() {
+        const headRow = tableHead.querySelector('tr');
+        if (!headRow) return;
+        const stickyHeaders = headRow.querySelectorAll('th.sticky-col');
+        let left = 0;
+        stickyHeaders.forEach((th) => {
+            th.style.left = left + 'px';
+            left += th.offsetWidth;
+        });
+        tableBody.querySelectorAll('tr').forEach(tr => {
+            const stickyCells = tr.querySelectorAll('td.sticky-col');
+            let l = 0;
+            stickyCells.forEach((td) => {
+                td.style.left = l + 'px';
+                l += td.offsetWidth;
+            });
+        });
+    }
+
+    // ============================================================
+    // AUTO-SAVE (debounced)
+    // ============================================================
+    function scheduleAutoSave() {
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        const statusEl = document.getElementById('saveStatus');
+        statusEl.className = 'save-status saving';
+        statusEl.innerText = '⏳ સેવ થાય છે...';
+        autoSaveTimer = setTimeout(() => saveData(false), 2000);
+    }
+
+    // ============================================================
+    // HEADER GENERATION
+    // ============================================================
+    function generateHeaders() {
+        subjects = getSubjects(currentStd);
+        const subCount = subjects.length;
+
+        let header1 = `
+            <tr>
+                <th rowspan="3" class="sticky-col s1">ક્રમ</th>
+                <th rowspan="3" class="sticky-col s2">રોલ</th>
+                <th rowspan="3" class="sticky-col s3">વિદ્યાર્થીનું નામ</th>
+                <th rowspan="3" class="sticky-col s4">ફોટો</th>
+                <th rowspan="3" class="vh">જન્મ તારીખ<br>(dd-mm-yyyy)</th>
+                <th rowspan="3" class="vh">GR No.</th>
+                <th rowspan="3" class="vh">હાજરી<br>દિવસો</th>
+                <th rowspan="3" class="vh">જ્ઞાતિ</th>
+                <th rowspan="3" class="vh">જાતિ<br>(M/F)</th>
+                <th rowspan="3" class="vh">દિવ્યાંગ</th>
+        `;
+        subjects.forEach(s => { header1 += `<th colspan="6">${s}</th>`; });
+        header1 += `
+                <th colspan="2" style="background-color: #FFE0B2;">પત્રક-B</th>
+                <th rowspan="3" class="vh">સરનામું</th>
+                <th rowspan="3" class="vh">માતાનું નામ</th>
+                <th rowspan="3" class="vh">સંપર્ક નં.</th>
+                <th rowspan="3" class="vh">UID નં.</th>
+                <th rowspan="3" class="vh">PEN નં.</th>
+            </tr>
+        `;
+
+        let semRow = '<tr>';
+        let markRow = '<tr>';
+        for (let i = 0; i < subCount; i++) {
+            const subName = subjects[i];
+            const sem1Avail = isSubjectInSem(currentStd, subName, 'Sem1');
+            const sem2Avail = isSubjectInSem(currentStd, subName, 'Sem2');
+            
+            if (sem1Avail) {
+                semRow += `<th colspan="3">પ્રથમ સત્ર</th>`;
+            } else {
+                semRow += `<th colspan="3" style="background:#E0E0E0; color:#888;">પ્રથમ સત્ર (N/A)</th>`;
+            }
+            
+            if (sem2Avail) {
+                semRow += `<th colspan="3">દ્વિતીય સત્ર</th>`;
+            } else {
+                semRow += `<th colspan="3" style="background:#E0E0E0; color:#888;">દ્વિતીય સત્ર (N/A)</th>`;
+            }
+            
+            if (sem1Avail) {
+                markRow += `<th class="vh cm">ત્રિમાસિક<br>(40)</th><th class="vh cm">સત્રાંત<br>(80)</th><th class="vh cm">સ્વ અધ્યયન<br>(20)</th>`;
+            } else {
+                markRow += `<th class="vh cm" style="background:#E0E0E0; color:#888;">N/A</th><th class="vh cm" style="background:#E0E0E0; color:#888;">N/A</th><th class="vh cm" style="background:#E0E0E0; color:#888;">N/A</th>`;
+            }
+            
+            if (sem2Avail) {
+                markRow += `<th class="vh cm">ત્રિમાસિક<br>(40)</th><th class="vh cm">સત્રાંત<br>(80)</th><th class="vh cm">સ્વ અધ્યયન<br>(20)</th>`;
+            } else {
+                markRow += `<th class="vh cm" style="background:#E0E0E0; color:#888;">N/A</th><th class="vh cm" style="background:#E0E0E0; color:#888;">N/A</th><th class="vh cm" style="background:#E0E0E0; color:#888;">N/A</th>`;
+            }
+        }
+        semRow += `<th colspan="2" style="background-color: #FFE0B2;">&nbsp;</th></tr>`;
+        markRow += `<th class="vh cm" style="background-color: #FFE0B2;">પ્રથમ સત્ર<br>(400)</th><th class="vh cm" style="background-color: #FFE0B2;">દ્વિતીય સત્ર<br>(400)</th></tr>`;
+
+        tableHead.innerHTML = header1 + semRow + markRow;
+    }
+
+    // ============================================================
+    // PHOTO COMPRESS
+    // ============================================================
+    function compressImage(file, maxWidth, maxHeight, quality, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width, height = img.height;
+                if (width > height) { if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; } }
+                else { if (height > maxHeight) { width = Math.round((width * maxHeight) / height); height = maxHeight; } }
+                canvas.width = width; canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                callback(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Promise-based version for bulk upload
+    function compressImageAsync(file, maxWidth, maxHeight, quality) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width, height = img.height;
+                    if (width > height) { if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; } }
+                    else { if (height > maxHeight) { width = Math.round((width * maxHeight) / height); height = maxHeight; } }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => resolve('');
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve('');
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // ============================================================
+    // SINGLE PHOTO UPLOAD
+    // ============================================================
+    window.uploadStudentPhoto = function(event, rowIndex) {
+        const file = event.target.files[0];
+        if (!file) return;
+        compressImage(file, 150, 180, 0.6, function(compressedData) {
+            const imgElement = document.getElementById(`studentPhotoPreview_${rowIndex}`);
+            imgElement.src = compressedData;
+            imgElement.style.display = 'block';
+            event.target.closest('tr').dataset.photo = compressedData;
+            scheduleAutoSave();
+        });
+    };
+
+    // ============================================================
+    // BULK PHOTO UPLOAD — Folder select → Roll થી auto-assign
+    // ============================================================
+    async function handleFolderPhotos(event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+
+        const imageFiles = files.filter(f => f.type.startsWith('image/'));
+        if (imageFiles.length === 0) {
+            alert('❌ ફોલ્ડરમાં કોઈ ફોટો મળ્યો નથી.');
+            return;
+        }
+
+        const statusEl = document.getElementById('saveStatus');
+        statusEl.className = 'save-status saving';
+        statusEl.innerText = '⏳ ફોટા load થાય છે...';
+
+        const photoMap = {};
+        for (let i = 0; i < imageFiles.length; i++) {
+            const file = imageFiles[i];
+            const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+            
+            // Extract last number from filename (handles "1.jpg", "roll1.jpg", "Roll_01.png")
+            const numMatch = nameWithoutExt.match(/\d+/g);
+            if (!numMatch) continue;
+            let rollNum = String(parseInt(numMatch[numMatch.length - 1], 10));
+            
+            try {
+                const base64 = await compressImageAsync(file, 150, 180, 0.6);
+                if (base64) photoMap[rollNum] = base64;
+            } catch (e) {
+                console.warn('Failed:', file.name, e);
+            }
+            
+            if ((i + 1) % 10 === 0) {
+                statusEl.innerText = `⏳ ${i + 1}/${imageFiles.length} ફોટા...`;
+            }
+        }
+
+        let applied = 0;
+        const rows = tableBody.querySelectorAll('tr');
+        rows.forEach((tr) => {
+            const rollInput = tr.querySelector('.inp-roll');
+            if (!rollInput || !rollInput.value.trim()) return;
+            const roll = String(parseInt(rollInput.value, 10));
+            if (isNaN(roll)) return;
+            
+            if (photoMap[roll]) {
+                tr.dataset.photo = photoMap[roll];
+                const img = tr.querySelector('.photo-thumb');
+                if (img) {
+                    img.src = photoMap[roll];
+                    img.style.display = 'block';
+                }
+                applied++;
+                delete photoMap[roll];
+            }
+        });
+
+        const remaining = Object.keys(photoMap);
+        
+        statusEl.className = 'save-status saved';
+        statusEl.innerText = `✅ ${applied} ફોટા અપડેટ!`;
+
+        let msg = `✅ ${applied} વિદ્યાર્થીના ફોટા સફળતાપૂર્વક અપડેટ થયા!`;
+        if (remaining.length > 0) {
+            msg += `\n\n⚠️ ${remaining.length} ફોટા match ન થયા (રોલ: ${remaining.slice(0, 10).join(', ')}${remaining.length > 10 ? '...' : ''})`;
+        }
+        alert(msg);
+
+        scheduleAutoSave();
+        event.target.value = '';
+    }
+
+    window.checkMark = function(input, max, subject, sem, type) {
+        let val = parseFloat(input.value);
+        if (input.value === '') return;
+        if (val > max) { alert(`ભૂલ: ${subject} - ${sem} - ${type} માં મહત્તમ ${max} ગુણ જ.`); input.value = ''; input.focus(); }
+        else if (val < 0) { alert(`ભૂલ: નકારાત્મક ગુણ ન ભરી શકાય.`); input.value = ''; input.focus(); }
+    };
+
+    // ============================================================
+    // DATE FIELD HANDLER
+    // ============================================================
+    function setupDateField(input) {
+        input.addEventListener('blur', function() {
+            const formatted = formatDate(this.value);
+            if (formatted !== this.value) {
+                this.value = formatted;
+                autoResizeInput(this);
+                scheduleAutoSave();
+            }
+        });
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const formatted = formatDate(this.value);
+                if (formatted !== this.value) {
+                    this.value = formatted;
+                    autoResizeInput(this);
+                    scheduleAutoSave();
+                }
+            }
+        });
+    }
+
+    // ============================================================
+    // CREATE ROW
+    // ============================================================
+    function createRow(data = {}, index = 0) {
+        const tr = document.createElement('tr');
+        let html = `
+            <td class="sticky-col s1">${index + 1}</td>
+            <td class="sticky-col s2"><input type="text" class="inp-roll" value="${data.roll || ''}"></td>
+            <td class="sticky-col s3"><input type="text" class="inp-name" value="${data.name || ''}"></td>
+            <td class="sticky-col s4">
+                <input type="file" accept="image/*" onchange="uploadStudentPhoto(event, ${index})">
+                <img id="studentPhotoPreview_${index}" class="photo-thumb" src="${data.photo || ''}" style="display: ${data.photo ? 'block' : 'none'};">
+            </td>
+            <td><input type="text" class="inp-dob" placeholder="dd-mm-yyyy" value="${data.dob || ''}"></td>
+            <td><input type="text" class="inp-gr" value="${data.gr || ''}"></td>
+            <td><input type="number" class="inp-attendance" value="${data.attendance || ''}"></td>
+            <td><select class="inp-caste"><option value="OPEN" ${data.caste==='OPEN'?'selected':''}>OPEN</option><option value="OBC" ${data.caste==='OBC'?'selected':''}>OBC</option><option value="SC" ${data.caste==='SC'?'selected':''}>SC</option><option value="ST" ${data.caste==='ST'?'selected':''}>ST</option></select></td>
+            <td><select class="inp-gender"><option value="M" ${data.gender==='M'?'selected':''}>M</option><option value="F" ${data.gender==='F'?'selected':''}>F</option></select></td>
+            <td><select class="inp-divyang"><option value="No" ${data.divyang !== 'YES' ? 'selected' : ''}>No</option><option value="YES" ${data.divyang === 'YES' ? 'selected' : ''}>YES</option></select></td>
+        `;
+        const totalMarks = subjects.length * 6;
+        for (let i = 0; i < totalMarks; i++) {
+            let val = data.marks && data.marks[i] ? data.marks[i] : '';
+            let maxVal = 20, type = 'સ્વ અધ્યયન';
+            if (i % 3 === 0) { maxVal = 40; type = 'ત્રિમાસિક'; }
+            else if (i % 3 === 1) { maxVal = 80; type = 'સત્રાંત'; }
+            let subIndex = Math.floor(i / 6);
+            let subject = subjects[subIndex] || '';
+            let sem = (i % 6) < 3 ? 'પ્રથમ' : 'દ્વિતીય';
+            
+            // ✅ Std 4: Hindi Sem1 cells disable
+            const semKey = (i % 6) < 3 ? 'Sem1' : 'Sem2';
+            const isAvailable = isSubjectInSem(currentStd, subject, semKey);
+            
+            if (!isAvailable) {
+                html += `<td style="background:#E0E0E0;" title="ધોરણ ${currentStd} માં ${subject} ફક્ત દ્વિતીય સત્રમાં"><input type="number" class="mk" value="" readonly disabled style="background:#E0E0E0; cursor:not-allowed;"></td>`;
+            } else {
+                html += `<td><input type="number" class="mk" min="0" max="${maxVal}" value="${val}" oninput="checkMark(this, ${maxVal}, '${subject}', '${sem}', '${type}')"></td>`;
+            }
+        }
+        html += `<td class="cpb"><input type="number" class="pb" min="0" max="400" value="${data.patrakB1 || ''}"></td>`;
+        html += `<td class="cpb"><input type="number" class="pb" min="0" max="400" value="${data.patrakB2 || ''}"></td>`;
+        html += `
+            <td class="ci"><input type="text" class="inp-address" value="${data.address || ''}"></td>
+            <td class="ci"><input type="text" class="inp-mother" value="${data.motherName || ''}"></td>
+            <td><input type="text" class="inp-contact" value="${data.contact || ''}"></td>
+            <td class="ci"><input type="text" class="inp-uid" value="${data.uid || ''}"></td>
+            <td><input type="text" class="inp-pen" value="${data.pen || ''}"></td>
+        `;
+        tr.innerHTML = html;
+        if (data.photo) tr.dataset.photo = data.photo;
+
+        setTimeout(() => {
+            attachAutoResize(tr);
+
+            // Attach auto-save
+            tr.querySelectorAll('input, select').forEach(inp => {
+                if (inp.type === 'file') return;
+                inp.addEventListener('input', scheduleAutoSave);
+                inp.addEventListener('change', scheduleAutoSave);
+            });
+
+            // Date field
+            const dobInput = tr.querySelector('.inp-dob');
+            if (dobInput) setupDateField(dobInput);
+
+            // ===== AUTO ROLL NUMBER =====
+            const nameInput = tr.querySelector('.inp-name');
+            const rollInput = tr.querySelector('.inp-roll');
+            if (nameInput && rollInput) {
+                const autoFillRoll = () => {
+                    if (nameInput.value.trim() && !rollInput.value.trim()) {
+                        const allRolls = Array.from(tableBody.querySelectorAll('.inp-roll'))
+                            .map(inp => parseInt(inp.value, 10) || 0)
+                            .filter(n => n > 0);
+                        const maxRoll = allRolls.length > 0 ? Math.max(...allRolls) : 0;
+                        rollInput.value = maxRoll + 1;
+                        autoResizeInput(rollInput);
+                        scheduleAutoSave();
+                    }
+                };
+                nameInput.addEventListener('blur', autoFillRoll);
+            }
+
+            updateStickyPositions();
+        }, 20);
+
+        return tr;
+    }
+
+    function addNewRow() { 
+        tableBody.appendChild(createRow({}, tableBody.children.length)); 
+        setTimeout(() => {
+            attachAutoResize();
+            updateStickyPositions();
+        }, 50);
+    }
+
+    // ============================================================
+    // LOAD DATA
+    // ============================================================
+    async function loadData() {
+        generateHeaders();
+        await openDB();
+        await migrateOldData();
+        const students = await getStudents(currentStd);
+        tableBody.innerHTML = '';
+        students.forEach((s, i) => tableBody.appendChild(createRow(s, i)));
+        for (let i = 0; i < 3; i++) addNewRow();
+
+        document.getElementById('excelImportInput').addEventListener('change', importExcel);
+        document.getElementById('ctsImportInput').addEventListener('change', importCTSFile);
+        document.getElementById('photoFolderInput').addEventListener('change', handleFolderPhotos);
+
+        setTimeout(() => {
+            attachAutoResize();
+            updateStickyPositions();
+        }, 300);
+
+        window.addEventListener('resize', () => setTimeout(updateStickyPositions, 50));
+        tableWrapper.addEventListener('scroll', updateStickyPositions);
+    }
+
+    // ============================================================
+    // READ ROW DATA
+    // ============================================================
+    function readRowData(tr, index) {
+        const name = tr.querySelector('.inp-name').value.trim();
+        if (!name) return null;
+        const marksArr = [];
+        tr.querySelectorAll('.mk').forEach(inp => marksArr.push(parseFloat(inp.value) || 0));
+        const pbArr = tr.querySelectorAll('.pb');
+        return {
+            id: index + 1,
+            roll: tr.querySelector('.inp-roll').value,
+            name: name,
+            photo: tr.dataset.photo || '',
+            dob: formatDate(tr.querySelector('.inp-dob').value),
+            gr: tr.querySelector('.inp-gr').value,
+            attendance: tr.querySelector('.inp-attendance').value,
+            caste: tr.querySelector('.inp-caste').value,
+            gender: tr.querySelector('.inp-gender').value,
+            divyang: tr.querySelector('.inp-divyang').value,
+            marks: marksArr,
+            patrakB1: parseFloat(pbArr[0].value) || 0,
+            patrakB2: parseFloat(pbArr[1].value) || 0,
+            address: tr.querySelector('.inp-address').value,
+            motherName: tr.querySelector('.inp-mother').value,
+            contact: tr.querySelector('.inp-contact').value,
+            uid: tr.querySelector('.inp-uid').value,
+            pen: tr.querySelector('.inp-pen').value
+        };
+    }
+
+    // ============================================================
+    // SAVE DATA
+    // ============================================================
+    async function saveData(manual) {
+        if (isSaving) return;
+        isSaving = true;
+        const statusEl = document.getElementById('saveStatus');
+        try {
+            const rows = tableBody.querySelectorAll('tr');
+            const dataToSave = [];
+            rows.forEach((tr, i) => { const s = readRowData(tr, i); if (s) dataToSave.push(s); });
+            await saveStudents(dataToSave, currentStd);
+            statusEl.className = 'save-status saved';
+            statusEl.innerText = '✅ સેવ થયું (' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ')';
+            if (manual) {
+                statusEl.innerText = '✅ ' + dataToSave.length + ' વિદ્યાર્થી સેવ થયા!';
+            }
+            setTimeout(() => {
+                statusEl.className = 'save-status';
+                statusEl.innerText = '💾 ઓટો-સેવ';
+            }, 3000);
+        } catch (err) {
+            console.error(err);
+            statusEl.className = 'save-status';
+            statusEl.style.background = '#FFCDD2';
+            statusEl.style.color = '#B71C1C';
+            statusEl.innerText = '❌ સેવ ભૂલ';
+        } finally {
+            isSaving = false;
+        }
+    }
+
+    // ============================================================
+    // EXPORT EXCEL
+    // ============================================================
+    function colLetter(n) {
+        let s = '';
+        while (n >= 0) { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26) - 1; }
+        return s;
+    }
+
+    function bdr(color, style = 'thin') {
+        return {
+            top: { style, color: { rgb: color } }, bottom: { style, color: { rgb: color } },
+            left: { style, color: { rgb: color } }, right: { style, color: { rgb: color } }
+        };
+    }
+
+    function exportEntryExcel() {
+        const rows = tableBody.querySelectorAll('tr');
+        const currentData = [];
+        rows.forEach((tr, i) => { const s = readRowData(tr, i); if (s) currentData.push(s); });
+        if (currentData.length === 0) { alert('કોઈ ડેટા નથી.'); return; }
+
+        const totalMarks = subjects.length * 6;
+        const marksStart = 9;
+        const pb1Col = marksStart + totalMarks;
+        const pb2Col = pb1Col + 1;
+        const addrCol = pb2Col + 1;
+        const totalCols = addrCol + 5;
+
+        const ws = {};
+        const C = { header: 'FFF2CC', subject: 'C8E6C9', sem1: 'FFF2CC', sem2: 'FCE4D6', info: 'FFD966', pb: 'FFE0B2', blue: '1A237E', green: '1B5E20' };
+
+        const infoLabels = ['ક્રમ', 'રોલ', 'વિદ્યાર્થીનું નામ', 'જન્મ તારીખ (dd-mm-yyyy)', 'GR No.', 'હાજરી દિવસો', 'જાતિ', 'M/F', 'દિવ્યાંગ'];
+        for (let i = 0; i < infoLabels.length; i++) {
+            ws[colLetter(i) + '1'] = { v: infoLabels[i], t: 's', s: {
+                font: { name: 'Noto Sans Gujarati', sz: 10, bold: true, color: { rgb: C.blue } },
+                fill: { fgColor: { rgb: C.info } },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                border: bdr(C.blue)
+            }};
+        }
+
+        ws['!merges'] = [];
+        for (let s = 0; s < subjects.length; s++) {
+            const colStart = marksStart + s * 6;
+            ws[colLetter(colStart) + '1'] = { v: subjects[s], t: 's', s: {
+                font: { name: 'Noto Sans Gujarati', sz: 12, bold: true, color: { rgb: C.green } },
+                fill: { fgColor: { rgb: C.subject } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                border: bdr(C.blue)
+            }};
+            ws['!merges'].push({ s: { r: 0, c: colStart }, e: { r: 0, c: colStart + 5 } });
+        }
+
+        ws[colLetter(pb1Col) + '1'] = { v: 'પત્રક-B', t: 's', s: {
+            font: { name: 'Noto Sans Gujarati', sz: 12, bold: true },
+            fill: { fgColor: { rgb: C.pb } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: bdr(C.blue)
+        }};
+        ws['!merges'].push({ s: { r: 0, c: pb1Col }, e: { r: 0, c: pb2Col } });
+
+        const otherLabels = ['સરનામું', 'માતાનું નામ', 'સંપર્ક નં.', 'UID નં.', 'PEN નં.'];
+        for (let i = 0; i < 5; i++) {
+            ws[colLetter(addrCol + i) + '1'] = { v: otherLabels[i], t: 's', s: {
+                font: { name: 'Noto Sans Gujarati', sz: 10, bold: true, color: { rgb: C.blue } },
+                fill: { fgColor: { rgb: C.header } },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                border: bdr(C.blue)
+            }};
+        }
+        for (let i = 0; i < 9; i++) ws['!merges'].push({ s: { r: 0, c: i }, e: { r: 2, c: i } });
+        for (let i = 0; i < 5; i++) ws['!merges'].push({ s: { r: 0, c: addrCol + i }, e: { r: 2, c: addrCol + i } });
+        ws['!merges'].push({ s: { r: 0, c: pb1Col }, e: { r: 2, c: pb2Col } });
+
+        for (let s = 0; s < subjects.length; s++) {
+            const colStart = marksStart + s * 6;
+            ws[colLetter(colStart) + '2'] = { v: 'પ્રથમ સત્ર', t: 's', s: {
+                font: { name: 'Noto Sans Gujarati', sz: 10, bold: true },
+                fill: { fgColor: { rgb: C.sem1 } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                border: bdr(C.blue)
+            }};
+            ws[colLetter(colStart + 3) + '2'] = { v: 'દ્વિતીય સત્ર', t: 's', s: {
+                font: { name: 'Noto Sans Gujarati', sz: 10, bold: true },
+                fill: { fgColor: { rgb: C.sem2 } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                border: bdr(C.blue)
+            }};
+            ws['!merges'].push({ s: { r: 1, c: colStart }, e: { r: 1, c: colStart + 2 } });
+            ws['!merges'].push({ s: { r: 1, c: colStart + 3 }, e: { r: 1, c: colStart + 5 } });
+
+            const colTypes = [
+                { l: 'ત્રિમાસિક (40)', c: C.sem1 }, { l: 'સત્રાંત (80)', c: C.sem1 }, { l: 'સ્વ અધ્યયન (20)', c: C.sem1 },
+                { l: 'ત્રિમાસિક (40)', c: C.sem2 }, { l: 'સત્રાંત (80)', c: C.sem2 }, { l: 'સ્વ અધ્યયન (20)', c: C.sem2 }
+            ];
+            colTypes.forEach((ct, k) => {
+                ws[colLetter(colStart + k) + '3'] = { v: ct.l, t: 's', s: {
+                    font: { name: 'Noto Sans Gujarati', sz: 9, bold: true, color: { rgb: C.blue } },
+                    fill: { fgColor: { rgb: ct.c } },
+                    alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                    border: bdr(C.blue)
+                }};
+            });
+        }
+
+        function dataStyle(bg = 'FFFFFF', bold = false, color = '000000', align = 'center') {
+            return {
+                font: { name: 'Noto Sans Gujarati', sz: 11, bold, color: { rgb: color } },
+                fill: { fgColor: { rgb: bg } },
+                alignment: { horizontal: align, vertical: 'center' },
+                border: bdr(C.blue)
+            };
+        }
+
+        currentData.forEach((s, idx) => {
+            const r = idx + 4;
+            ws[colLetter(0) + r] = { v: idx + 1, t: 'n', s: dataStyle() };
+            ws[colLetter(1) + r] = { v: s.roll || '', t: 's', s: dataStyle() };
+            ws[colLetter(2) + r] = { v: s.name || '', t: 's', s: dataStyle('FFFFFF', true, '000000', 'left') };
+            ws[colLetter(3) + r] = { v: formatDate(s.dob), t: 's', s: dataStyle() };
+            ws[colLetter(4) + r] = { v: s.gr || '', t: 's', s: dataStyle() };
+            ws[colLetter(5) + r] = { v: s.attendance || '', t: 's', s: dataStyle() };
+            ws[colLetter(6) + r] = { v: s.caste || '', t: 's', s: dataStyle() };
+            ws[colLetter(7) + r] = { v: s.gender || '', t: 's', s: dataStyle() };
+            ws[colLetter(8) + r] = { v: s.divyang || '', t: 's', s: dataStyle() };
+            for (let i = 0; i < totalMarks; i++) ws[colLetter(marksStart + i) + r] = { v: s.marks[i] || 0, t: 'n', s: dataStyle() };
+            ws[colLetter(pb1Col) + r] = { v: s.patrakB1 || 0, t: 'n', s: dataStyle('FFE0B2') };
+            ws[colLetter(pb2Col) + r] = { v: s.patrakB2 || 0, t: 'n', s: dataStyle('FFE0B2') };
+            ws[colLetter(addrCol) + r] = { v: s.address || '', t: 's', s: dataStyle('FFFFFF', false, '000000', 'left') };
+            ws[colLetter(addrCol + 1) + r] = { v: s.motherName || '', t: 's', s: dataStyle('FFFFFF', false, '000000', 'left') };
+            ws[colLetter(addrCol + 2) + r] = { v: s.contact || '', t: 's', s: dataStyle() };
+            ws[colLetter(addrCol + 3) + r] = { v: s.uid || '', t: 's', s: dataStyle('FFFFFF', false, '000000', 'left') };
+            ws[colLetter(addrCol + 4) + r] = { v: s.pen || '', t: 's', s: dataStyle() };
+        });
+
+        ws['!rows'] = [{ hpt: 80 }, { hpt: 28 }, { hpt: 85 }];
+        for (let i = 0; i < currentData.length; i++) ws['!rows'].push({ hpt: 20 });
+
+        ws['!cols'] = [{ wch: 5 }, { wch: 7 }, { wch: 22 }, { wch: 14 }, { wch: 7 }, { wch: 8 }, { wch: 7 }, { wch: 5 }, { wch: 8 }];
+        for (let i = 0; i < totalMarks; i++) ws['!cols'].push({ wch: 5 });
+        ws['!cols'].push({ wch: 8 }, { wch: 8 }, { wch: 18 }, { wch: 14 }, { wch: 10 }, { wch: 15 }, { wch: 12 });
+
+        ws['!ref'] = `A1:${colLetter(totalCols - 1)}${4 + currentData.length}`;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'MarksEntry');
+        XLSX.writeFile(wb, `MarksEntry_Std${currentStd}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+
+    // ============================================================
+    // IMPORT EXCEL
+    // ============================================================
+    function importExcel(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const wb = XLSX.read(data, { type: 'array', cellDates: true, cellText: false });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                if (!sheet['!ref']) { alert('Excel file ખાલી છે.'); return; }
+
+                const range = XLSX.utils.decode_range(sheet['!ref']);
+                const grid = [];
+                for (let r = range.s.r; r <= range.e.r; r++) {
+                    const row = [];
+                    for (let c = range.s.c; c <= range.e.c; c++) {
+                        const cellAddr = XLSX.utils.encode_cell({ r: r, c: c });
+                        const cell = sheet[cellAddr];
+                        let val = '';
+                        if (cell) {
+                            if (cell.v !== null && cell.v !== undefined) val = cell.v;
+                            else if (cell.w !== null && cell.w !== undefined) val = cell.w;
+                        }
+                        row.push(val);
+                    }
+                    grid.push(row);
+                }
+
+                let dataStart = -1;
+                for (let i = 3; i < grid.length; i++) {
+                    const row = grid[i];
+                    if (!row) continue;
+                    const rollNum = parseFloat(row[1]);
+                    const nameStr = String(row[2] !== undefined && row[2] !== null ? row[2] : '').trim();
+                    if (!isNaN(rollNum) && rollNum > 0 && nameStr.length > 0) { dataStart = i; break; }
+                }
+                if (dataStart === -1) { alert('❌ Excel માં ડેટા મળ્યો નથી.'); return; }
+
+                const oldPhotos = {};
+                tableBody.querySelectorAll('tr').forEach(tr => {
+                    const rollEl = tr.querySelector('.inp-roll');
+                    if (rollEl && tr.dataset.photo) oldPhotos[rollEl.value] = tr.dataset.photo;
+                });
+
+                tableBody.innerHTML = '';
+                const totalMarks = subjects.length * 6;
+                const marksStart = 9;
+                const pb1Col = marksStart + totalMarks;
+                const pb2Col = pb1Col + 1;
+                const addrCol = pb2Col + 1;
+
+                let importedCount = 0;
+                for (let i = dataStart; i < grid.length; i++) {
+                    const row = grid[i];
+                    if (!row) continue;
+                    const nameStr = String(row[2] !== undefined && row[2] !== null ? row[2] : '').trim();
+                    if (!nameStr) continue;
+
+                    const marks = [];
+                    for (let k = 0; k < totalMarks; k++) {
+                        const v = row[marksStart + k];
+                        let num = 0;
+                        if (v !== null && v !== undefined && v !== '') {
+                            num = parseFloat(String(v).replace(/[^\d.-]/g, ''));
+                            if (isNaN(num)) num = 0;
+                        }
+                        marks.push(num);
+                    }
+
+                    const safeStr = (v) => (v === null || v === undefined) ? '' : String(v);
+                    const safeNum = (v) => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+
+                    const rawDob = row[3];
+                    let dobFormatted = '';
+                    if (rawDob instanceof Date) {
+                        const d = String(rawDob.getDate()).padStart(2, '0');
+                        const m = String(rawDob.getMonth() + 1).padStart(2, '0');
+                        const y = rawDob.getFullYear();
+                        dobFormatted = `${d}-${m}-${y}`;
+                    } else {
+                        dobFormatted = formatDate(rawDob);
+                    }
+
+                    const student = {
+                        id: importedCount + 1,
+                        roll: safeStr(row[1]),
+                        name: nameStr,
+                        photo: oldPhotos[safeStr(row[1])] || '',
+                        dob: dobFormatted,
+                        gr: safeStr(row[4]),
+                        attendance: safeStr(row[5]),
+                        caste: safeStr(row[6]) || 'OBC',
+                        gender: safeStr(row[7]) || 'M',
+                        divyang: safeStr(row[8]) || 'No',
+                        marks: marks,
+                        patrakB1: safeNum(row[pb1Col]),
+                        patrakB2: safeNum(row[pb2Col]),
+                        address: safeStr(row[addrCol]),
+                        motherName: safeStr(row[addrCol + 1]),
+                        contact: safeStr(row[addrCol + 2]),
+                        uid: safeStr(row[addrCol + 3]),
+                        pen: safeStr(row[addrCol + 4])
+                    };
+                    tableBody.appendChild(createRow(student, importedCount));
+                    importedCount++;
+                }
+
+                if (importedCount === 0) { alert('❌ કોઈ વિદ્યાર્થી import થયા નથી.'); return; }
+                for (let i = 0; i < 3; i++) addNewRow();
+                setTimeout(() => { attachAutoResize(); updateStickyPositions(); }, 300);
+                alert(`✅ ${importedCount} વિદ્યાર્થીઓનો ડેટા Import થઈ ગયો!\n\nઓટો-સેવ થઈ જશે.`);
+                setTimeout(() => saveData(false), 500);
+            } catch (err) {
+                console.error('Import Error:', err);
+                alert('❌ Import ભૂલ: ' + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        event.target.value = '';
+    }
+    // ============================================================
+    // CTS IMPORT + AUTO TRANSLATION (Hybrid: Dictionary + Google API)
+    // ============================================================
+    
+    let translationStats = { dict: 0, api: 0, fallback: 0 };
+
+    // ---- Single word translation ----
+    async function translateWord(word) {
+        if (!word || !word.trim()) return '';
+        word = word.trim();
+        
+        // Already Gujarati? Return as is
+        if (/[\u0A80-\u0AFF]/.test(word)) return word;
+        
+        const upper = word.toUpperCase();
+        
+        // Step 1: Dictionary
+        if (typeof NAMES_DICT !== 'undefined' && NAMES_DICT[upper]) {
+            translationStats.dict++;
+            return NAMES_DICT[upper];
+        }
+        
+        // Step 2: Google API (free endpoint)
+        try {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=gu&dt=t&q=${encodeURIComponent(word)}`;
+            const res = await fetch(url);
+            
+            if (!res.ok) {
+                translationStats.fallback++;
+                return word;
+            }
+            
+            const data = await res.json();
+            const translated = data[0] && data[0][0] && data[0][0][0];
+            
+            if (translated && translated !== word) {
+                translationStats.api++;
+                // Auto-cache in dictionary
+                if (typeof NAMES_DICT !== 'undefined') {
+                    NAMES_DICT[upper] = translated;
+                }
+                return translated;
+            }
+            translationStats.fallback++;
+            return word;
+        } catch (e) {
+            translationStats.fallback++;
+            return word;
+        }
+    }
+
+    // ---- Full name translation ----
+    async function translateFullName(englishName) {
+        if (!englishName || !englishName.trim()) return '';
+        const parts = englishName.split(/\s+/).filter(p => p.length > 0);
+        const translated = [];
+        
+        for (let i = 0; i < parts.length; i++) {
+            const t = await translateWord(parts[i]);
+            translated.push(t);
+            if (i < parts.length - 1) {
+                await new Promise(r => setTimeout(r, 50));
+            }
+        }
+        return translated.join(' ');
+    }
+
+    // ---- Date formatter for CTS (2020-XX-XX → 01-01-2020) ----
+    function formatCTSDate(dob) {
+        if (!dob) return '';
+        const str = String(dob).trim();
+        const m = str.match(/^(\d{4})[-./](\w+)[-./](\w+)/);
+        if (!m) return str;
+        const year = m[1];
+        let month = (m[2] === 'XX' || m[2] === 'xx') ? '01' : String(m[2]).padStart(2, '0');
+        let day = (m[3] === 'XX' || m[3] === 'xx') ? '01' : String(m[3]).padStart(2, '0');
+        return `${day}-${month}-${year}`;
+    }
+
+    // ---- Caste mapper ----
+    function mapCaste(cat) {
+        const c = String(cat || '').toUpperCase().trim();
+        if (c === 'GENERAL' || c === 'SEBC' || c === 'EWS' || c === 'OPEN') return 'OPEN';
+        if (c === 'OBC') return 'OBC';
+        if (c === 'SC') return 'SC';
+        if (c === 'ST') return 'ST';
+        return 'OPEN';
+    }
+
+    // ============================================================
+    // MAIN CTS IMPORT FUNCTION
+    // ============================================================
+    async function importCTSFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const wb = XLSX.read(data, { type: 'array' });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                if (!sheet['!ref']) { alert('CTS file ખાલી છે.'); return; }
+
+                const grid = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+                // ---- Find header row ----
+                let headerRowIdx = -1;
+                for (let i = 0; i < Math.min(5, grid.length); i++) {
+                    const row = grid[i];
+                    if (row && row.some(c => String(c).toLowerCase().includes('studentname'))) {
+                        headerRowIdx = i;
+                        break;
+                    }
+                }
+
+                if (headerRowIdx === -1) {
+                    alert('❌ CTS ફાઈલમાં "StudentName" header મળ્યો નથી.');
+                    return;
+                }
+
+                const headers = grid[headerRowIdx].map(h => String(h).trim());
+                console.log('CTS Headers:', headers);
+
+                // ---- Find column indices ----
+                // ✅ Gender: પહેલા exact "GENDER" શોધો, પછી "GenderId" fallback
+                let genderColIdx = headers.findIndex(h => h === 'GENDER');
+                let genderIdColIdx = headers.findIndex(h => h === 'GenderId');
+                
+                console.log('GENDER column index:', genderColIdx, '(Expected: S = 18)');
+                console.log('GenderId column index:', genderIdColIdx, '(Expected: R = 17)');
+                
+                const colIdx = {
+                    studentName: headers.findIndex(h => h === 'StudentName'),
+                    fatherName: headers.findIndex(h => h === 'FatherName'),
+                    motherName: headers.findIndex(h => h === 'MotherName'),
+                    surName: headers.findIndex(h => h === 'SurName'),
+                    dob: headers.findIndex(h => h === 'DOB'),
+                    gender: genderColIdx !== -1 ? genderColIdx : genderIdColIdx,  // ✅ Fix
+                    genderId: genderIdColIdx,
+                    socialCat: headers.findIndex(h => h === 'SOCIALCAT'),
+                    aadhaar: headers.findIndex(h => h === 'AadhaarUID'),
+                    grNo: headers.findIndex(h => h === 'GRNo'),
+                    studyingClass: headers.findIndex(h => h === 'StudyingClass'),
+                    daysAttended: headers.findIndex(h => h === 'DaysAttendedPrvYear'),
+                    disability: headers.findIndex(h => h === 'STUDENTDISABILITY'),
+                    village: headers.findIndex(h => h === 'Village')
+                };
+
+                console.log('Column indices:', colIdx);
+
+                if (colIdx.studentName === -1 || colIdx.studyingClass === -1) {
+                    alert('❌ જરૂરી columns મળ્યા નથી.');
+                    return;
+                }
+
+                // ---- Filter by current std ----
+                const dataRows = grid.slice(headerRowIdx + 1).filter(row => {
+                    if (!row) return false;
+                    const cls = String(row[colIdx.studyingClass] || '').trim();
+                    const name = String(row[colIdx.studentName] || '').trim();
+                    return cls === currentStd && name.length > 0;
+                });
+
+                console.log(`Found ${dataRows.length} students for std ${currentStd}`);
+
+                if (dataRows.length === 0) {
+                    alert(`❌ ધોરણ ${currentStd} ના કોઈ વિદ્યાર્થી મળ્યા નથી.\n\nCTS ફાઈલમાં ધોરણ ${currentStd} ના વિદ્યાર્થી છે કે નહીં તે ચકાસો.`);
+                    return;
+                }
+
+                const msg = `📊 ધોરણ ${currentStd} માં ${dataRows.length} વિદ્યાર્થી મળ્યા.\n\n` +
+                    `⚠️ નામ English થી Gujarati માં translate થશે.\n` +
+                    `⏱️ ~${Math.round(dataRows.length * 0.5)} સેકન્ડ લાગશે.\n\n` +
+                    `Import કરવું છે?`;
+
+                if (!confirm(msg)) { event.target.value = ''; return; }
+
+                const statusEl = document.getElementById('saveStatus');
+                statusEl.className = 'save-status saving';
+                translationStats = { dict: 0, api: 0, fallback: 0 };
+
+                // ---- Preserve existing students ----
+                const existingRows = Array.from(tableBody.querySelectorAll('tr'));
+                const existingData = [];
+                existingRows.forEach((tr, i) => {
+                    const s = readRowData(tr, i);
+                    if (s) existingData.push(s);
+                });
+
+                tableBody.innerHTML = '';
+                existingData.forEach((s, i) => tableBody.appendChild(createRow(s, i)));
+
+                // ---- Auto-roll start ----
+                let nextRoll = 1;
+                existingData.forEach(s => {
+                    const r = parseInt(s.roll, 10);
+                    if (!isNaN(r) && r >= nextRoll) nextRoll = r + 1;
+                });
+
+                // ---- Import each student ----
+                let imported = 0;
+                for (let i = 0; i < dataRows.length; i++) {
+                    const row = dataRows[i];
+
+                    statusEl.innerText = `⏳ ${i + 1}/${dataRows.length} translate...`;
+
+                    const surName = String(row[colIdx.surName] || '').trim();
+                    const studentName = String(row[colIdx.studentName] || '').trim();
+                    const fatherName = String(row[colIdx.fatherName] || '').trim();
+                    const motherName = String(row[colIdx.motherName] || '').trim();
+                    const dob = String(row[colIdx.dob] || '').trim();
+                    // ✅ Gender: "Female"/"F"/"2" → F, બાકી → M
+                    const genderRaw = String(row[colIdx.gender] || '').trim();
+                    const genderIdRaw = String(row[colIdx.genderId] || '').trim();
+                    const genderLower = genderRaw.toLowerCase();
+                    let genderFinal = 'M';
+                    if (genderLower === 'female' || genderLower === 'f' || genderRaw === '2' || genderIdRaw === '2') {
+                        genderFinal = 'F';
+                    }
+                    console.log(`Gender raw: "${genderRaw}", id: "${genderIdRaw}" → ${genderFinal}`);
+                    const socialCat = String(row[colIdx.socialCat] || '').trim();
+                    const aadhaar = String(row[colIdx.aadhaar] || '').trim().replace(/^'/, '');
+                    const grNo = String(row[colIdx.grNo] || '').trim();
+                    const daysAttended = String(row[colIdx.daysAttended] || '').trim();
+                    const disability = String(row[colIdx.disability] || '').trim();
+                    const village = String(row[colIdx.village] || '').trim();
+
+                    // Combine names: SurName + StudentName + FatherName
+                    const fullNameEn = [surName, studentName, fatherName].filter(p => p).join(' ');
+
+                    // Translate (this is the slow part)
+                    const fullNameGu = await translateFullName(fullNameEn);
+                    const motherNameGu = await translateFullName(motherName);
+                    const villageGu = await translateFullName(village);
+
+                    const student = {
+                        roll: String(nextRoll++),
+                        name: fullNameGu,
+                        photo: '',
+                        dob: formatCTSDate(dob),
+                        gr: grNo,
+                        attendance: daysAttended,
+                        caste: mapCaste(socialCat),
+                        gender: genderFinal,
+                        divyang: (disability === 'NA' || !disability) ? 'No' : 'YES',
+                        marks: new Array(42).fill(0),
+                        patrakB1: 0,
+                        patrakB2: 0,
+                        address: villageGu,
+                        motherName: motherNameGu,
+                        contact: '',
+                        uid: aadhaar,
+                        pen: ''
+                    };
+
+                    tableBody.appendChild(createRow(student, tableBody.children.length));
+                    imported++;
+
+                    if (i < dataRows.length - 1) {
+                        await new Promise(r => setTimeout(r, 100));
+                    }
+                }
+
+                for (let i = 0; i < 3; i++) addNewRow();
+
+                setTimeout(() => { attachAutoResize(); updateStickyPositions(); }, 300);
+
+                statusEl.className = 'save-status saved';
+                statusEl.innerText = `✅ ${imported} વિદ્યાર્થી Import!`;
+
+                const statsMsg = `✅ ${imported} વિદ્યાર્થી ધોરણ ${currentStd} માં Import થયા!\n\n` +
+                    `📚 Dictionary થી: ${translationStats.dict}\n` +
+                    `🌐 Google API થી: ${translationStats.api}\n` +
+                    `⚠️ Fallback (English): ${translationStats.fallback}\n\n` +
+                    `હવે જે નામ ખોટા લાગે તે manually edit કરો.\n\n` +
+                    `પછી "💾 ડેટા સેવ કરો" દબાવો.`;
+
+                alert(statsMsg);
+
+                setTimeout(() => saveData(false), 500);
+
+            } catch (err) {
+                console.error('CTS Import Error:', err);
+                alert('❌ CTS Import ભૂલ: ' + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        event.target.value = '';
+    }
+
+    window.onload = loadData;
+</script>
+</body>
+</html>

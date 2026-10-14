@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પત્રક - C : પરિણામ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="db.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script>
+        const currentStd = getUrlParam('std', '8');
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans Gujarati', sans-serif; background-color: #d0d0d0; padding: 10px; }
+
+        .top-bar { width: 100%; max-width: 210mm; margin: 0 auto 8px auto; background: #fff; border: 1px solid #000; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .btn { padding: 7px 12px; border: 1px solid #000; border-radius: 5px; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0px rgba(0,0,0,0.4); }
+        .btn:active { transform: translate(2px, 2px); box-shadow: none; }
+        .btn-black { background-color: #000; color: #fff; }
+        .btn-blue { background-color: #2D72B8; color: #fff; }
+        .btn-orange { background-color: #F26C23; color: #fff; }
+        .std-badge { background: #1A237E; color: #FFD700; padding: 5px 12px; border-radius: 5px; font-weight: 700; font-size: 13px; }
+
+        .page {
+            background: #fff; width: 210mm; height: 297mm;
+            margin: 0 auto 12px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: relative; overflow: hidden;
+            border: 7px solid #1A237E; padding: 4mm;
+        }
+        .page-inner {
+            width: 100%; height: 100%;
+            border: 2px solid #FFA000;
+            box-shadow: inset 0 0 0 1px #FFD700, inset 0 0 0 2px #1A237E;
+            padding: 7mm 8mm 5mm 8mm;
+            position: relative; display: flex; flex-direction: column;
+        }
+        .corner { position: absolute; width: 32px; height: 32px; background: linear-gradient(135deg, #FFD700, #FFA000); border: 2px solid #1A237E; z-index: 5; overflow: hidden; }
+        .corner::before { content: ''; position: absolute; width: 12px; height: 12px; background: #1A237E; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .corner::after { content: ''; position: absolute; width: 0; height: 0; border-style: solid; }
+        .corner-tl { top: 5px; left: 5px; }
+        .corner-tr { top: 5px; right: 5px; }
+        .corner-bl { bottom: 5px; left: 5px; }
+        .corner-br { bottom: 5px; right: 5px; }
+        .corner-tl::after { bottom: -2px; right: -2px; border-width: 0 0 12px 12px; border-color: transparent transparent #B71C1C transparent; }
+        .corner-tr::after { bottom: -2px; left: -2px; border-width: 0 12px 12px 0; border-color: transparent #B71C1C transparent transparent; }
+        .corner-bl::after { top: -2px; right: -2px; border-width: 12px 0 0 12px; border-color: transparent transparent transparent #B71C1C; }
+        .corner-br::after { top: -2px; left: -2px; border-width: 12px 12px 0 0; border-color: #B71C1C transparent transparent transparent; }
+
+        .side-diamond { position: absolute; width: 12px; height: 12px; background: linear-gradient(135deg, #FFD700, #FFA000); border: 1.5px solid #1A237E; transform: rotate(45deg); z-index: 4; }
+        .sd-l1 { left: 8px; top: 22%; } .sd-l2 { left: 8px; top: 50%; } .sd-l3 { left: 8px; top: 78%; }
+        .sd-r1 { right: 8px; top: 22%; } .sd-r2 { right: 8px; top: 50%; } .sd-r3 { right: 8px; top: 78%; }
+
+        .page-badge { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: #1A237E; color: #FFD700; padding: 3px 20px; font-size: 13px; font-weight: 700; border: 2px solid #FFD700; border-radius: 4px; z-index: 5; }
+        .top-diamond, .bottom-diamond { position: absolute; left: 50%; width: 14px; height: 14px; background: linear-gradient(135deg, #FFD700, #FFA000); border: 2px solid #1A237E; transform: translateX(-50%) rotate(45deg); z-index: 5; }
+        .top-diamond { top: 6px; } .bottom-diamond { bottom: 6px; }
+
+        .print-header { text-align: center; margin-bottom: 2.5mm; padding: 5px 8px; background: #FFF9C4; border: 1.2px solid #1A237E; border-radius: 3px; white-space: nowrap; overflow: hidden; font-size: 13px; font-weight: 700; }
+        .print-header .h-school { color: #B71C1C; }
+        .print-header .h-sep { color: #1A237E; margin: 0 6px; }
+        .print-header .h-info { color: #1A237E; }
+
+        .table-wrapper { flex: 1; overflow: hidden; }
+        table.marks { border-collapse: collapse; white-space: nowrap; width: 100%; }
+        table.marks th, table.marks td { border: 1.2px solid #1A237E; padding: 4px 4px; text-align: center; vertical-align: middle; font-weight: 700; font-size: 11.5px; line-height: 1.15; }
+        table.marks thead th { background-color: #FFF2CC; font-size: 11.5px; }
+        table.marks .vh { height: 88px; font-size: 10.5px; }
+
+        .h-subject { background-color: #C8E6C9 !important; color: #1B5E20; font-size: 12px !important; }
+        .h-sem1 { background-color: #FFF2CC !important; }
+        .h-sem2 { background-color: #FCE4D6 !important; }
+        .h-kul1 { background-color: #FFF9C4 !important; }
+        .h-kul { background-color: #DDEBF7 !important; }
+        .h-grade { background-color: #C8E6C9 !important; }
+        .h-rank { background-color: #FFCC80 !important; }
+        .h-pb { background-color: #B3E5FC !important; }
+        .h-pct { background-color: #F8BBD0 !important; }
+        .h-info { background-color: #E8EAF6 !important; color: #1A237E; }
+        .h-result { background-color: #FFE0B2 !important; }
+        .h-subtotal { background-color: #D1C4E9 !important; }
+
+        .vh { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; vertical-align: middle; padding: 2px 1px; }
+        .val { font-weight: 700; }
+        .grade-A { color: green; font-weight: 700; }
+        .grade-F { color: red; font-weight: 700; }
+        .pass { color: green; font-weight: 700; }
+        .fail { color: red; font-weight: 700; }
+
+        .signatures { margin-top: auto; padding: 6mm 20px 0 20px; display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; }
+        .sig-box { text-align: center; }
+        .sig-box .line { border-top: 1.2px solid #000; width: 150px; padding-top: 4px; }
+
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body { background: #fff; padding: 0; display: block; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .top-bar { display: none !important; }
+            .page { box-shadow: none; margin: 0; page-break-after: always; width: 210mm; height: 297mm; }
+            .page:last-child { page-break-after: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <button class="btn btn-black" onclick="window.location.href='home.html?std=' + currentStd">Home</button>
+    <div class="std-badge">ધોરણ : <span id="stdBadge">-</span></div>
+    <div style="font-weight:700; font-size:14px; color:#4A148C;" id="examTypeLabel">પત્રક - C</div>
+    <div style="display:flex; gap:5px;">
+        <button class="btn btn-blue" onclick="window.print()">🖨 પ્રિન્ટ / PDF</button>
+        <button class="btn btn-orange" onclick="exportExcel()">📤 Excel</button>
+    </div>
+</div>
+
+<div id="pagesContainer"></div>
+<div id="noDataMessage" style="text-align:center; padding:50px; font-size:16px; color:#888; display:none;">કોઈ ડેટા નથી. પહેલા <a href="marks_entry.html?std=${currentStd}">ડેટા એન્ટ્રી</a> કરો.</div>
+
+<script>
+    let students = [];
+    let schoolInfo = {};
+    let examType = 'Annual';
+    let subjects = [];
+    const STUDENTS_PER_PAGE = 35;
+
+    document.getElementById('stdBadge').innerText = currentStd;
+
+    window.onload = async function() {
+        await openDB();
+        subjects = getSubjects(currentStd);
+        students = await getStudents(currentStd);
+        schoolInfo = (await getSchoolInfoDB(currentStd)) || {};
+        const urlExam = getUrlParam('exam', '');
+        examType = urlExam || schoolInfo.examType || 'Annual';
+
+        document.getElementById('examTypeLabel').innerText =
+            (examType === 'Sem1') ? 'પત્રક - C (પ્રથમ સત્ર)' : 'પત્રક - C (વાર્ષિક)';
+        document.title = `PatrakC_Std${currentStd}_${examType}`;
+
+        if (!students || students.length === 0) {
+            document.getElementById('noDataMessage').style.display = 'block';
+            return;
+        }
+        calculateRanks();
+        renderAllPages();
+    };
+
+    function getPageWrapper(innerHTML, pageNum, totalPages) {
+        return `
+            <div class="page">
+                <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+                <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+                <div class="side-diamond sd-l1"></div><div class="side-diamond sd-l2"></div><div class="side-diamond sd-l3"></div>
+                <div class="side-diamond sd-r1"></div><div class="side-diamond sd-r2"></div><div class="side-diamond sd-r3"></div>
+                <div class="top-diamond"></div><div class="bottom-diamond"></div>
+                <div class="page-badge">પેજ ${pageNum} / ${totalPages}</div>
+                <div class="page-inner">${innerHTML}</div>
+            </div>
+        `;
+    }
+
+    function sem1Parts(student, idx) {
+        return { tri: parseFloat(student.marks[idx]) || 0, sat: (parseFloat(student.marks[idx + 1]) || 0) / 2, swa: parseFloat(student.marks[idx + 2]) || 0 };
+    }
+    function sem2Parts(student, idx) {
+        return { tri: parseFloat(student.marks[idx + 3]) || 0, sat: (parseFloat(student.marks[idx + 4]) || 0) / 2, swa: parseFloat(student.marks[idx + 5]) || 0 };
+    }
+    function getGrade(pct) {
+        if (pct >= 80) return 'A';
+        if (pct >= 65) return 'B';
+        if (pct >= 50) return 'C';
+        if (pct >= 35) return 'D';
+        return 'E';
+    }
+    function fmtNum(n) { return (n % 1 === 0) ? n : n.toFixed(1); }
+
+    function getStudentTotal(student) {
+        const pbConfig = getPatrakBConfig(currentStd);
+        const pbMax = pbConfig.maxTotal;
+        
+        let subjectTotal = 0, subjectMax = 0;
+        for (let i = 0; i < subjects.length; i++) {
+            const s1 = sem1Parts(student, i * 6);
+            const s2 = sem2Parts(student, i * 6);
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+            if (examType === 'Sem1') { subjectTotal += t1; subjectMax += 100; }
+            else { subjectTotal += (t1 + t2); subjectMax += 200; }
+        }
+        const pb1 = parseFloat(student.patrakB1) || 0;
+        const pb2 = parseFloat(student.patrakB2) || 0;
+        const pbO = examType === 'Sem1' ? pb1 : (pb1 + pb2) / 2;
+        const total = subjectTotal + pbO;
+        const max = subjectMax + pbMax;
+        return { subjectTotal, subjectMax, patrakB: pbO, total, max, pct: (total / max) * 100 };
+    }
+
+    function getResultStatus(student) {
+        const stdNum = parseInt(currentStd) || 8;
+        if (stdNum !== 8) return 'PASS';
+        let eCount = 0;
+        for (let i = 0; i < subjects.length; i++) {
+            const s1 = sem1Parts(student, i * 6);
+            const s2 = sem2Parts(student, i * 6);
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+            let obtained, max;
+            if (examType === 'Sem1') { obtained = t1; max = 100; }
+            else { obtained = t1 + t2; max = 200; }
+            if (getGrade((obtained / max) * 100) === 'E') eCount++;
+        }
+        return eCount >= 2 ? 'FAIL' : 'PASS';
+    }
+
+    function calculateRanks() {
+        students.forEach(s => { s._total = getStudentTotal(s).total; });
+        const sorted = [...students].sort((a, b) => b._total - a._total);
+        sorted.forEach((s, i) => { const o = students.find(x => x.roll === s.roll); if (o) o.rank = i + 1; });
+    }
+
+    function getSchoolHeader() {
+        const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
+        const examLabel = (examType === 'Sem1')
+            ? `પ્રથમ સત્ર પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`
+            : `વાર્ષિક પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`;
+        return `
+            <div class="print-header">
+                <span class="h-school">${schoolName}</span>
+                <span class="h-sep">|</span>
+                <span class="h-info">${examLabel}</span>
+                <span class="h-sep">|</span>
+                <span class="h-info">ધોરણ : ${currentStd}</span>
+                <span class="h-sep">|</span>
+                <span class="h-info">વર્ગ : ${schoolInfo.class || 'A'}</span>
+            </div>
+        `;
+    }
+
+    function getSignatures() {
+        return `
+            <div class="signatures">
+                <div class="sig-box"><div class="line">વર્ગ શિક્ષકની સહી</div></div>
+                <div class="sig-box"><div class="line">આચાર્યની સહી</div></div>
+            </div>
+        `;
+    }
+
+    function buildSubjectHeaders(subjectGroup, isAnnual) {
+        const colsPerSub = isAnnual ? 8 : 5;
+        let h1 = '';
+        subjectGroup.forEach(sub => { h1 += `<th colspan="${colsPerSub}" class="h-subject">${sub}</th>`; });
+
+        let h2 = '';
+        subjectGroup.forEach(() => {
+            if (isAnnual) {
+                h2 += `<th colspan="3" class="h-sem1">પ્રથમ સત્ર</th>`;
+                h2 += `<th colspan="3" class="h-sem2">દ્વિતીય સત્ર</th>`;
+                h2 += `<th colspan="2" class="h-kul">કુલ</th>`;
+            } else {
+                h2 += `<th colspan="4" class="h-sem1">પ્રથમ સત્ર</th>`;
+                h2 += `<th rowspan="2" class="h-grade vh">ગ્રેડ</th>`;
+            }
+        });
+
+        let h3 = '';
+        subjectGroup.forEach(() => {
+            h3 += `<th class="vh h-sem1">ત્રિમાસિક કસોટી (40)</th>`;
+            h3 += `<th class="vh h-sem1">સત્રાંત મૂલ્યાંકન (40)</th>`;
+            h3 += `<th class="vh h-sem1">સ્વ અધ્યયન (20)</th>`;
+            if (isAnnual) {
+                h3 += `<th class="vh h-sem2">ત્રિમાસિક કસોટી (40)</th>`;
+                h3 += `<th class="vh h-sem2">સત્રાંત મૂલ્યાંકન (40)</th>`;
+                h3 += `<th class="vh h-sem2">સ્વ અધ્યયન (20)</th>`;
+                h3 += `<th class="vh h-kul">કુલ (200)</th>`;
+                h3 += `<th class="vh h-grade">ગ્રેડ</th>`;
+            } else {
+                h3 += `<th class="vh h-kul1">કુલ (100)</th>`;
+            }
+        });
+        return { h1, h2, h3 };
+    }
+
+    function buildSubjectCells(student, subjectGroup, isAnnual) {
+        let cells = '';
+        subjectGroup.forEach((subName, k) => {
+            const subIdx = subjects.indexOf(subName) * 6;
+            const s1 = sem1Parts(student, subIdx);
+            const s2 = sem2Parts(student, subIdx);
+            const t1 = Math.round((s1.tri + s1.sat + s1.swa) * 100) / 100;
+            const t2 = Math.round((s2.tri + s2.sat + s2.swa) * 100) / 100;
+            if (isAnnual) {
+                const subTotal = t1 + t2;
+                const subGrade = getGrade((subTotal / 200) * 100);
+                const gc = (subGrade === 'E') ? 'grade-F' : 'grade-A';
+                cells += `<td>${s1.tri}</td><td>${fmtNum(s1.sat)}</td><td>${s1.swa}</td>`;
+                cells += `<td>${s2.tri}</td><td>${fmtNum(s2.sat)}</td><td>${s2.swa}</td>`;
+                cells += `<td class="val" style="background:#FFF9C4;">${subTotal}</td>`;
+                cells += `<td class="${gc}">${subGrade}</td>`;
+            } else {
+                const subGrade = getGrade(t1);
+                const gc = (subGrade === 'E') ? 'grade-F' : 'grade-A';
+                cells += `<td>${s1.tri}</td><td>${fmtNum(s1.sat)}</td><td>${s1.swa}</td>`;
+                cells += `<td class="val" style="background:#FFF9C4;">${t1}</td>`;
+                cells += `<td class="${gc}">${subGrade}</td>`;
+            }
+        });
+        return cells;
+    }
+
+    // Page 1: First subject + full info
+    function buildPage1(studentList, pageNum, totalPages) {
+        const isAnnual = (examType === 'Annual');
+        const firstSub = subjects[0];
+        const { h2, h3 } = buildSubjectHeaders([firstSub], isAnnual);
+        const firstCols = isAnnual ? 8 : 5;
+
+        let headerRow1 = `
+            <tr>
+                <th rowspan="3" class="vh h-info">ક્રમ</th>
+                <th rowspan="3" class="vh h-info">રોલ નંબર</th>
+                <th rowspan="3" class="vh h-info">વિદ્યાર્થીનું નામ</th>
+                <th rowspan="3" class="vh h-info">જન્મ તારીખ</th>
+                <th rowspan="3" class="vh h-info">GR No.</th>
+                <th rowspan="3" class="vh h-info">હાજરી<br>દિવસો</th>
+                <th rowspan="3" class="vh h-info">જાતિ</th>
+                <th rowspan="3" class="vh h-info">M/F</th>
+                <th colspan="${firstCols}" class="h-subject">${firstSub}</th>
+            </tr>
+        `;
+        let headerRow2 = `<tr>${h2}</tr>`;
+        let headerRow3 = `<tr>${h3}</tr>`;
+
+        let bodyHTML = '';
+        studentList.forEach((student, idx) => {
+            let row = '<tr>';
+            row += `<td class="val">${student._globalIdx || (idx + 1)}</td>`;
+            row += `<td class="val">${student.roll || ''}</td>`;
+            row += `<td class="val" style="text-align:left; padding-left:5px;">${student.name || ''}</td>`;
+            row += `<td>${student.dob || ''}</td>`;
+            row += `<td>${student.gr || ''}</td>`;
+            row += `<td>${student.attendance || ''}</td>`;
+            row += `<td>${student.caste || ''}</td>`;
+            row += `<td>${student.gender || ''}</td>`;
+            row += buildSubjectCells(student, [firstSub], isAnnual);
+            row += '</tr>';
+            bodyHTML += row;
+        });
+
+        const inner = `${getSchoolHeader()}<div class="table-wrapper"><table class="marks"><thead>${headerRow1}${headerRow2}${headerRow3}</thead><tbody>${bodyHTML}</tbody></table></div>${getSignatures()}`;
+        return getPageWrapper(inner, pageNum, totalPages);
+    }
+
+    // Pages 2-3: Groups of 3 subjects
+    function buildSubjectPage(studentList, subjectGroup, pageNum, totalPages) {
+        const isAnnual = (examType === 'Annual');
+        const { h1, h2, h3 } = buildSubjectHeaders(subjectGroup, isAnnual);
+
+        let headerRow1 = `<tr><th rowspan="3" class="vh h-info">રોલ નંબર</th>${h1}</tr>`;
+        let headerRow2 = `<tr>${h2}</tr>`;
+        let headerRow3 = `<tr>${h3}</tr>`;
+
+        let bodyHTML = '';
+        studentList.forEach((student) => {
+            let row = '<tr>';
+            row += `<td class="val">${student.roll || ''}</td>`;
+            row += buildSubjectCells(student, subjectGroup, isAnnual);
+            row += '</tr>';
+            bodyHTML += row;
+        });
+
+        const inner = `${getSchoolHeader()}<div class="table-wrapper"><table class="marks"><thead>${headerRow1}${headerRow2}${headerRow3}</thead><tbody>${bodyHTML}</tbody></table></div>${getSignatures()}`;
+        return getPageWrapper(inner, pageNum, totalPages);
+    }
+
+    // Summary page
+    function buildSummaryPage(studentList, pageNum, totalPages) {
+        const isAnnual = (examType === 'Annual');
+        const pbConfig = getPatrakBConfig(currentStd);
+        const pbMax = pbConfig.maxTotal;
+        const subCount = subjects.length;
+        
+        const subMaxTotal = isAnnual ? (subCount * 200) : (subCount * 100);
+        const grandMax = subMaxTotal + pbMax;
+
+        let headerRow = `
+            <tr>
+                <th class="vh h-info">ક્રમ</th>
+                <th class="vh h-info">રોલ<br>નંબર</th>
+                <th class="vh h-info">વિદ્યાર્થીનું નામ</th>
+                <th class="vh h-subtotal">તમામ વિષયોનો<br>કુલ ગુણ (${subMaxTotal})</th>
+                <th class="vh h-pb">પત્રક-B<br>(${pbMax})</th>
+                <th class="vh h-kul">કુલ ગુણ<br>(${grandMax})</th>
+                <th class="vh h-pct">ટકાવારી</th>
+                <th class="vh h-grade">એકંદરે<br>ગ્રેડ</th>
+                <th class="vh h-result">પરિણામ</th>
+                <th class="vh h-rank">RANK</th>
+            </tr>
+        `;
+
+        let bodyHTML = '';
+        studentList.forEach((student, idx) => {
+            const calc = getStudentTotal(student);
+            const overallGrade = getGrade(calc.pct);
+            const gc = (overallGrade === 'E') ? 'grade-F' : 'grade-A';
+            const result = getResultStatus(student);
+            const rc = (result === 'PASS') ? 'pass' : 'fail';
+
+            bodyHTML += `
+                <tr>
+                    <td>${student._globalIdx || (idx + 1)}</td>
+                    <td>${student.roll || ''}</td>
+                    <td style="text-align:left; padding-left:5px;">${student.name || ''}</td>
+                    <td style="background:#D1C4E9;">${Math.round(calc.subjectTotal)}</td>
+                    <td style="background:#B3E5FC;">${Math.round(calc.patrakB)}</td>
+                    <td style="background:#FFCDD2;">${Math.round(calc.total)}</td>
+                    <td style="background:#F8BBD0;">${calc.pct.toFixed(2)}</td>
+                    <td class="${gc}" style="background:#C8E6C9;">${overallGrade}</td>
+                    <td class="${rc}" style="background:#FFE0B2;">${result}</td>
+                    <td style="background:#FFCC80;">${student.rank || '-'}</td>
+                </tr>
+            `;
+        });
+
+        const inner = `${getSchoolHeader()}<div class="table-wrapper"><table class="marks summary-table"><thead>${headerRow}</thead><tbody>${bodyHTML}</tbody></table></div>${getSignatures()}`;
+        return getPageWrapper(inner, pageNum, totalPages);
+    }
+
+    // ============ RENDER ALL PAGES ============
+    function renderAllPages() {
+        students.forEach((s, i) => { s._globalIdx = i + 1; });
+
+        const studentChunks = [];
+        for (let i = 0; i < students.length; i += STUDENTS_PER_PAGE) {
+            studentChunks.push(students.slice(i, i + STUDENTS_PER_PAGE));
+        }
+        if (studentChunks.length === 0) studentChunks.push([]);
+
+        // Build subject groups: first subject alone, then groups of 3
+        const firstSub = [subjects[0]];
+        const restSubs = subjects.slice(1);
+        const subjectGroups = [];
+        for (let i = 0; i < restSubs.length; i += 3) {
+            subjectGroups.push(restSubs.slice(i, i + 3));
+        }
+
+        const groups = [
+            { type: 'single', subjects: firstSub },
+            ...subjectGroups.map(g => ({ type: 'group', subjects: g })),
+            { type: 'summary' }
+        ];
+
+        const totalPages = groups.length * studentChunks.length;
+
+        let html = '';
+        let pageNum = 1;
+        studentChunks.forEach(chunk => {
+            groups.forEach(group => {
+                if (group.type === 'single') {
+                    html += buildPage1(chunk, pageNum, totalPages);
+                } else if (group.type === 'group') {
+                    html += buildSubjectPage(chunk, group.subjects, pageNum, totalPages);
+                } else {
+                    html += buildSummaryPage(chunk, pageNum, totalPages);
+                }
+                pageNum++;
+            });
+        });
+
+        document.getElementById('pagesContainer').innerHTML = html;
+    }
+
+    // ============================================
+    // EXCEL EXPORT — HTML જેવી જ ડિઝાઇન સાથે
+    // ============================================
+    
+    // ---- COLOR CONSTANTS ----
+    const C = {
+        blue: "1A237E",
+        blueLight: "E8EAF6",
+        red: "B71C1C",
+        green: "1B5E20",
+        greenLight: "C8E6C9",
+        yellow: "FFF2CC",
+        yellowLight: "FFF9C4",
+        orange: "FCE4D6",
+        blueSky: "B3E5FC",
+        bluePale: "DDEBF7",
+        pink: "F8BBD0",
+        purple: "D1C4E9",
+        peach: "FFE0B2",
+        redLight: "FFCDD2",
+        rank: "FFCC80",
+        white: "FFFFFF",
+        gradeGreen: "1B5E20",
+        gradeRed: "C62828"
+    };
+
+    // ---- BORDER PRESET ----
+    function bdr(color = C.blue, style = 'thin') {
+        return {
+            top: { style, color: { rgb: color } },
+            bottom: { style, color: { rgb: color } },
+            left: { style, color: { rgb: color } },
+            right: { style, color: { rgb: color } }
+        };
+    }
+
+    // ---- STYLE PRESETS ----
+    function styleHeader(color, fontSize = 10, rot = false) {
+        return {
+            font: { name: 'Noto Sans Gujarati', sz: fontSize, bold: true, color: { rgb: C.blue } },
+            fill: { fgColor: { rgb: color } },
+            alignment: {
+                horizontal: 'center',
+                vertical: 'center',
+                wrapText: true,
+                textRotation: rot ? 90 : 0
+            },
+            border: bdr()
+        };
+    }
+
+    function styleData(bgColor = C.white, bold = false, color = "000000", align = 'center') {
+        return {
+            font: { name: 'Noto Sans Gujarati', sz: 10, bold, color: { rgb: color } },
+            fill: { fgColor: { rgb: bgColor } },
+            alignment: { horizontal: align, vertical: 'center' },
+            border: bdr()
+        };
+    }
+
+    // ---- CREATE A CELL ----
+    function cell(v, style) {
+        let t = 's';
+        if (typeof v === 'number') t = 'n';
+        if (v === null || v === undefined || v === '') return { v: '', t: 's', s: style };
+        return { v: v, t: t, s: style };
+    }
+
+    // ---- APPLY MERGES ----
+    function addMerge(ws, r1, c1, r2, c2) {
+        if (!ws['!merges']) ws['!merges'] = [];
+        ws['!merges'].push({ s: { r: r1, c: c1 }, e: { r: r2, c: c2 } });
+    }
+
+    // ============================================
+    // SHEET 1: ગુજરાતી + Full Info
+    // ============================================
+    function createGujaratiSheet(wb, isAnnual) {
+        const ws = {};
+        const gujSub = SUBJECTS[0];
+        const gujCols = isAnnual ? 8 : 5;
+        const infoCols = 8;
+        const totalCols = infoCols + gujCols;
+
+        // ---- Row 1: School Header (merged) ----
+        const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
+        const examLabel = (examType === 'Sem1')
+            ? `પ્રથમ સત્ર પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`
+            : `વાર્ષિક પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`;
+        const fullHeader = `${schoolName} | ${examLabel} | ધોરણ : ${schoolInfo.std || '8'} | વર્ગ : ${schoolInfo.class || 'A'}`;
+
+        ws['A1'] = cell(fullHeader, {
+            font: { name: 'Noto Sans Gujarati', sz: 13, bold: true, color: { rgb: C.red } },
+            fill: { fgColor: { rgb: C.yellowLight } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: bdr(C.blue, 'medium')
+        });
+        addMerge(ws, 0, 0, 0, totalCols - 1);
+        ws['!rows'] = ws['!rows'] || [];
+        ws['!rows'][0] = { hpt: 28 };
+
+        // ---- Row 2: Subject Names ----
+        // Info headers (vertical) + Gujarati subject name
+        const infoLabels = ['ક્રમ', 'રોલ નંબર', 'વિદ્યાર્થીનું નામ', 'જન્મ તારીખ', 'GR No.', 'હાજરી દિવસો', 'જાતિ', 'M/F'];
+        for (let i = 0; i < infoCols; i++) {
+            ws[String.fromCharCode(65 + i) + '2'] = cell(infoLabels[i], {
+                font: { name: 'Noto Sans Gujarati', sz: 10, bold: true, color: { rgb: C.blue } },
+                fill: { fgColor: { rgb: C.blueLight } },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                border: bdr()
+            });
+        }
+        // Gujarati subject name
+        ws[String.fromCharCode(65 + infoCols) + '2'] = cell(gujSub.name, {
+            font: { name: 'Noto Sans Gujarati', sz: 12, bold: true, color: { rgb: C.green } },
+            fill: { fgColor: { rgb: C.greenLight } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: bdr()
+        });
+        addMerge(ws, 1, infoCols, 1, totalCols - 1);
+
+        // ---- Row 3: Sem Groups ----
+        if (isAnnual) {
+            const groups = [
+                { label: 'પ્રથમ સત્ર', span: 3, color: C.yellow },
+                { label: 'દ્વિતીય સત્ર', span: 3, color: C.orange },
+                { label: 'કુલ', span: 2, color: C.bluePale }
+            ];
+            let col = infoCols;
+            groups.forEach(g => {
+                ws[String.fromCharCode(65 + col) + '3'] = cell(g.label, styleHeader(g.color, 11));
+                addMerge(ws, 2, col, 2, col + g.span - 1);
+                col += g.span;
+            });
+        } else {
+            ws[String.fromCharCode(65 + infoCols) + '3'] = cell('પ્રથમ સત્ર', styleHeader(C.yellow, 11));
+            addMerge(ws, 2, infoCols, 2, infoCols + 3);
+            ws[String.fromCharCode(65 + infoCols + 4) + '3'] = cell('ગ્રેડ', {
+                font: { name: 'Noto Sans Gujarati', sz: 11, bold: true, color: { rgb: C.blue } },
+                fill: { fgColor: { rgb: C.greenLight } },
+                alignment: { horizontal: 'center', vertical: 'center', textRotation: 90 },
+                border: bdr()
+            });
+            addMerge(ws, 2, infoCols + 4, 3, infoCols + 4); // merge grade header 2 rows
+        }
+
+        // ---- Row 4: Individual Column Headers (vertical) ----
+        let col = infoCols;
+        if (isAnnual) {
+            const colDefs = [
+                { label: 'ત્રિમાસિક કસોટી (40)', color: C.yellow },
+                { label: 'સત્રાંત મૂલ્યાંકન (40)', color: C.yellow },
+                { label: 'સ્વ અધ્યયન (20)', color: C.yellow },
+                { label: 'ત્રિમાસિક કસોટી (40)', color: C.orange },
+                { label: 'સત્રાંત મૂલ્યાંકન (40)', color: C.orange },
+                { label: 'સ્વ અધ્યયન (20)', color: C.orange },
+                { label: 'કુલ (200)', color: C.bluePale },
+                { label: 'ગ્રેડ', color: C.greenLight }
+            ];
+            colDefs.forEach(d => {
+                ws[String.fromCharCode(65 + col) + '4'] = cell(d.label, {
+                    font: { name: 'Noto Sans Gujarati', sz: 9, bold: true, color: { rgb: C.blue } },
+                    fill: { fgColor: { rgb: d.color } },
+                    alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                    border: bdr()
+                });
+                col++;
+            });
+        } else {
+            const colDefs = [
+                { label: 'ત્રિમાસિક કસોટી (40)', color: C.yellow },
+                { label: 'સત્રાંત મૂલ્યાંકન (40)', color: C.yellow },
+                { label: 'સ્વ અધ્યયન (20)', color: C.yellow },
+                { label: 'કુલ (100)', color: C.yellowLight }
+            ];
+            colDefs.forEach(d => {
+                ws[String.fromCharCode(65 + col) + '4'] = cell(d.label, {
+                    font: { name: 'Noto Sans Gujarati', sz: 9, bold: true, color: { rgb: C.blue } },
+                    fill: { fgColor: { rgb: d.color } },
+                    alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                    border: bdr()
+                });
+                col++;
+            });
+        }
+        ws['!rows'][1] = { hpt: 55 };
+        ws['!rows'][2] = { hpt: 30 };
+        ws['!rows'][3] = { hpt: 85 };
+
+        // ---- Data Rows ----
+        students.forEach((s, idx) => {
+            const rowNum = idx + 5; // 1-based in xlsx
+            const rIdx = rowNum - 1;
+            ws['!rows'][rIdx] = { hpt: 20 };
+
+            ws[`A${rowNum}`] = cell(s._globalIdx || (idx + 1), styleData(C.blueLight));
+            ws[`B${rowNum}`] = cell(s.roll || '', styleData(C.blueLight));
+            ws[`C${rowNum}`] = cell(s.name || '', styleData(C.blueLight, true, "000000", 'left'));
+            ws[`D${rowNum}`] = cell(s.dob || '', styleData(C.white));
+            ws[`E${rowNum}`] = cell(s.gr || '', styleData(C.white));
+            ws[`F${rowNum}`] = cell(s.attendance || '', styleData(C.white));
+            ws[`G${rowNum}`] = cell(s.caste || '', styleData(C.white));
+            ws[`H${rowNum}`] = cell(s.gender || '', styleData(C.white));
+
+            // Gujarati marks
+            const s1 = sem1Parts(s, gujSub.idx);
+            const s2 = sem2Parts(s, gujSub.idx);
+            const t1 = Math.round((s1.tri + s1.sat + s1.swa) * 100) / 100;
+            const t2 = Math.round((s2.tri + s2.sat + s2.swa) * 100) / 100;
+            let cc = 8;
+            if (isAnnual) {
+                const subTotal = t1 + t2;
+                const subGrade = getGrade((subTotal / 200) * 100);
+                const gc = (subGrade === 'E') ? C.gradeRed : C.gradeGreen;
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s1.tri, styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(fmtNum(s1.sat), styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s1.swa, styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s2.tri, styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(fmtNum(s2.sat), styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s2.swa, styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(subTotal, styleData(C.yellowLight, true));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(subGrade, styleData(C.greenLight, true, gc));
+            } else {
+                const subGrade = getGrade(t1);
+                const gc = (subGrade === 'E') ? C.gradeRed : C.gradeGreen;
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s1.tri, styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(fmtNum(s1.sat), styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s1.swa, styleData(C.white));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(t1, styleData(C.yellowLight, true));
+                ws[String.fromCharCode(65 + cc++) + rowNum] = cell(subGrade, styleData(C.greenLight, true, gc));
+            }
+        });
+
+        // ---- Signature Rows ----
+        const sigRow = students.length + 7;
+        ws['!rows'][sigRow - 1] = { hpt: 30 };
+        ws[`B${sigRow}`] = cell('વર્ગ શિક્ષકની સહી', {
+            font: { name: 'Noto Sans Gujarati', sz: 11, bold: true },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        });
+        ws[`${String.fromCharCode(65 + totalCols - 3)}${sigRow}`] = cell('આચાર્યની સહી', {
+            font: { name: 'Noto Sans Gujarati', sz: 11, bold: true },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        });
+
+        // ---- Column Widths ----
+        ws['!cols'] = [];
+        ws['!cols'][0] = { wch: 5 };
+        ws['!cols'][1] = { wch: 6 };
+        ws['!cols'][2] = { wch: 25 };
+        ws['!cols'][3] = { wch: 11 };
+        ws['!cols'][4] = { wch: 7 };
+        ws['!cols'][5] = { wch: 7 };
+        ws['!cols'][6] = { wch: 6 };
+        ws['!cols'][7] = { wch: 5 };
+        for (let i = 8; i < totalCols; i++) ws['!cols'][i] = { wch: 4.5 };
+
+        ws['!ref'] = `A1:${String.fromCharCode(65 + totalCols - 1)}${sigRow}`;
+        XLSX.utils.book_append_sheet(wb, ws, '1_ગુજરાતી');
+    }
+
+    // ============================================
+    // SHEET 2-3: 3 Subjects
+    // ============================================
+    function createSubjectSheet(wb, subjectGroup, sheetName, isAnnual) {
+        const ws = {};
+        const colsPerSub = isAnnual ? 8 : 5;
+        const totalCols = 1 + (subjectGroup.length * colsPerSub);
+
+        // ---- Row 1: School Header ----
+        const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
+        const examLabel = (examType === 'Sem1')
+            ? `પ્રથમ સત્ર પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`
+            : `વાર્ષિક પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`;
+        const fullHeader = `${schoolName} | ${examLabel} | ધોરણ : ${schoolInfo.std || '8'} | વર્ગ : ${schoolInfo.class || 'A'}`;
+
+        ws['A1'] = cell(fullHeader, {
+            font: { name: 'Noto Sans Gujarati', sz: 13, bold: true, color: { rgb: C.red } },
+            fill: { fgColor: { rgb: C.yellowLight } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: bdr(C.blue, 'medium')
+        });
+        addMerge(ws, 0, 0, 0, totalCols - 1);
+        ws['!rows'] = ws['!rows'] || [];
+        ws['!rows'][0] = { hpt: 28 };
+
+        // ---- Row 2: Roll number + Subject Names ----
+        ws['A2'] = cell('રોલ નંબર', {
+            font: { name: 'Noto Sans Gujarati', sz: 10, bold: true, color: { rgb: C.blue } },
+            fill: { fgColor: { rgb: C.blueLight } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+            border: bdr()
+        });
+        addMerge(ws, 1, 0, 3, 0); // merge roll number header for 3 rows
+
+        let col = 1;
+        subjectGroup.forEach(sub => {
+            ws[String.fromCharCode(65 + col) + '2'] = cell(sub.name, {
+                font: { name: 'Noto Sans Gujarati', sz: 12, bold: true, color: { rgb: C.green } },
+                fill: { fgColor: { rgb: C.greenLight } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                border: bdr()
+            });
+            addMerge(ws, 1, col, 1, col + colsPerSub - 1);
+            col += colsPerSub;
+        });
+
+        // ---- Row 3: Sem Groups ----
+        col = 1;
+        subjectGroup.forEach(() => {
+            if (isAnnual) {
+                ws[String.fromCharCode(65 + col) + '3'] = cell('પ્રથમ સત્ર', styleHeader(C.yellow, 10));
+                addMerge(ws, 2, col, 2, col + 2);
+                ws[String.fromCharCode(65 + col + 3) + '3'] = cell('દ્વિતીય સત્ર', styleHeader(C.orange, 10));
+                addMerge(ws, 2, col + 3, 2, col + 5);
+                ws[String.fromCharCode(65 + col + 6) + '3'] = cell('કુલ', styleHeader(C.bluePale, 10));
+                addMerge(ws, 2, col + 6, 2, col + 7);
+                col += 8;
+            } else {
+                ws[String.fromCharCode(65 + col) + '3'] = cell('પ્રથમ સત્ર', styleHeader(C.yellow, 10));
+                addMerge(ws, 2, col, 2, col + 3);
+                ws[String.fromCharCode(65 + col + 4) + '3'] = cell('ગ્રેડ', {
+                    font: { name: 'Noto Sans Gujarati', sz: 10, bold: true, color: { rgb: C.blue } },
+                    fill: { fgColor: { rgb: C.greenLight } },
+                    alignment: { horizontal: 'center', vertical: 'center', textRotation: 90 },
+                    border: bdr()
+                });
+                addMerge(ws, 2, col + 4, 3, col + 4);
+                col += 5;
+            }
+        });
+
+        // ---- Row 4: Individual Column Headers ----
+        col = 1;
+        subjectGroup.forEach(() => {
+            if (isAnnual) {
+                const c1 = ['ત્રિમાસિક કસોટી (40)', 'સત્રાંત મૂલ્યાંકન (40)', 'સ્વ અધ્યયન (20)'];
+                const c2 = ['ત્રિમાસિક કસોટી (40)', 'સત્રાંત મૂલ્યાંકન (40)', 'સ્વ અધ્યયન (20)'];
+                c1.forEach(l => {
+                    ws[String.fromCharCode(65 + col) + '4'] = cell(l, {
+                        font: { name: 'Noto Sans Gujarati', sz: 9, bold: true, color: { rgb: C.blue } },
+                        fill: { fgColor: { rgb: C.yellow } },
+                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                        border: bdr()
+                    });
+                    col++;
+                });
+                c2.forEach(l => {
+                    ws[String.fromCharCode(65 + col) + '4'] = cell(l, {
+                        font: { name: 'Noto Sans Gujarati', sz: 9, bold: true, color: { rgb: C.blue } },
+                        fill: { fgColor: { rgb: C.orange } },
+                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                        border: bdr()
+                    });
+                    col++;
+                });
+                ws[String.fromCharCode(65 + col) + '4'] = cell('કુલ (200)', {
+                    font: { name: 'Noto Sans Gujarati', sz: 9, bold: true, color: { rgb: C.blue } },
+                    fill: { fgColor: { rgb: C.bluePale } },
+                    alignment: { horizontal: 'center', vertical: 'center', textRotation: 90 },
+                    border: bdr()
+                });
+                col++;
+                ws[String.fromCharCode(65 + col) + '4'] = cell('ગ્રેડ', {
+                    font: { name: 'Noto Sans Gujarati', sz: 9, bold: true, color: { rgb: C.blue } },
+                    fill: { fgColor: { rgb: C.greenLight } },
+                    alignment: { horizontal: 'center', vertical: 'center', textRotation: 90 },
+                    border: bdr()
+                });
+                col++;
+            } else {
+                const c1 = ['ત્રિમાસિક કસોટી (40)', 'સત્રાંત મૂલ્યાંકન (40)', 'સ્વ અધ્યયન (20)', 'કુલ (100)'];
+                c1.forEach(l => {
+                    ws[String.fromCharCode(65 + col) + '4'] = cell(l, {
+                        font: { name: 'Noto Sans Gujarati', sz: 9, bold: true, color: { rgb: C.blue } },
+                        fill: { fgColor: { rgb: C.yellow } },
+                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                        border: bdr()
+                    });
+                    col++;
+                });
+            }
+        });
+        ws['!rows'][1] = { hpt: 55 };
+        ws['!rows'][2] = { hpt: 30 };
+        ws['!rows'][3] = { hpt: 85 };
+
+        // ---- Data Rows ----
+        students.forEach((s, idx) => {
+            const rowNum = idx + 5;
+            ws['!rows'][rowNum - 1] = { hpt: 20 };
+            ws[`A${rowNum}`] = cell(s.roll || '', styleData(C.blueLight, true));
+
+            let cc = 1;
+            subjectGroup.forEach(sub => {
+                const s1 = sem1Parts(s, sub.idx);
+                const s2 = sem2Parts(s, sub.idx);
+                const t1 = Math.round((s1.tri + s1.sat + s1.swa) * 100) / 100;
+                const t2 = Math.round((s2.tri + s2.sat + s2.swa) * 100) / 100;
+                if (isAnnual) {
+                    const subTotal = t1 + t2;
+                    const subGrade = getGrade((subTotal / 200) * 100);
+                    const gc = (subGrade === 'E') ? C.gradeRed : C.gradeGreen;
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s1.tri, styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(fmtNum(s1.sat), styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s1.swa, styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s2.tri, styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(fmtNum(s2.sat), styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s2.swa, styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(subTotal, styleData(C.yellowLight, true));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(subGrade, styleData(C.greenLight, true, gc));
+                } else {
+                    const subGrade = getGrade(t1);
+                    const gc = (subGrade === 'E') ? C.gradeRed : C.gradeGreen;
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s1.tri, styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(fmtNum(s1.sat), styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(s1.swa, styleData(C.white));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(t1, styleData(C.yellowLight, true));
+                    ws[String.fromCharCode(65 + cc++) + rowNum] = cell(subGrade, styleData(C.greenLight, true, gc));
+                }
+            });
+        });
+
+        // Signature
+        const sigRow = students.length + 7;
+        ws['!rows'][sigRow - 1] = { hpt: 30 };
+        ws[`A${sigRow}`] = cell('વર્ગ શિક્ષકની સહી', {
+            font: { name: 'Noto Sans Gujarati', sz: 11, bold: true },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        });
+        ws[`${String.fromCharCode(65 + totalCols - 3)}${sigRow}`] = cell('આચાર્યની સહી', {
+            font: { name: 'Noto Sans Gujarati', sz: 11, bold: true },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        });
+
+        // Column widths
+        ws['!cols'] = [{ wch: 7 }];
+        for (let i = 1; i < totalCols; i++) ws['!cols'][i] = { wch: 4.5 };
+
+        ws['!ref'] = `A1:${String.fromCharCode(65 + totalCols - 1)}${sigRow}`;
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    }
+
+    // ============================================
+    // SHEET 4: Summary
+    // ============================================
+    function createSummarySheet(wb, isAnnual) {
+        const ws = {};
+        const totalCols = 10;
+        const labels = [
+            { l: 'ક્રમ', c: C.blueLight },
+            { l: 'રોલ નંબર', c: C.blueLight },
+            { l: 'વિદ્યાર્થીનું નામ', c: C.blueLight },
+            { l: `તમામ વિષયોનો કુલ ગુણ (${isAnnual ? 1400 : 700})`, c: C.purple },
+            { l: 'પત્રક-B (400)', c: C.blueSky },
+            { l: `કુલ ગુણ (${isAnnual ? 1800 : 1100})`, c: C.bluePale },
+            { l: 'ટકાવારી', c: C.pink },
+            { l: 'એકંદરે ગ્રેડ', c: C.greenLight },
+            { l: 'પરિણામ', c: C.peach },
+            { l: 'RANK', c: C.rank }
+        ];
+
+        // Row 1: School Header
+        const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
+        const examLabel = (examType === 'Sem1')
+            ? `પ્રથમ સત્ર પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`
+            : `વાર્ષિક પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`;
+        const fullHeader = `${schoolName} | ${examLabel} | ધોરણ : ${schoolInfo.std || '8'} | વર્ગ : ${schoolInfo.class || 'A'}`;
+
+        ws['A1'] = cell(fullHeader, {
+            font: { name: 'Noto Sans Gujarati', sz: 13, bold: true, color: { rgb: C.red } },
+            fill: { fgColor: { rgb: C.yellowLight } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: bdr(C.blue, 'medium')
+        });
+        addMerge(ws, 0, 0, 0, totalCols - 1);
+        ws['!rows'] = ws['!rows'] || [];
+        ws['!rows'][0] = { hpt: 28 };
+
+        // Row 2: Column Headers
+        labels.forEach((lbl, i) => {
+            ws[String.fromCharCode(65 + i) + '2'] = cell(lbl.l, {
+                font: { name: 'Noto Sans Gujarati', sz: 10, bold: true, color: { rgb: C.blue } },
+                fill: { fgColor: { rgb: lbl.c } },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                border: bdr()
+            });
+        });
+        ws['!rows'][1] = { hpt: 95 };
+
+        // Data rows
+        students.forEach((s, idx) => {
+            const rowNum = idx + 3;
+            ws['!rows'][rowNum - 1] = { hpt: 20 };
+            const calc = getStudentTotal(s);
+            const overallGrade = getGrade(calc.pct);
+            const gc = (overallGrade === 'E') ? C.gradeRed : C.gradeGreen;
+            const result = getResultStatus(s);
+            const rc = (result === 'PASS') ? C.gradeGreen : C.gradeRed;
+
+            ws[`A${rowNum}`] = cell(s._globalIdx || (idx + 1), styleData(C.blueLight));
+            ws[`B${rowNum}`] = cell(s.roll || '', styleData(C.blueLight, true));
+            ws[`C${rowNum}`] = cell(s.name || '', styleData(C.white, true, "000000", 'left'));
+            ws[`D${rowNum}`] = cell(Math.round(calc.subjectTotal), styleData(C.purple, true));
+            ws[`E${rowNum}`] = cell(Math.round(calc.patrakB), styleData(C.blueSky, true));
+            ws[`F${rowNum}`] = cell(Math.round(calc.total), styleData(C.redLight, true));
+            ws[`G${rowNum}`] = cell(calc.pct.toFixed(2), styleData(C.pink));
+            ws[`H${rowNum}`] = cell(overallGrade, styleData(C.greenLight, true, gc));
+            ws[`I${rowNum}`] = cell(result, styleData(C.peach, true, rc));
+            ws[`J${rowNum}`] = cell(s.rank || '-', styleData(C.rank, true));
+        });
+
+        // Signature
+        const sigRow = students.length + 5;
+        ws['!rows'][sigRow - 1] = { hpt: 30 };
+        ws[`B${sigRow}`] = cell('વર્ગ શિક્ષકની સહી', {
+            font: { name: 'Noto Sans Gujarati', sz: 11, bold: true },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        });
+        ws[`H${sigRow}`] = cell('આચાર્યની સહી', {
+            font: { name: 'Noto Sans Gujarati', sz: 11, bold: true },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        });
+
+        // Column widths
+        ws['!cols'] = [
+            { wch: 5 }, { wch: 7 }, { wch: 26 }, { wch: 11 },
+            { wch: 9 }, { wch: 10 }, { wch: 9 }, { wch: 9 },
+            { wch: 9 }, { wch: 7 }
+        ];
+
+        ws['!ref'] = `A1:J${sigRow}`;
+        XLSX.utils.book_append_sheet(wb, ws, '4_Summary');
+    }
+
+    // ============================================
+    // MAIN EXPORT FUNCTION
+    // ============================================
+    function exportExcel() {
+        const isAnnual = (examType === 'Annual');
+
+        if (!students || students.length === 0) {
+            alert('કોઈ ડેટા નથી. પહેલા ડેટા એન્ટ્રી કરો.');
+            return;
+        }
+
+        // Assign global index
+        students.forEach((s, i) => { if (!s._globalIdx) s._globalIdx = i + 1; });
+
+        const wb = XLSX.utils.book_new();
+
+        // Create 4 sheets
+        createGujaratiSheet(wb, isAnnual);
+        createSubjectSheet(wb, [SUBJECTS[1], SUBJECTS[2], SUBJECTS[3]], '2_ગણિત-હિન્દી-અંગ્રેજી', isAnnual);
+        createSubjectSheet(wb, [SUBJECTS[4], SUBJECTS[5], SUBJECTS[6]], '3_વિજ્ઞાન-સામાજિક-સંસ્કૃત', isAnnual);
+        createSummarySheet(wb, isAnnual);
+
+        // Save
+        XLSX.writeFile(wb, `PatrakC_Std${currentStd}_${examType}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+</script>
+</body>
+</html>

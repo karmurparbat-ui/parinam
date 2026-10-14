@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પત્રક-B : વ્યક્તિત્વ વિકાસ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="db.js"></script>
+    <script>
+        const currentStd = getUrlParam('std', '8');
+        const urlExam = getUrlParam('exam', '');
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans Gujarati', sans-serif; background-color: #d0d0d0; padding: 8px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+
+        /* ============================================================
+           TOP BAR
+           ============================================================ */
+        .top-bar { width: 100%; max-width: 99vw; background: #fff; border: 2px solid #1A237E; padding: 8px 12px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 8px; border-radius: 6px; }
+        .top-row-1 { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px dashed #1A237E; }
+        .top-row-2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .std-badge { background: #1A237E; color: #FFD700; padding: 6px 14px; border-radius: 5px; font-weight: 700; font-size: 14px; white-space: nowrap; }
+        .title-badge { font-weight: 700; color: #4A148C; font-size: 15px; flex: 1; white-space: nowrap; }
+        .save-status { padding: 5px 12px; border-radius: 5px; font-size: 13px; font-weight: 700; background: #E0E0E0; color: #555; white-space: nowrap; }
+        .save-status.saved { background: #C8E6C9; color: #1B5E20; }
+        .save-status.saving { background: #FFF9C4; color: #F57F17; }
+
+        .btn { padding: 8px 10px; border: 1px solid #000; border-radius: 5px; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0px rgba(0,0,0,0.4); text-align: center; white-space: nowrap; }
+        .btn:active { transform: translate(2px, 2px); box-shadow: none; }
+        .btn-black { background-color: #000; color: #fff; }
+        .btn-green { background-color: #4B854B; color: #fff; }
+        .btn-blue { background-color: #2D72B8; color: #fff; }
+        .btn-orange { background-color: #F26C23; color: #fff; }
+        .btn-purple { background-color: #7030A0; color: #fff; }
+        .btn-red { background-color: #D22B2B; color: #fff; }
+        .btn-white { background-color: #fff; color: #000; }
+        .btn.active-sem1 { background: #1A237E; color: #FFD700; border-color: #FFD700; }
+        .btn.active-sem2 { background: #D84315; color: #fff; border-color: #FFD700; }
+
+        /* ============================================================
+           PAPER — Main Entry
+           ============================================================ */
+        .paper { background: #fff; border: 3px solid #1A237E; padding: 4mm; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 100%; max-width: 99vw; }
+        .paper-header { text-align: center; padding: 5px; margin-bottom: 4px; background: #FFF9C4; border: 1.5px solid #1A237E; font-size: 14px; font-weight: 700; color: #1A237E; white-space: nowrap; overflow: hidden; }
+        .paper-header .h-school { color: #B71C1C; }
+        .paper-header .h-sep { margin: 0 8px; color: #1A237E; }
+
+        /* ============================================================
+           ENTRY TABLE
+           ============================================================ */
+        .table-wrapper { overflow: auto; max-height: 74vh; border: 1.5px solid #1A237E; }
+        table.patrak-b { border-collapse: separate; border-spacing: 0; font-size: 12px; table-layout: auto; min-width: 100%; }
+        table.patrak-b th, table.patrak-b td { border-right: 1px solid #1A237E; border-bottom: 1px solid #1A237E; padding: 4px 3px; text-align: center; vertical-align: middle; font-weight: 700; background: #fff; }
+        table.patrak-b th:first-child, table.patrak-b td:first-child { border-left: 1px solid #1A237E; }
+        table.patrak-b thead tr:first-child th { border-top: 1px solid #1A237E; }
+
+        table.patrak-b thead tr.kshetra-row th { background: #FFD966; color: #1A237E; font-size: 13px; padding: 6px 4px; position: sticky; top: 0; z-index: 8; border-bottom: 2px solid #1A237E; white-space: normal; }
+        table.patrak-b thead tr.vidhan-row th { background: #C8E6C9; color: #1B5E20; position: sticky; top: 32px; z-index: 7; }
+        table.patrak-b .vh-vidhan { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; height: 110px; font-size: 11px; padding: 3px 2px; background: #C8E6C9; color: #1B5E20; letter-spacing: 0.2px; }
+
+        /* Sticky columns */
+        table.patrak-b .sticky-col { position: sticky; left: 0; background: #FFF2CC !important; z-index: 6; }
+        table.patrak-b thead .sticky-col { z-index: 10; background: #FFB74D !important; color: #1A237E; }
+        table.patrak-b .sticky-col-2 { left: 60px; z-index: 6; }
+        table.patrak-b thead .sticky-col-2 { z-index: 10; background: #FFB74D !important; }
+
+        /* Column widths */
+        table.patrak-b .col-roll { width: 60px; min-width: 60px; max-width: 60px; }
+        table.patrak-b .col-name { width: 220px; min-width: 220px; max-width: 220px; text-align: left; padding-left: 8px; font-size: 13px; }
+        table.patrak-b .col-vidhan { width: 32px; min-width: 32px; max-width: 32px; }
+        table.patrak-b .col-total { width: 58px; min-width: 58px; max-width: 58px; background: #FFF9C4 !important; font-weight: 700; font-size: 14px; color: #1A237E; }
+
+        /* Rows */
+        table.patrak-b tbody tr:nth-child(even) td:not(.sticky-col) { background: #FAFAFA; }
+        table.patrak-b tbody tr:hover td:not(.sticky-col) { background: #FFFDE7; }
+        table.patrak-b tbody tr:focus-within td:not(.sticky-col) { background: #E8F5E9 !important; }
+        table.patrak-b tbody tr:focus-within td.sticky-col { background: #A5D6A7 !important; }
+
+        /* Editable cells */
+        table.patrak-b input.cat-input { width: 100%; border: none; background: transparent; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 13px; font-weight: 700; text-align: center; outline: none; padding: 3px 0; color: #1B5E20; }
+        table.patrak-b input.cat-input:focus { background: #FFF3E0; box-shadow: inset 0 0 0 2px #FF6F00; border-radius: 3px; }
+        table.patrak-b input.cat-input.zero { color: #BBB; }
+
+        /* Name single line */
+        .name-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ============================================================
+           PRINT — 20 students/page, FULL page, single-line header
+           ============================================================ */
+        #printContainer { display: none; }
+
+        .print-page {
+            background: #fff;
+            width: 297mm;
+            height: 210mm;
+            padding: 3mm 4mm 3mm 4mm;
+            page-break-after: always;
+            border: 2px solid #1A237E;
+            position: relative;
+            margin: 0 auto 10px auto;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .print-page:last-child { page-break-after: auto; }
+
+        /* ===== SINGLE-LINE HEADER ===== */
+        .print-page .paper-header {
+            text-align: center;
+            padding: 4px 8px;
+            background: #FFF9C4;
+            border: 1.5px solid #1A237E;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 2mm;
+        }
+        .print-page .paper-header .h-school { color: #B71C1C; }
+        .print-page .paper-header .h-sep { color: #1A237E; margin: 0 6px; }
+        .print-page .paper-header .h-info { color: #1A237E; }
+
+        .print-page .table-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .print-page table.patrak-b-print { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; height: 100%; }
+        .print-page table.patrak-b-print th,
+        .print-page table.patrak-b-print td {
+            border: 1px solid #1A237E;
+            padding: 2px 1px;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: 700;
+        }
+        /* Kshetra header — full text visible, wrap allowed */
+        .print-page table.patrak-b-print thead tr.kshetra-row th {
+            background: #FFD966;
+            color: #1A237E;
+            font-size: 10px;
+            padding: 4px 2px;
+            font-weight: 700;
+            white-space: normal;
+            line-height: 1.1;
+            word-wrap: break-word;
+        }
+        .print-page table.patrak-b-print thead tr.vidhan-row th {
+            background: #C8E6C9;
+            color: #1B5E20;
+        }
+        .print-page .vh-vidhan {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            white-space: nowrap;
+            height: 90px;
+            font-size: 9px;
+            padding: 2px 1px;
+            font-weight: 700;
+        }
+        .print-page .col-roll { width: 40px; font-size: 12px; }
+        .print-page .col-name { width: 150px; text-align: left; padding-left: 5px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .print-page .col-vidhan { width: 15px; font-size: 12px; }
+        .print-page .col-total { width: 40px; background: #FFF9C4; font-size: 13px; }
+
+        .print-page table.patrak-b-print tbody tr { height: 1px; }
+        .print-page table.patrak-b-print tbody td { font-size: 12px; padding: 3px 1px; }
+
+        /* ===== SIGNATURES ===== */
+        .print-page .print-signatures {
+            margin-top: 3mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 30px;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .print-page .sig-box { text-align: center; min-width: 150px; }
+        .print-page .sig-box img { max-width: 90px; max-height: 40px; display: block; margin: 0 auto 3px; }
+        .print-page .sig-box .no-sign { height: 35px; }
+        .print-page .sig-box .line { border-top: 1px solid #000; padding-top: 3px; }
+
+        /* Page number — moved LEFT so signature not hidden */
+        .print-page .page-num {
+            position: absolute;
+            bottom: 3mm;
+            left: 6mm;
+            font-size: 10px;
+            font-weight: 700;
+            color: #1A237E;
+            background: #FFF9C4;
+            padding: 2px 8px;
+            border: 1px solid #1A237E;
+            border-radius: 3px;
+        }
+
+        @media print {
+            @page { size: A4 landscape; margin: 3mm; }
+            body { background: #fff !important; padding: 0 !important; display: block !important; }
+            .top-bar, .paper { display: none !important; }
+            #printContainer { display: block !important; }
+            .print-page {
+                width: 100%;
+                height: 203mm;
+                margin: 0;
+                padding: 2mm 3mm;
+                border: 2px solid #1A237E;
+                page-break-after: always;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .print-page:last-child { page-break-after: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     TOP BAR
+     ============================================================ -->
+<div class="top-bar">
+    <div class="top-row-1">
+        <div class="std-badge">ધોરણ : <span id="stdBadge">-</span></div>
+        <div class="title-badge" id="titleBadge">પત્રક-B : વ્યક્તિત્વ વિકાસ</div>
+        <div class="save-status" id="saveStatus">💾 ઓટો-સેવ</div>
+        <button class="btn btn-black" onclick="window.location.href='home.html?std=' + currentStd">🏠 Home</button>
+    </div>
+    <div class="top-row-2">
+        <button class="btn btn-white active-sem1" id="btnSem1" onclick="switchSem('sem1')">📖 પ્રથમ સત્ર</button>
+        <button class="btn btn-white" id="btnSem2" onclick="switchSem('sem2')">📖 દ્વિતીય સત્ર</button>
+        <button class="btn btn-purple" onclick="distributeCurrentSem()">🎲 આ સત્ર Distribute</button>
+        <button class="btn btn-purple" onclick="autoDistributeAll()">🎲 બધાને Auto-Distribute</button>
+        <button class="btn btn-green" onclick="saveData(true)">💾 સેવ કરો</button>
+        <button class="btn btn-orange" onclick="showPrint()">🖨 પ્રિન્ટ (20/પેજ)</button>
+        <button class="btn btn-red" onclick="clearCurrentSem()">🗑 આ સત્ર સાફ</button>
+        <button class="btn btn-blue" onclick="showSummary()">📊 Summary</button>
+    </div>
+</div>
+
+<!-- ============================================================
+     PAPER
+     ============================================================ -->
+<div class="paper">
+    <div class="paper-header" id="paperHeaderTop">
+        <span class="h-school" id="topSchoolName">શ્રી કોરાડા વાડી પ્રાથમિક શાળા</span>
+        <span class="h-sep">|</span>
+        <span class="h-info" id="topExamLabel">પત્રક-B : વ્યક્તિત્વ વિકાસ</span>
+        <span class="h-sep">|</span>
+        <span class="h-info" id="topDetails">ધોરણ : 8 | વર્ગ : A</span>
+    </div>
+
+    <div class="table-wrapper" id="tableWrapper">
+        <table class="patrak-b" id="patrakTable">
+            <thead id="patrakHead"></thead>
+            <tbody id="patrakBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ============================================================
+     PRINT CONTAINER
+     ============================================================ -->
+<div id="printContainer"></div>
+
+<script>
+    // ============================================================
+    // KSHETRA + VIDHAN STRUCTURE
+    // ============================================================
+    const KSHETRA_DATA = [
+        { kshetra: 'શારીરિક વિકાસ', vidhans: ['રમતગમતમાં ભાગ લે છે', 'શારીરિક કસરત કરે છે', 'સ્વચ્છતા જાળવે છે', 'નિયમિત ઊંઘ લે છે', 'સંતુલિત આહાર લે છે'] },
+        { kshetra: 'માનસિક વિકાસ', vidhans: ['જિજ્ઞાસા દર્શાવે છે', 'પ્રશ્નો પૂછે છે', 'નવી વસ્તુ શીખવા ઉત્સુક', 'એકાગ્રતા જાળવે છે', 'સમસ્યા હલ કરે છે'] },
+        { kshetra: 'ભાવનાત્મક વિકાસ', vidhans: ['આત્મવિશ્વાસ દર્શાવે છે', 'ધીરજ રાખે છે', 'ભાવનાઓ વ્યક્ત કરે છે', 'સહાનુભૂતિ દર્શાવે છે', 'ઉત્સાહ જાળવે છે'] },
+        { kshetra: 'સામાજિક વિકાસ', vidhans: ['મિત્રો સાથે સૌહાર્દ', 'જૂથમાં કામ કરે છે', 'સાથીઓને મદદ કરે છે', 'સામૂહિક પ્રવૃત્તિમાં ભાગ', 'નેતૃત્વ દર્શાવે છે'] },
+        { kshetra: 'નૈતિક વિકાસ', vidhans: ['સત્ય બોલે છે', 'પ્રામાણિકતા જાળવે છે', 'શિસ્ત પાળે છે', 'જવાબદારી નિભાવે છે', 'ભૂલો સ્વીકારે છે'] },
+        { kshetra: 'સૌંદર્યાત્મક વિકાસ', vidhans: ['સર્જનાત્મકતા દર્શાવે છે', 'સાંસ્કૃતિક કાર્યક્રમમાં ભાગ', 'કલા-સંગીતમાં રસ', 'સ્વચ્છ પોષાક પહેરે', 'સૌંદર્યની કદર કરે છે'] },
+        { kshetra: 'આરોગ્ય', vidhans: ['વ્યક્તિગત સ્વચ્છતા રાખે', 'શાળા સફાઈમાં ભાગ લે', 'પર્યાવરણની કાળજી', 'સ્વાસ્થ્ય જાળવે છે', 'પ્રાણીઓ પ્રત્યે દયા'] },
+        { kshetra: 'શૈક્ષણિક કૌશલ્ય', vidhans: ['સમયસર આવે છે', 'નિયમિત અભ્યાસ કરે', 'ગૃહકાર્ય પૂર્ણ કરે', 'વાંચનમાં રસ ધરાવે', 'શિક્ષકોને આદર આપે'] }
+    ];
+
+    const ALL_VIDHANS = KSHETRA_DATA.flatMap(k => k.vidhans);
+    const CAT_COUNT = 40;
+
+    // ✅ Dynamic based on Std (from db.js)
+    const patrakBConfig = getPatrakBConfig(currentStd);
+    const MAX_PER_CAT = patrakBConfig.maxPerCat;
+    const MAX_TOTAL = patrakBConfig.maxTotal;
+    const STUDENTS_PER_PAGE = 20;
+
+    let students = [];
+    let schoolInfo = {};
+    let autoSaveTimer = null;
+    let isSaving = false;
+    let currentSem = (urlExam === 'Annual' || urlExam === 'Sem2') ? 'sem2' : 'sem1';
+    let distributions = {};
+
+    document.getElementById('stdBadge').innerText = currentStd;
+
+    // ============================================================
+    // RANDOM DISTRIBUTION
+    // ============================================================
+    function distributeRandomly(total, count, minVal, maxVal) {
+        total = Math.max(0, Math.min(total, count * maxVal));
+        const base = Math.floor(total / count);
+        const values = [];
+        for (let i = 0; i < count; i++) {
+            const variation = Math.floor(Math.random() * 3) - 1;
+            let v = base + variation;
+            v = Math.max(minVal, Math.min(maxVal, v));
+            values.push(v);
+        }
+        let currentSum = values.reduce((a, b) => a + b, 0);
+        let diff = total - currentSum;
+        let safety = 0;
+        while (diff !== 0 && safety < 10000) {
+            safety++;
+            const idx = Math.floor(Math.random() * count);
+            if (diff > 0 && values[idx] < maxVal) { values[idx]++; diff--; }
+            else if (diff < 0 && values[idx] > minVal) { values[idx]--; diff++; }
+        }
+        for (let i = values.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [values[i], values[j]] = [values[j], values[i]];
+        }
+        return values;
+    }
+
+    // ============================================================
+    // LOAD DATA
+    // ============================================================
+    async function loadData() {
+        await openDB();
+        await migrateOldData();
+        students = await getStudents(currentStd);
+        schoolInfo = (await getSchoolInfoDB(currentStd)) || {};
+
+        if (students.length === 0) {
+            document.getElementById('patrakBody').innerHTML = `
+                <tr><td colspan="43" style="padding:30px; color:#888; text-align:center;">
+                    ધોરણ ${currentStd} માં કોઈ વિદ્યાર્થી નથી. પહેલા 
+                    <a href="marks_entry.html?std=${currentStd}">ડેટા એન્ટ્રી</a> કરો.
+                </td></tr>`;
+            return;
+        }
+
+        students.forEach(s => {
+            if (!distributions[s.roll]) {
+                distributions[s.roll] = {
+                    sem1: (s.patrakB1Cats && s.patrakB1Cats.length === CAT_COUNT) ? s.patrakB1Cats.slice() : null,
+                    sem2: (s.patrakB2Cats && s.patrakB2Cats.length === CAT_COUNT) ? s.patrakB2Cats.slice() : null,
+                    total1: parseFloat(s.patrakB1) || 0,
+                    total2: parseFloat(s.patrakB2) || 0
+                };
+            }
+        });
+
+        // ✅ Set active sem button based on URL (only once)
+        if (currentSem === 'sem2') {
+            document.getElementById('btnSem1').classList.remove('active-sem1');
+            document.getElementById('btnSem2').classList.add('active-sem2');
+        }
+
+        renderHeaderInfo();
+        renderTable();
+    }
+
+    // ============================================================
+    // HEADER
+    // ============================================================
+    function renderHeaderInfo() {
+        const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
+        const semLabel = currentSem === 'sem1' ? 'પ્રથમ સત્ર' : 'દ્વિતીય સત્ર';
+        const sessionYear = schoolInfo.sessionYear || "2025-'26";
+        const cls = schoolInfo.class || 'A';
+
+        document.getElementById('topSchoolName').innerText = schoolName;
+        document.getElementById('topExamLabel').innerText = `પત્રક-B : વ્યક્તિત્વ વિકાસ — ${semLabel} (${sessionYear})`;
+        document.getElementById('topDetails').innerText = `ધોરણ : ${currentStd} | વર્ગ : ${cls}`;
+        document.getElementById('titleBadge').innerText = `પત્રક-B : વ્યક્તિત્વ વિકાસ (${MAX_TOTAL}) — ${semLabel}`;
+    }
+
+    // ============================================================
+    // RENDER TABLE
+    // ============================================================
+    function renderTable() {
+        const head = document.getElementById('patrakHead');
+        const body = document.getElementById('patrakBody');
+
+        // HEADER ROW 1: Kshetra
+        let h1 = '<tr class="kshetra-row">';
+        h1 += `<th rowspan="2" class="sticky-col col-roll">રોલ</th>`;
+        h1 += `<th rowspan="2" class="sticky-col sticky-col-2 col-name">વિદ્યાર્થીનું નામ</th>`;
+        KSHETRA_DATA.forEach(k => {
+            h1 += `<th colspan="${k.vidhans.length}">${k.kshetra}</th>`;
+        });
+        h1 += `<th rowspan="2" class="col-total">કુલ<br>(${MAX_TOTAL})</th>`;
+        h1 += '</tr>';
+
+        // HEADER ROW 2: Vidhan
+        let h2 = '<tr class="vidhan-row">';
+        ALL_VIDHANS.forEach(v => {
+            h2 += `<th class="col-vidhan vh-vidhan" title="${v}">${v}</th>`;
+        });
+        h2 += '</tr>';
+
+        head.innerHTML = h1 + h2;
+
+        // BODY
+        let b = '';
+        students.forEach((s) => {
+            const d = distributions[s.roll] || {};
+            const cats = d[currentSem] || new Array(CAT_COUNT).fill(0);
+            const total = cats.reduce((a, b) => a + b, 0);
+
+            b += '<tr data-roll="' + s.roll + '">';
+            b += `<td class="sticky-col col-roll">${s.roll || ''}</td>`;
+            b += `<td class="sticky-col sticky-col-2 col-name name-cell" title="${s.name || ''}">${s.name || ''}</td>`;
+            cats.forEach((v, catIdx) => {
+                const cls = v === 0 ? 'cat-input zero' : 'cat-input';
+                b += `<td class="col-vidhan"><input type="number" class="${cls}" 
+                    min="0" max="${MAX_PER_CAT}" value="${v}" 
+                    data-roll="${s.roll}" data-cat="${catIdx}"
+                    oninput="onCellChange(this)" onblur="onCellBlur(this)"></td>`;
+            });
+            b += `<td class="col-total total-cell-${s.roll}">${total}</td>`;
+            b += '</tr>';
+        });
+        body.innerHTML = b;
+    }
+
+    // ============================================================
+    // CELL CHANGE
+    // ============================================================
+    function onCellChange(input) {
+        let val = parseInt(input.value, 10);
+        if (isNaN(val) || val < 0) val = 0;
+        if (val > MAX_PER_CAT) { val = MAX_PER_CAT; input.value = val; }
+
+        const roll = input.dataset.roll;
+        const catIdx = parseInt(input.dataset.cat, 10);
+        if (!distributions[roll]) distributions[roll] = { sem1: null, sem2: null, total1: 0, total2: 0 };
+        if (!distributions[roll][currentSem] || distributions[roll][currentSem].length !== CAT_COUNT) {
+            distributions[roll][currentSem] = new Array(CAT_COUNT).fill(0);
+        }
+        distributions[roll][currentSem][catIdx] = val;
+        input.className = 'cat-input ' + (val === 0 ? 'zero' : '');
+
+        const total = distributions[roll][currentSem].reduce((a, b) => a + b, 0);
+        const totalCell = document.querySelector(`.total-cell-${roll}`);
+        if (totalCell) totalCell.innerText = total;
+
+        scheduleAutoSave();
+    }
+
+    function onCellBlur(input) {
+        if (input.value === '') {
+            input.value = 0;
+            input.className = 'cat-input zero';
+            onCellChange(input);
+        }
+    }
+
+    // ============================================================
+    // SWITCH SEM
+    // ============================================================
+    function switchSem(sem) {
+        currentSem = sem;
+        document.getElementById('btnSem1').classList.toggle('active-sem1', sem === 'sem1');
+        document.getElementById('btnSem2').classList.toggle('active-sem2', sem === 'sem2');
+        renderHeaderInfo();
+        renderTable();
+    }
+
+    // ============================================================
+    // DISTRIBUTE CURRENT SEM
+    // ============================================================
+    function distributeCurrentSem() {
+        if (students.length === 0) return;
+        const semLabel = currentSem === 'sem1' ? 'પ્રથમ સત્ર' : 'દ્વિતીય સત્ર';
+        const userInput = prompt(
+            `${semLabel} માટે કુલ ગુણ (0-${MAX_TOTAL}) ભરો.\n\nખાલી રાખો તો દરેક વિદ્યાર્થીના marks_entry વાળા ગુણ વપરાશે.`,
+            ''
+        );
+
+        let count = 0;
+        students.forEach(s => {
+            const d = distributions[s.roll];
+            if (!d) return;
+            let target = 0;
+            if (userInput !== null && userInput.trim() !== '') {
+                target = Math.max(0, Math.min(MAX_TOTAL, parseInt(userInput, 10) || 0));
+            } else {
+                target = currentSem === 'sem1' ? (d.total1 || 0) : (d.total2 || 0);
+            }
+            if (target > 0) {
+                d[currentSem] = distributeRandomly(target, CAT_COUNT, 0, MAX_PER_CAT);
+                if (currentSem === 'sem1') d.total1 = target;
+                else d.total2 = target;
+                count++;
+            }
+        });
+        renderTable();
+        scheduleAutoSave();
+        alert(`✅ ${count} વિદ્યાર્થી માટે ${semLabel} નું distribution થયું!`);
+    }
+
+    // ============================================================
+    // AUTO-DISTRIBUTE ALL
+    // ============================================================
+    function autoDistributeAll() {
+        if (students.length === 0) return;
+        const userInput = prompt(
+            `બંને સત્ર માટે કુલ ગુણ (0-${MAX_TOTAL}) ભરો.\n\nખાલી રાખો તો દરેક વિદ્યાર્થીના ગુણ વપરાશે.`,
+            ''
+        );
+
+        let count = 0;
+        students.forEach(s => {
+            const d = distributions[s.roll];
+            if (!d) return;
+            let target = 0;
+            if (userInput !== null && userInput.trim() !== '') {
+                target = Math.max(0, Math.min(MAX_TOTAL, parseInt(userInput, 10) || 0));
+            }
+            const t1 = target || d.total1;
+            if (t1 > 0) { d.sem1 = distributeRandomly(t1, CAT_COUNT, 0, MAX_PER_CAT); d.total1 = t1; count++; }
+            const t2 = target || d.total2;
+            if (t2 > 0) { d.sem2 = distributeRandomly(t2, CAT_COUNT, 0, MAX_PER_CAT); d.total2 = t2; count++; }
+        });
+        renderTable();
+        scheduleAutoSave();
+        alert(`✅ ${count} વિદ્યાર્થી-સત્ર માટે distribution થયું!`);
+    }
+
+    // ============================================================
+    // CLEAR
+    // ============================================================
+    function clearCurrentSem() {
+        const semLabel = currentSem === 'sem1' ? 'પ્રથમ સત્ર' : 'દ્વિતીય સત્ર';
+        if (!confirm(`${semLabel} નું બધું distribution સાફ કરવું છે?`)) return;
+        students.forEach(s => {
+            const d = distributions[s.roll];
+            if (d) d[currentSem] = new Array(CAT_COUNT).fill(0);
+        });
+        renderTable();
+        scheduleAutoSave();
+    }
+
+    // ============================================================
+    // SUMMARY
+    // ============================================================
+    function showSummary() {
+        let distCount = 0;
+        let totalSum = 0;
+        students.forEach(s => {
+            const d = distributions[s.roll];
+            if (d && d[currentSem] && d[currentSem].some(v => v > 0)) {
+                distCount++;
+                totalSum += d[currentSem].reduce((a, b) => a + b, 0);
+            }
+        });
+        const semLabel = currentSem === 'sem1' ? 'પ્રથમ સત્ર' : 'દ્વિતીય સત્ર';
+        alert(
+            `📊 Summary — ${semLabel}\n\n` +
+            `કુલ વિદ્યાર્થી: ${students.length}\n` +
+            `Distribute થયેલા: ${distCount}\n` +
+            `બાકી: ${students.length - distCount}\n` +
+            `કુલ ગુણ સરવાળો: ${totalSum}`
+        );
+    }
+
+    // ============================================================
+    // AUTO-SAVE
+    // ============================================================
+    function scheduleAutoSave() {
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        const statusEl = document.getElementById('saveStatus');
+        statusEl.className = 'save-status saving';
+        statusEl.innerText = '⏳ સેવ થાય છે...';
+        autoSaveTimer = setTimeout(() => saveData(false), 2000);
+    }
+
+    async function saveData(manual) {
+        if (isSaving) return;
+        isSaving = true;
+        const statusEl = document.getElementById('saveStatus');
+        try {
+            students.forEach(s => {
+                const d = distributions[s.roll];
+                if (!d) return;
+                if (d.sem1 && d.sem1.length === CAT_COUNT) {
+                    s.patrakB1Cats = d.sem1.slice();
+                    s.patrakB1 = d.sem1.reduce((a, b) => a + b, 0);
+                }
+                if (d.sem2 && d.sem2.length === CAT_COUNT) {
+                    s.patrakB2Cats = d.sem2.slice();
+                    s.patrakB2 = d.sem2.reduce((a, b) => a + b, 0);
+                }
+            });
+            await saveStudents(students, currentStd);
+            statusEl.className = 'save-status saved';
+            statusEl.innerText = '✅ સેવ થયું';
+            if (manual) statusEl.innerText = `✅ ${students.length} વિદ્યાર્થી સેવ!`;
+            setTimeout(() => {
+                statusEl.className = 'save-status';
+                statusEl.innerText = '💾 ઓટો-સેવ';
+            }, 3000);
+        } catch (err) {
+            console.error(err);
+            statusEl.className = 'save-status';
+            statusEl.style.background = '#FFCDD2';
+            statusEl.style.color = '#B71C1C';
+            statusEl.innerText = '❌ સેવ ભૂલ';
+        } finally {
+            isSaving = false;
+        }
+    }
+
+    // ============================================================
+    // NAME FONT AUTO-SHRINK (for print)
+    // ============================================================
+    function getFittedNameFontSize(name) {
+        const len = (name || '').length;
+        if (len <= 20) return 11;
+        if (len <= 25) return 10.5;
+        if (len <= 30) return 10;
+        if (len <= 35) return 9.5;
+        if (len <= 40) return 9;
+        return 8.5;
+    }
+
+    // ============================================================
+    // PRINT
+    // ============================================================
+    function showPrint() {
+        if (students.length === 0) { alert('કોઈ ડેટા નથી.'); return; }
+        const hasDist = students.some(s => {
+            const d = distributions[s.roll];
+            return d && ((d.sem1 && d.sem1.some(v => v > 0)) || (d.sem2 && d.sem2.some(v => v > 0)));
+        });
+        if (!hasDist) { alert('પહેલા Distribute કરો.'); return; }
+
+        const container = document.getElementById('printContainer');
+        container.innerHTML = '';
+        const chunks = [];
+        for (let i = 0; i < students.length; i += STUDENTS_PER_PAGE) {
+            chunks.push(students.slice(i, i + STUDENTS_PER_PAGE));
+        }
+        const totalPages = chunks.length * 2;
+        let pageNum = 1;
+        chunks.forEach(chunk => {
+            container.innerHTML += buildPrintPage(chunk, 'sem1', pageNum++, totalPages, 'પ્રથમ સત્ર');
+            container.innerHTML += buildPrintPage(chunk, 'sem2', pageNum++, totalPages, 'દ્વિતીય સત્ર');
+        });
+
+        document.querySelector('.top-bar').style.display = 'none';
+        document.querySelector('.paper').style.display = 'none';
+        container.style.display = 'block';
+        setTimeout(() => {
+            window.print();
+            setTimeout(() => {
+                container.style.display = 'none';
+                document.querySelector('.top-bar').style.display = 'flex';
+                document.querySelector('.paper').style.display = 'block';
+            }, 500);
+        }, 300);
+    }
+
+    function buildPrintPage(chunk, sem, pageNum, totalPages, semLabel) {
+        const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
+        const sessionYear = schoolInfo.sessionYear || "2025-'26";
+        const cls = schoolInfo.class || 'A';
+        const teacherSign = schoolInfo.teacherSign ? `<img src="${schoolInfo.teacherSign}">` : `<div class="no-sign"></div>`;
+        const principalSign = schoolInfo.principalSign ? `<img src="${schoolInfo.principalSign}">` : `<div class="no-sign"></div>`;
+
+        // Kshetra header row
+        let kshetraRow = '<tr class="kshetra-row">';
+        kshetraRow += `<th rowspan="2" class="col-roll">રોલ</th>`;
+        kshetraRow += `<th rowspan="2" class="col-name">વિદ્યાર્થીનું નામ</th>`;
+        KSHETRA_DATA.forEach(k => {
+            kshetraRow += `<th colspan="${k.vidhans.length}">${k.kshetra}</th>`;
+        });
+        kshetraRow += `<th rowspan="2" class="col-total">કુલ<br>(${MAX_TOTAL})</th>`;
+        kshetraRow += '</tr>';
+
+        // Vidhan header row
+        let vidhanRow = '<tr class="vidhan-row">';
+        ALL_VIDHANS.forEach(v => {
+            vidhanRow += `<th class="col-vidhan vh-vidhan" title="${v}">${v}</th>`;
+        });
+        vidhanRow += '</tr>';
+
+        // Body
+        let bodyRows = '';
+        chunk.forEach((s) => {
+            const d = distributions[s.roll] || {};
+            const cats = (d[sem] && d[sem].length === CAT_COUNT) ? d[sem] : new Array(CAT_COUNT).fill(0);
+            const total = cats.reduce((a, b) => a + b, 0);
+            const nameFontSize = getFittedNameFontSize(s.name);
+            bodyRows += '<tr>';
+            bodyRows += `<td>${s.roll || ''}</td>`;
+            bodyRows += `<td class="col-name" style="font-size:${nameFontSize}px;" title="${s.name || ''}">${s.name || ''}</td>`;
+            cats.forEach(v => { bodyRows += `<td>${v}</td>`; });
+            bodyRows += `<td class="col-total">${total}</td>`;
+            bodyRows += '</tr>';
+        });
+
+        // Single-line header
+        const headerLine = `
+            <span class="h-school">${schoolName}</span>
+            <span class="h-sep">|</span>
+            <span class="h-info">પત્રક-B : વ્યક્તિત્વ વિકાસ — ${semLabel} (${sessionYear})</span>
+            <span class="h-sep">|</span>
+            <span class="h-info">ધોરણ : ${currentStd} | વર્ગ : ${cls}</span>
+        `;
+
+        return `
+            <div class="print-page">
+                <div class="paper-header">${headerLine}</div>
+                <div class="table-container">
+                    <table class="patrak-b-print">
+                        <thead>${kshetraRow}${vidhanRow}</thead>
+                        <tbody>${bodyRows}</tbody>
+                    </table>
+                </div>
+                <div class="print-signatures">
+                    <div class="sig-box">${teacherSign}<div class="line">વર્ગ શિક્ષકની સહી</div></div>
+                    <div class="sig-box">${principalSign}<div class="line">આચાર્યની સહી</div></div>
+                </div>
+                <div class="page-num">પેજ ${pageNum} / ${totalPages}</div>
+            </div>
+        `;
+    }
+
+    window.onload = loadData;
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>શાળા રિઝલ્ટ સોફ્ટવેર</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans Gujarati', sans-serif; background: linear-gradient(135deg, #1A237E 0%, #283593 50%, #1A237E 100%); min-height: 100vh; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; }
+        .header { text-align: center; margin-bottom: 35px; }
+        .header h1 { font-size: 42px; color: #FFD700; font-weight: 700; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .header h2 { font-size: 20px; color: #FFF; font-weight: 600; }
+        .header .divider { width: 120px; height: 4px; background: #FFD700; margin: 15px auto 0 auto; border-radius: 2px; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; max-width: 1100px; width: 100%; background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px; border: 2px solid #FFD700; }
+        .std-card { background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%); border: 2px solid #FFA000; border-radius: 12px; padding: 20px 15px; text-align: center; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+        .std-card:hover:not(.disabled) { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(255,215,0,0.5); border-color: #1A237E; }
+        .std-card:active:not(.disabled) { transform: translateY(-2px); }
+        .std-card .std-number { font-size: 45px; font-weight: 700; color: #1A237E; line-height: 1.1; margin-bottom: 5px; }
+        .std-card .std-label { font-size: 16px; font-weight: 700; color: #B71C1C; }
+        .std-card .std-status { font-size: 12px; font-weight: 600; margin-top: 6px; padding: 3px 10px; border-radius: 12px; display: inline-block; }
+        .std-card.active .std-status { background: #C8E6C9; color: #1B5E20; }
+        .std-card.disabled { opacity: 0.55; cursor: not-allowed; filter: grayscale(0.8); background: #E0E0E0; }
+        .std-card.disabled .std-status { background: #FFCDD2; color: #B71C1C; }
+        .std-card.disabled .std-number { color: #757575; }
+        .std-card .icon { font-size: 32px; margin-bottom: 8px; }
+        .footer { margin-top: 40px; text-align: center; color: #FFF; font-size: 13px; opacity: 0.85; }
+        .footer strong { color: #FFD700; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 28px; }
+            .grid-container { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 15px; }
+            .std-card .std-number { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>📚 શાળા રિઝલ્ટ સોફ્ટવેર</h1>
+    <h2>ધોરણ પસંદ કરો</h2>
+    <div class="divider"></div>
+</div>
+
+<div class="grid-container">
+    <div class="std-card disabled" onclick="comingSoon('બાલવાટિકા')">
+        <div class="icon">🧸</div>
+        <div class="std-number" style="font-size:24px;">બાલવાટિકા</div>
+        <div class="std-label">Balvatika</div>
+        <div class="std-status">Coming Soon</div>
+    </div>
+    <div class="std-card disabled" onclick="comingSoon('ધોરણ 1')">
+        <div class="icon">1️⃣</div>
+        <div class="std-number">1</div>
+        <div class="std-label">ધોરણ ૧</div>
+        <div class="std-status">Coming Soon</div>
+    </div>
+    <div class="std-card disabled" onclick="comingSoon('ધોરણ 2')">
+        <div class="icon">2️⃣</div>
+        <div class="std-number">2</div>
+        <div class="std-label">ધોરણ ૨</div>
+        <div class="std-status">Coming Soon</div>
+    </div>
+    <div class="std-card active" onclick="openStd('3')">
+        <div class="icon">3️⃣</div>
+        <div class="std-number">3</div>
+        <div class="std-label">ધોરણ ૩</div>
+        <div class="std-status">✅ Active</div>
+    </div>
+    <div class="std-card active" onclick="openStd('4')">
+        <div class="icon">4️⃣</div>
+        <div class="std-number">4</div>
+        <div class="std-label">ધોરણ ૪</div>
+        <div class="std-status">✅ Active</div>
+    </div>    <div class="std-card active" onclick="openStd('5')">
+        <div class="icon">5️⃣</div>
+        <div class="std-number">5</div>
+        <div class="std-label">ધોરણ ૫</div>
+        <div class="std-status">✅ Active</div>
+    </div>
+    <div class="std-card active" onclick="openStd('6')">
+        <div class="icon">6️⃣</div>
+        <div class="std-number">6</div>
+        <div class="std-label">ધોરણ ૬</div>
+        <div class="std-status">✅ Active</div>
+    </div>
+    <div class="std-card active" onclick="openStd('7')">
+        <div class="icon">7️⃣</div>
+        <div class="std-number">7</div>
+        <div class="std-label">ધોરણ ૭</div>
+        <div class="std-status">✅ Active</div>
+    </div>
+    <div class="std-card active" onclick="openStd('8')">
+        <div class="icon">8️⃣</div>
+        <div class="std-number">8</div>
+        <div class="std-label">ધોરણ ૮</div>
+        <div class="std-status">✅ Active</div>
+    </div>
+</div>
+
+<div class="footer">
+    Developed by <strong>પરબતભાઈ કરમુર</strong> | શ્રી કોરાડા વાડી પ્રા. શાળા<br>
+    📞 <strong>95863 11704</strong>
+</div>
+
+<script>
+    function openStd(std) { window.location.href = 'home.html?std=' + std; }
+    function comingSoon(name) { alert(name + ' — ટૂંક સમયમાં ઉમેરાશે! 🚧'); }
+</script>
+</body>
+</html>
