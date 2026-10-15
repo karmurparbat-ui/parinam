@@ -54,12 +54,15 @@
         <div class="std-label">ધોરણ ૧</div>
         <div class="std-status">Coming Soon</div>
     </div>
-    <div class="std-card disabled" onclick="comingSoon('ધોરણ 2')">
+
+    <!-- ✅ ધોરણ ૨ — હવે ACTIVE (અલગ home_std2.html) -->
+    <div class="std-card active" onclick="openStd2()">
         <div class="icon">2️⃣</div>
         <div class="std-number">2</div>
         <div class="std-label">ધોરણ ૨</div>
-        <div class="std-status">Coming Soon</div>
+        <div class="std-status">✅ Active</div>
     </div>
+
     <div class="std-card active" onclick="openStd('3')">
         <div class="icon">3️⃣</div>
         <div class="std-number">3</div>
@@ -71,7 +74,8 @@
         <div class="std-number">4</div>
         <div class="std-label">ધોરણ ૪</div>
         <div class="std-status">✅ Active</div>
-    </div>    <div class="std-card active" onclick="openStd('5')">
+    </div>
+    <div class="std-card active" onclick="openStd('5')">
         <div class="icon">5️⃣</div>
         <div class="std-number">5</div>
         <div class="std-label">ધોરણ ૫</div>
@@ -103,7 +107,12 @@
 </div>
 
 <script>
+    // Std 3-8 → home.html (જૂનું, અકબંધ)
     function openStd(std) { window.location.href = 'home.html?std=' + std; }
+
+    // Std 2 → home_std2.html (નવું, અલગ સંપૂર્ણ)
+    function openStd2() { window.location.href = 'home_std2.html'; }
+
     function comingSoon(name) { alert(name + ' — ટૂંક સમયમાં ઉમેરાશે! 🚧'); }
 </script>
 </body>

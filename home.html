@@ -171,17 +171,13 @@
             padding: 18px;
             border-radius: 18px;
             position: relative;
-            transition: transform 0.3s ease;
-        }
-        .col:hover {
-            transform: translateY(-3px);
         }
         
         /* Column 1 — Orange/Amber theme */
         .col-1 {
             flex: 1.2;
-            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
-            border: 2px solid #FF9800;
+            background: #fff;
+            border: 1px solid #f0d0a0;
             box-shadow: 
                 0 10px 30px rgba(255, 152, 0, 0.25),
                 0 4px 12px rgba(0, 0, 0, 0.08),
@@ -191,8 +187,8 @@
         /* Column 2 — Purple theme (Sem 1) */
         .col-2 {
             flex: 1.1;
-            background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
-            border: 2px solid #9C27B0;
+            background: #fff;
+            border: 1px solid #e4d5e9;
             box-shadow: 
                 0 10px 30px rgba(156, 39, 176, 0.25),
                 0 4px 12px rgba(0, 0, 0, 0.08),
@@ -202,8 +198,8 @@
         /* Column 3 — Red theme (Annual) */
         .col-3 {
             flex: 1.1;
-            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
-            border: 2px solid #E53935;
+            background: #fff;
+            border: 1px solid #efd5d5;
             box-shadow: 
                 0 10px 30px rgba(229, 57, 53, 0.25),
                 0 4px 12px rgba(0, 0, 0, 0.08),
@@ -213,54 +209,24 @@
         /* ============================================================
            SECTION HEADERS
            ============================================================ */
-        .section-header {
+        .section-header, .sub-header {
             text-align: center;
             font-weight: 800;
-            font-size: 18px;
-            padding: 12px 8px;
-            border-radius: 12px;
-            color: #fff;
-            background: linear-gradient(135deg, #FF6F00, #FF9800);
-            box-shadow: 
-                0 6px 16px rgba(255, 111, 0, 0.4),
-                0 -2px 6px rgba(0, 0, 0, 0.15) inset;
-            letter-spacing: 0.5px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
+            font-size: 20px;
+            line-height: 1.6;
+            padding: 0 0 14px;
+            margin: 0 0 6px;
+            color: #8B4513;
+            border-bottom: 3px solid #f0d0a0;
+            cursor: default;
         }
-        .section-header::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.3) 50%, transparent 60%);
-            animation: shine 4s infinite;
-        }
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-        
         .sub-header {
-            font-size: 15px;
-            font-weight: 800;
-            text-align: center;
-            padding: 10px;
-            border-radius: 10px;
-            color: #fff;
-            background: linear-gradient(135deg, #7B1FA2, #9C27B0);
-            box-shadow: 
-                0 5px 14px rgba(123, 31, 162, 0.35),
-                0 -2px 6px rgba(0, 0, 0, 0.15) inset;
-            letter-spacing: 0.3px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            color: #6A287C;
+            border-bottom-color: #e4d5e9;
         }
         .sub-header.red-theme {
-            background: linear-gradient(135deg, #C62828, #E53935);
-            box-shadow: 
-                0 5px 14px rgba(198, 40, 40, 0.35),
-                0 -2px 6px rgba(0, 0, 0, 0.15) inset;
+            color: #A02D2D;
+            border-bottom-color: #efd5d5;
         }
         
         /* ============================================================
@@ -559,12 +525,50 @@
         }
         
         @media (max-width: 500px) {
-            .dashboard-container { padding: 12px; border-radius: 18px; }
-            .top-nav { padding: 12px; }
-            .top-nav .std-title { font-size: 15px; }
+            body { padding: 8px; }
+            .dashboard-container {
+                min-height: calc(100vh - 16px);
+                padding: 10px;
+                gap: 12px;
+                border-radius: 18px;
+            }
+            .top-nav {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
+                gap: 10px;
+            }
+            .top-nav .std-title {
+                justify-content: center;
+                font-size: 15px;
+                line-height: 1.5;
+                text-align: center;
+            }
             .top-nav .std-title .icon-big { font-size: 22px; }
-            .section-header { font-size: 15px; padding: 10px 6px; }
-            .btn { font-size: 13px; padding: 12px 8px; }
+            .nav-btn { width: 100%; min-height: 44px; }
+            .columns { gap: 12px; }
+            .col { gap: 10px; padding: 14px; }
+            .section-header, .sub-header {
+                font-size: 18px;
+                line-height: 1.5;
+                padding: 0 0 12px;
+            }
+            .btn {
+                min-height: 44px;
+                font-size: 13px;
+                line-height: 1.5;
+                padding: 12px 8px;
+                overflow-wrap: anywhere;
+            }
+            .btn-main-action { padding: 16px 12px; }
+            .contact-info .c-school { overflow-wrap: anywhere; }
+        }
+
+        @media (max-width: 350px) {
+            body { padding: 5px; }
+            .dashboard-container { padding: 8px; }
+            .top-nav .std-title { font-size: 14px; }
+            .col { padding: 12px; }
         }
     </style>
 </head>
@@ -590,7 +594,7 @@
 
         <!-- ============ COLUMN 1: DATA ENTRY ============ -->
         <div class="col col-1">
-            <div class="section-header">⬇ ડેટા એન્ટ્રી વિભાગ</div>
+            <h2 class="section-header">⬇ ડેટા એન્ટ્રી વિભાગ</h2>
 
             <button class="btn btn-orange" onclick="go('school_info.html')">
                 🏫 શાળાકીય માહિતી
@@ -610,7 +614,10 @@
 
         <!-- ============ COLUMN 2: પ્રથમ સત્ર ============ -->
         <div class="col col-2">
-            <div class="sub-header">📖 પ્રથમ સત્ર</div>
+            <h2 class="sub-header">📖 પ્રથમ સત્ર</h2>
+            <button class="btn btn-purple" onclick="goExam('covers.html','Sem1')">
+                🎨 પ્રથમ સત્ર કવર પેજ
+            </button>
 
             <button class="btn btn-purple" onclick="goExam('result.html','Sem1')">
                 📊 પ્રથમ સત્ર પરિણામ (પત્રક C)
@@ -618,6 +625,10 @@
             <button class="btn btn-purple" onclick="goExam('marksheet.html','Sem1')">
                 📜 પ્રથમ સત્ર માર્કશીટ
             </button>
+			<button class="btn btn-purple" onclick="goExam('patrak_f.html','Sem1')" style="background: linear-gradient(135deg, #2E7D32, #43A047);">
+ 		   📋 પ્રગતિ પત્રક (પત્રક F)
+			</button>
+
             <button class="btn btn-purple" onclick="goExam('patrak_c_front.html','Sem1')" style="background: linear-gradient(135deg, #1A237E, #283593); border-color: #FFD700;">
             📋 પત્રક-C front
             </button>
@@ -638,15 +649,20 @@
 
         <!-- ============ COLUMN 3: વાર્ષિક ============ -->
         <div class="col col-3">
-            <div class="sub-header red-theme">🎓 વાર્ષિક</div>
+            <h2 class="sub-header red-theme">🎓 વાર્ષિક</h2>
 
+            <button class="btn btn-red" onclick="goExam('covers.html','Sem2')">
+                🎨 દ્વિતીય સત્ર કવર પેજ
+            </button>
             <button class="btn btn-red" onclick="goExam('result.html','Annual')">
                 📊 વાર્ષિક પરિણામ (પત્રક C)
             </button>
             <button class="btn btn-red" onclick="goExam('marksheet.html','Annual')">
                 📜 વાર્ષિક માર્કશીટ
             </button>
-
+			<button class="btn btn-red" onclick="goExam('patrak_f.html','Annual')" style="background: linear-gradient(135deg, #2E7D32, #43A047);">
+    		📋 પ્રગતિ પત્રક (પત્રક F)
+			</button>
             <button class="btn btn-red" onclick="goExam('patrak_c_front.html','Annual')" style="background: linear-gradient(135deg, #1A237E, #283593); border-color: #FFD700;">
             📋 પત્રક-C front page
             </button>

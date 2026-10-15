@@ -6,8 +6,10 @@
     <title>શાળાકીય માહિતી</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="db.js"></script>
+    <script src="std2_db.js"></script>
     <script>
         const currentStd = getUrlParam('std', '8');
+        const isStd2 = String(currentStd) === '2';
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,7 +62,9 @@
             <tr><td class="label-col">ધોરણ :</td><td class="value-col"><input type="text" id="std" value="8"></td></tr>
             <tr><td class="label-col">વર્ગ :</td><td class="value-col"><input type="text" id="class" value="A"></td></tr>
             <tr class="highlight-row"><td class="label-col">શાળાનો ડાયસ કોડ :</td><td class="value-col"><input type="text" id="diceCode" value="24290201802"></td></tr>
-            <tr><td class="label-col">શાળાનું સરનામું :</td><td class="value-col"><input type="text" id="address" value="ગું. કોરાડા, તા.ઢ્રારકા, જિ. દેવ. ઢ્રારકા"></td></tr>
+            <tr><td class="label-col">મુકામ :</td><td class="value-col"><input type="text" id="village" value="કોરાડા"></td></tr>
+            <tr><td class="label-col">તાલુકો :</td><td class="value-col"><input type="text" id="taluka" value="ઢ્રારકા"></td></tr>
+            <tr><td class="label-col">જિલ્લો :</td><td class="value-col"><input type="text" id="district" value="દેવ. ઢ્રારકા"></td></tr>
             <tr><td class="label-col">નગર/જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ :</td><td class="value-col"><input type="text" id="educationCommittee" value="દેવ. ધ્રારકા જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ"></td></tr>
             <tr><td class="label-col">પે. સેન્ટર શાળા :</td><td class="value-col"><input type="text" id="centerSchool" value="શ્રી ઢ્રારકા તાલુકા શાળા -૨"></td></tr>
             <tr><td class="label-col">સી.આર.સી. :</td><td class="value-col"><input type="text" id="crc" value="બરડિયા"></td></tr>
@@ -73,7 +77,7 @@
     </div>
     <div class="sidebar">
         <div class="std-badge">ધોરણ : <span id="stdSide">-</span></div>
-        <button class="btn btn-home" onclick="window.location.href='home.html?std=' + currentStd">Home</button>
+        <button class="btn btn-home" onclick="goHome()">Home</button>
         <button class="btn btn-save" onclick="saveSchoolInfo()">માહિતી સેવ કરો</button>
     </div>
 </div>
@@ -82,6 +86,12 @@
     let uploadedImages = { schoolLogo: '', principalSign: '', teacherSign: '' };
 
     document.getElementById('stdSide').innerText = currentStd;
+
+    // ✅ Home button — Std 2 હોય તો home_std2, બાકીના home.html
+    function goHome() {
+        if (isStd2) window.location.href = 'home_std2.html';
+        else window.location.href = 'home.html?std=' + currentStd;
+    }
 
     function compressImage(file, maxWidth, maxHeight, quality, callback) {
         const reader = new FileReader();
@@ -113,17 +123,31 @@
         });
     }
 
+    // ✅ Load — Std 2 હોય તો s2GetSchool, બાકીના getSchoolInfoDB
     window.onload = async function() {
-        await openDB();
-        const data = await getSchoolInfoDB(currentStd);
+        let data;
+        if (isStd2) {
+            await openStd2DB();
+            data = await s2GetSchool();
+        } else {
+            await openDB();
+            data = await getSchoolInfoDB(currentStd);
+        }
+
         if (data) {
+            const addressParts = getSchoolAddressParts({
+                ...data,
+                address: data.address || 'ગું. કોરાડા, તા.ઢ્રારકા, જિ. દેવ. ઢ્રારકા'
+            });
             document.getElementById('schoolName').value = data.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
             document.getElementById('sessionYear').value = data.sessionYear || "2025-'26";
             document.getElementById('examType').value = data.examType || "Annual";
             document.getElementById('std').value = data.std || currentStd;
             document.getElementById('class').value = data.class || 'A';
             document.getElementById('diceCode').value = data.diceCode || '24290201802';
-            document.getElementById('address').value = data.address || 'ગું. કોરાડા, તા.ઢ્રારકા, જિ. દેવ. ઢ્રારકા';
+            document.getElementById('village').value = addressParts.village;
+            document.getElementById('taluka').value = addressParts.taluka;
+            document.getElementById('district').value = addressParts.district;
             document.getElementById('educationCommittee').value = data.educationCommittee || 'દેવ. ધ્રારકા જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ';
             document.getElementById('centerSchool').value = data.centerSchool || 'શ્રી ઢ્રારકા તાલુકા શાળા -૨';
             document.getElementById('crc').value = data.crc || 'બરડિયા';
@@ -133,14 +157,15 @@
             document.getElementById('exam2Date').value = data.exam2Date || '2026-05-02';
             document.getElementById('totalDays').value = data.totalDays || '232';
 
-            if (data.schoolLogo) { uploadedImages.schoolLogo = data.schoolLogo; document.getElementById('previewLogo').src = data.schoolLogo; document.getElementById('previewLogo').style.display = 'block'; }
-            if (data.principalSign) { uploadedImages.principalSign = data.principalSign; document.getElementById('previewPrincipal').src = data.principalSign; document.getElementById('previewPrincipal').style.display = 'block'; }
-            if (data.teacherSign) { uploadedImages.teacherSign = data.teacherSign; document.getElementById('previewTeacher').src = data.teacherSign; document.getElementById('previewTeacher').style.display = 'block'; }
+            if (data.schoolLogo)     { uploadedImages.schoolLogo = data.schoolLogo;         document.getElementById('previewLogo').src = data.schoolLogo;             document.getElementById('previewLogo').style.display = 'block'; }
+            if (data.principalSign)  { uploadedImages.principalSign = data.principalSign;   document.getElementById('previewPrincipal').src = data.principalSign;     document.getElementById('previewPrincipal').style.display = 'block'; }
+            if (data.teacherSign)    { uploadedImages.teacherSign = data.teacherSign;       document.getElementById('previewTeacher').src = data.teacherSign;         document.getElementById('previewTeacher').style.display = 'block'; }
         } else {
             document.getElementById('std').value = currentStd;
         }
     };
 
+    // ✅ Save — Std 2 હોય તો s2SaveSchool, બાકીના saveSchoolInfoDB
     async function saveSchoolInfo() {
         const schoolData = {
             schoolName: document.getElementById('schoolName').value,
@@ -149,7 +174,14 @@
             std: document.getElementById('std').value,
             class: document.getElementById('class').value,
             diceCode: document.getElementById('diceCode').value,
-            address: document.getElementById('address').value,
+            village: document.getElementById('village').value.trim(),
+            taluka: document.getElementById('taluka').value.trim(),
+            district: document.getElementById('district').value.trim(),
+            address: formatSchoolAddress({
+                village: document.getElementById('village').value.trim(),
+                taluka: document.getElementById('taluka').value.trim(),
+                district: document.getElementById('district').value.trim()
+            }),
             educationCommittee: document.getElementById('educationCommittee').value,
             centerSchool: document.getElementById('centerSchool').value,
             crc: document.getElementById('crc').value,
@@ -162,7 +194,13 @@
             principalSign: uploadedImages.principalSign,
             teacherSign: uploadedImages.teacherSign
         };
-        await saveSchoolInfoDB(schoolData, currentStd);
+
+        if (isStd2) {
+            await s2SaveSchool(schoolData);
+        } else {
+            await saveSchoolInfoDB(schoolData, currentStd);
+        }
+
         alert('શાળાકીય માહિતી સફળતાપૂર્વક સેવ થઈ ગઈ છે!');
     }
 </script>

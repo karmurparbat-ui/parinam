@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પ્રગતિ પત્રક (પત્રક F) — Landscape 2/પેજ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Rasa:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="db.js"></script>
+    <script>
+        const currentStd = getUrlParam('std', '8');
+        const urlExam = getUrlParam('exam', 'Annual');
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Rasa', sans-serif;
+            background-color: #d0d0d0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .main-container { display: flex; gap: 15px; width: 100%; max-width: 1400px; }
+        .pages-area { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        
+        /* ============ CONTROL PANEL ============ */
+        .control-panel {
+            width: 240px; display: flex; flex-direction: column; gap: 8px;
+            flex-shrink: 0; position: sticky; top: 15px; align-self: flex-start;
+        }
+        .btn {
+            padding: 10px; border: 1px solid #000; border-radius: 5px;
+            font-family: 'Rasa', sans-serif; font-size: 14px; font-weight: 700;
+            cursor: pointer; text-align: center; box-shadow: 2px 2px 0px rgba(0,0,0,0.4);
+            transition: all 0.1s ease;
+        }
+        .btn:active { transform: translate(2px, 2px); box-shadow: none; }
+        .btn-black { background-color: #000; color: #fff; }
+        .btn-orange { background-color: #F26C23; color: #fff; }
+        .btn-blue { background-color: #2D72B8; color: #fff; }
+        .btn-green { background-color: #4B854B; color: #fff; }
+        .btn-white { background-color: #fff; color: #000; }
+        .nav-buttons { display: flex; gap: 5px; }
+        .nav-buttons .btn { flex: 1; padding: 8px 2px; font-size: 14px; }
+        .small-btn { padding: 6px; font-size: 12px; border-radius: 3px; }
+        .std-badge {
+            background: #1A237E; color: #FFD700; padding: 8px 12px;
+            border-radius: 5px; font-weight: 700; font-size: 15px; text-align: center;
+        }
+        .exam-info {
+            background-color: #FFF2CC; padding: 8px; border-radius: 4px;
+            font-size: 13px; text-align: center; font-weight: 700;
+            border: 1px solid #F57F17; color: #D84315;
+        }
+        .pair-info {
+            background: #E8EAF6; padding: 6px; border-radius: 4px;
+            font-size: 12px; text-align: center; font-weight: 700;
+            color: #1A237E; border: 1px solid #3F51B5;
+        }
+        
+        /* ============ A4 LANDSCAPE ============ */
+        .a4-page {
+            width: 297mm; height: 210mm; background: #fff;
+            position: relative; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            overflow: hidden; display: flex; flex-direction: row;
+            border: 1px solid #999;
+        }
+        
+        /* ============ HALF PAGE with SAFE ZONE ============ */
+        .half-page {
+            flex: 1;
+            position: relative;
+            /* ✅ Frame image as background, content gets MORE padding */
+            padding: 12mm 10mm 12mm 10mm;   /* ⬆️ વધુ padding — frame ના corner થી દૂર */
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            background-color: #fff;
+            background-image: url('frame.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        /* ============ VERTICAL CUT LINE ============ */
+        .cut-line {
+            width: 5mm; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative; padding: 4mm 0; background: #fff; flex-shrink: 0;
+        }
+        .cut-line::before, .cut-line::after {
+            content: ''; flex: 1; border-left: 1.5px dashed #666;
+        }
+        .cut-line .scissors {
+            padding: 8px 0; font-size: 16px; color: #666;
+            transform: rotate(-90deg); font-weight: 700;
+        }
+        
+        /* ============ PAGE LABEL ============ */
+        .page-label {
+            position: absolute; top: -22px; left: 0;
+            font-size: 12px; font-weight: 700; color: #1A237E;
+            background: #FFD700; padding: 3px 10px; border-radius: 4px;
+        }
+        
+        /* ============================================================
+           TABLE PAGE — PDF Page 1
+           ============================================================ */
+        .tbl-page { display: flex; flex-direction: column; gap: 2mm; }
+        
+        .tbl-title {
+            text-align: center;
+            font-family: 'Shrikhand', cursive;
+            font-size: 20px;               /* ✅ 15px → 20px */
+            color: #B71C1C; padding-bottom: 1.5mm;
+            border-bottom: 2.5px solid #B71C1C;
+            letter-spacing: 0.5px;
+        }
+        
+        .tbl-student-name {
+            font-size: 15px;               /* ✅ 12px → 15px */
+            font-weight: 700; color: #1A237E;
+            padding: 1.5mm 0;
+        }
+        
+        .tbl-info-row {
+            display: flex; gap: 5mm;
+            font-size: 13px;               /* ✅ 11.5px → 13px */
+            font-weight: 700; color: #1A237E;
+            padding-bottom: 1.5mm;
+            border-bottom: 1px dashed #999;
+            flex-wrap: wrap;
+        }
+        .tbl-info-row .item { display: flex; gap: 3px; }
+        .tbl-info-row .val { color: #C62828; }
+        
+        /* Marks Table */
+        table.tbl-marks {
+            width: 100%; flex: 0 0 auto; border-collapse: collapse;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        table.tbl-marks th, table.tbl-marks td {
+            border: 1.3px solid #000; padding: 4px;
+            text-align: center; vertical-align: middle;
+        }
+        table.tbl-marks thead th {
+            background: #FFF2CC; color: #000; font-weight: 700;
+            font-size: 14px;
+            padding: 5px 3px;
+        }
+        table.tbl-marks tbody td.subject {
+            text-align: left; padding-left: 8px;
+            font-weight: 700; background: #FAFAFA;
+        }
+        table.tbl-marks tbody td.total-lbl {
+            text-align: left; padding-left: 8px;
+            font-weight: 800; background: #FFF9C4; color: #827717;
+        }
+        table.tbl-marks tbody td.total-val {
+            font-weight: 800; background: #FFF9C4; color: #827717;
+        }
+        table.tbl-marks tbody tr { height: 30px; }
+        .grade-A { color: #1B5E20; font-weight: 800; }
+        .grade-F { color: #B71C1C; font-weight: 800; }
+        
+        /* Summary Row */
+        .tbl-summary-row {
+            display: flex; justify-content: space-around; align-items: center;
+            background: #FFF9C4; border: 1.5px solid #827717;
+            border-radius: 4px; padding: 4px 6px;
+            font-size: 13px;               /* ✅ 11px → 13px */
+            font-weight: 700; color: #1A237E; margin-top: 1.5mm;
+        }
+        .tbl-summary-row .item { display: flex; gap: 3px; }
+        .tbl-summary-row .lbl { color: #827717; }
+        .tbl-summary-row .val { color: #000; font-weight: 800; }
+        .pass { color: #1B5E20 !important; }
+        .fail { color: #B71C1C !important; }
+        
+        /* Signatures — SAFE ZONE */
+        .tbl-signatures {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            gap: 3mm; margin-top: auto;
+            padding: 4mm 4mm 0 4mm;         /* ✅ extra bottom padding */
+            font-size: 12px;               /* ✅ 10.5px → 12px */
+            font-weight: 700; color: #1A237E;
+        }
+        .sig-cell { text-align: center; flex: 1; min-width: 28mm; }
+        .sig-cell .sig-img {
+            height: 12mm;                  /* ✅ 9mm → 12mm */
+            display: flex; align-items: flex-end; justify-content: center;
+            margin-bottom: 2px;
+        }
+        .sig-cell .sig-img img { max-height: 12mm; max-width: 25mm; }
+        .sig-cell .sig-line {
+            border-top: 1px solid #000; padding-top: 2px;
+            font-size: 11px;               /* ✅ 9.5px → 11px */
+        }
+        
+        /* Place/Date Row */
+        .tbl-place-date {
+            display: flex; justify-content: space-between;
+            font-size: 11.5px;             /* ✅ 10px → 11.5px */
+            font-weight: 700; color: #1A237E;
+            padding: 0 4mm; margin-top: 1.5mm;
+            flex-wrap: wrap; gap: 4px;
+        }
+        
+        /* ============================================================
+           PROGRESS REPORT — PDF Page 2
+           ============================================================ */
+        .prg-page { display: flex; flex-direction: column; }
+        
+        .prg-header {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 4mm; padding: 2mm 0;
+        }
+        .prg-saraswati {
+            width: 25mm;
+            height: 25mm;
+            flex-shrink: 0;
+        }
+        .prg-saraswati img {
+            width: 100%; height: 100%;
+            object-fit: contain; display: block;
+        }
+        .prg-header-center { flex: 1; text-align: center; line-height: 1.25; }
+        .prg-main-title {
+            font-family: 'Shrikhand', cursive;
+            font-size: 20px;
+            color: #1B5E20; margin-bottom: 3px;
+        }
+        .prg-sub-title {
+            font-size: 15px;
+            font-weight: 700; color: #1B5E20; margin-bottom: 2px;
+        }
+        .prg-patrak-title {
+            font-size: 20px;
+            font-weight: 800; color: #1B5E20; margin: 2px 0;
+        }
+        .prg-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #A5D6A7, #66BB6A);
+            color: #1B5E20; padding: 4px 22px;
+            font-size: 16px;
+            font-weight: 800; border-radius: 20px;
+            border: 1.5px solid #2E7D32; letter-spacing: 1.2px;
+            margin: 2px 0;
+        }
+        .prg-report-text {
+            font-size: 14px;
+            font-weight: 700; color: #1B5E20;
+            letter-spacing: 1.8px; margin-top: 2px;
+        }
+        
+        /* Progress Info Grid */
+        .prg-info {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 4mm 5mm;
+            padding: 4mm 2mm;
+            font-size: 15px;
+            font-weight: 600; line-height: 1.8;
+            margin-top: 3mm; flex: 1; align-content: space-evenly;
+        }
+        .prg-info .full-width { grid-column: span 2; }
+        .prg-line {
+            display: flex; align-items: baseline; gap: 4px;
+            white-space: nowrap; overflow: hidden;
+        }
+        .prg-line .lbl {
+            color: #1B5E20; font-weight: 700; flex-shrink: 0;
+        }
+        .prg-line .val {
+            color: #000; font-weight: 700;
+            border-bottom: 1px dotted #999; padding-bottom: 1px;
+            flex: 1; text-overflow: ellipsis; overflow: hidden;
+        }
+        .prg-line.center-hint {
+            justify-content: center; font-style: italic;
+            font-size: 13px; color: #555; font-weight: 600;
+            text-align: center; padding: 1.5mm 0; border: none;
+            white-space: normal;
+        }
+        
+        /* ============ PRINT ============ */
+        @media print {
+            @page { size: A4 landscape; margin: 0; }
+            body { background: #fff !important; padding: 0 !important; display: block !important; }
+            .control-panel { display: none !important; }
+            .page-label { display: none !important; }
+            .a4-page {
+                box-shadow: none; margin: 0;
+                page-break-after: always; border: none;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            .a4-page:last-child { page-break-after: auto; }
+        }
+        
+        @media screen {
+            .half-page { outline: 1px dashed #ddd; outline-offset: -1px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="pages-area" id="pagesContainer"></div>
+    
+    <div class="control-panel">
+        <div class="std-badge">ધોરણ : <span id="stdSide">-</span></div>
+        <button class="btn btn-black" onclick="window.location.href='home.html?std=' + currentStd">🏠 Home</button>
+        <div class="exam-info" id="examTypeDisplay">વાર્ષિક</div>
+        <div class="pair-info" id="pairInfo">પેજ 1 / 1</div>
+        <div class="nav-buttons">
+            <button class="btn btn-white" onclick="prevPair()">◀</button>
+            <button class="btn btn-blue" id="pairNavDisplay">1 / 1</button>
+            <button class="btn btn-white" onclick="nextPair()">▶</button>
+        </div>
+        <button class="btn btn-orange" onclick="bulkPDF()">📄 Bulk PDF</button>
+        <button class="btn btn-blue" onclick="bulkPrint()">🖨 Bulk Prints</button>
+        <button class="btn btn-green" onclick="sendWhatsappCurrent()">💬 WhatsApp (Current)</button>
+        <button class="btn btn-green" onclick="sendWhatsappBulk()">💬 WhatsApp (Bulk)</button>
+        <button class="btn btn-white small-btn" onclick="editWhatsappMessage()">✏️ SMS Edit</button>
+    </div>
+</div>
+
+<script>
+    let students = [];
+    let schoolInfo = {};
+    let subjects = [];
+    let examType = 'Annual';
+    let customWhatsappMsg = '';
+    let currentPairIndex = 0;
+    let pairs = [];
+
+    window.onload = async function() {
+        await openDB();
+        subjects = getSubjects(currentStd);
+        students = await getStudents(currentStd);
+        schoolInfo = (await getSchoolInfoDB(currentStd)) || {};
+        
+        const urlExamParam = getUrlParam('exam', '');
+        examType = urlExamParam || schoolInfo.examType || 'Annual';
+
+        const examNames = { Sem1: 'પ્રથમ સત્ર', Sem2: 'દ્વિતીય સત્ર', Annual: 'વાર્ષિક' };
+        document.getElementById('stdSide').innerText = currentStd;
+        document.getElementById('examTypeDisplay').innerText = examNames[examType] || 'વાર્ષિક';
+
+        if (students.length === 0) {
+            document.getElementById('pagesContainer').innerHTML = `
+                <div style="text-align:center; padding:40px; font-size:16px; color:#888; background:#fff; border-radius:8px; max-width:297mm;">
+                    ધોરણ ${currentStd} માં કોઈ વિદ્યાર્થી નથી.<br><br>
+                    પહેલા <a href="marks_entry.html?std=${currentStd}">ડેટા એન્ટ્રી</a> કરો.
+                </div>`;
+            return;
+        }
+
+        calculateRanks();
+        
+        pairs = [];
+        for (let i = 0; i < students.length; i += 2) {
+            pairs.push(students.slice(i, i + 2));
+        }
+        
+        currentPairIndex = 0;
+        renderAllPages();
+        updateNavDisplay();
+    };
+
+    function sem1Parts(student, idx) {
+        return {
+            tri: parseFloat(student.marks[idx]) || 0,
+            sat: (parseFloat(student.marks[idx + 1]) || 0) / 2,
+            swa: parseFloat(student.marks[idx + 2]) || 0
+        };
+    }
+    function sem2Parts(student, idx) {
+        return {
+            tri: parseFloat(student.marks[idx + 3]) || 0,
+            sat: (parseFloat(student.marks[idx + 4]) || 0) / 2,
+            swa: parseFloat(student.marks[idx + 5]) || 0
+        };
+    }
+    function getGrade(pct) {
+        if (pct >= 80) return 'A';
+        if (pct >= 65) return 'B';
+        if (pct >= 50) return 'C';
+        if (pct >= 35) return 'D';
+        return 'E';
+    }
+    function getRemark(g) {
+        if (g === 'A' || g === 'B') return 'ઉત્તમ';
+        if (g === 'C') return 'સારું';
+        return 'સુધારો જરૂરી';
+    }
+
+    function getStudentTotal(student) {
+        const pbConfig = getPatrakBConfig(currentStd);
+        const pbMax = pbConfig.maxTotal;
+        let total = 0, max = 0;
+        for (let i = 0; i < subjects.length; i++) {
+            const subName = subjects[i];
+            const s1 = sem1Parts(student, i * 6);
+            const s2 = sem2Parts(student, i * 6);
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+            const sem1Avail = isSubjectInSem(currentStd, subName, 'Sem1');
+            const sem2Avail = isSubjectInSem(currentStd, subName, 'Sem2');
+            if (examType === 'Sem1') { if (sem1Avail) { total += t1; max += 100; } }
+            else if (examType === 'Sem2') { if (sem2Avail) { total += t2; max += 100; } }
+            else {
+                if (sem1Avail) { total += t1; max += 100; }
+                if (sem2Avail) { total += t2; max += 100; }
+            }
+        }
+        const pb1 = parseFloat(student.patrakB1) || 0;
+        const pb2 = parseFloat(student.patrakB2) || 0;
+        if (examType === 'Sem1') { total += pb1; max += pbMax; }
+        else if (examType === 'Sem2') { total += pb2; max += pbMax; }
+        else { total += (pb1 + pb2) / 2; max += pbMax; }
+        return { total, max, pct: max > 0 ? (total / max) * 100 : 0 };
+    }
+
+    function getResultStatus(student) {
+        const stdNum = parseInt(currentStd) || 8;
+        if (stdNum !== 8) return 'PASS';
+        let eCount = 0;
+        for (let i = 0; i < subjects.length; i++) {
+            const subName = subjects[i];
+            const s1 = sem1Parts(student, i * 6);
+            const s2 = sem2Parts(student, i * 6);
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+            const sem1Avail = isSubjectInSem(currentStd, subName, 'Sem1');
+            const sem2Avail = isSubjectInSem(currentStd, subName, 'Sem2');
+            let obtained = 0, max = 0;
+            if (examType === 'Sem1') { if (sem1Avail) { obtained = t1; max = 100; } }
+            else if (examType === 'Sem2') { if (sem2Avail) { obtained = t2; max = 100; } }
+            else {
+                if (sem1Avail) { obtained += t1; max += 100; }
+                if (sem2Avail) { obtained += t2; max += 100; }
+            }
+            if (max > 0 && getGrade((obtained / max) * 100) === 'E') eCount++;
+        }
+        return eCount >= 2 ? 'FAIL' : 'PASS';
+    }
+
+    function calculateRanks() {
+        students.forEach(s => { s._total = getStudentTotal(s).total; });
+        const sorted = [...students].sort((a, b) => b._total - a._total);
+        sorted.forEach((s, i) => {
+            const o = students.find(x => x.roll === s.roll);
+            if (o) o.rank = i + 1;
+        });
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '---';
+        if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) return dateStr;
+        const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+        return dateStr;
+    }
+
+    function renderAllPages() {
+        const container = document.getElementById('pagesContainer');
+        container.innerHTML = '';
+        pairs.forEach((pair, pairIdx) => {
+            const frontPage = document.createElement('div');
+            frontPage.className = 'a4-page';
+            frontPage.innerHTML = `
+                <div class="page-label">આગળ (Front) — ${pair[0]?.name || ''}${pair[1] ? ' + ' + pair[1].name : ''}</div>
+                ${buildTableHalf(pair[0])}
+                ${pair[1] ? `
+                    <div class="cut-line"><span class="scissors">✂</span></div>
+                    ${buildTableHalf(pair[1])}
+                ` : `
+                    <div class="cut-line"><span class="scissors">✂</span></div>
+                    <div class="half-page" style="opacity:0.3;"></div>
+                `}
+            `;
+            container.appendChild(frontPage);
+
+            const backPage = document.createElement('div');
+            backPage.className = 'a4-page';
+            backPage.innerHTML = `
+                <div class="page-label">પાછળ (Back) — ${pair[0]?.name || ''}${pair[1] ? ' + ' + pair[1].name : ''}</div>
+                ${buildProgressHalf(pair[0])}
+                ${pair[1] ? `
+                    <div class="cut-line"><span class="scissors">✂</span></div>
+                    ${buildProgressHalf(pair[1])}
+                ` : `
+                    <div class="cut-line"><span class="scissors">✂</span></div>
+                    <div class="half-page" style="opacity:0.3;"></div>
+                `}
+            `;
+            container.appendChild(backPage);
+        });
+    }
+
+    function buildTableHalf(student) {
+        if (!student) return '';
+        const calc = getStudentTotal(student);
+        const result = getResultStatus(student);
+        const resultClass = (result === 'PASS') ? 'pass' : 'fail';
+        const totalDays = schoolInfo.totalDays || 232;
+        const presentDays = student.attendance || 0;
+
+        let marksRows = '';
+        let grandTotal = 0, totalObtained = 0;
+
+        subjects.forEach((subName, idx) => {
+            const marksIdx = idx * 6;
+            const s1 = sem1Parts(student, marksIdx);
+            const s2 = sem2Parts(student, marksIdx);
+            const t1 = s1.tri + s1.sat + s1.swa;
+            const t2 = s2.tri + s2.sat + s2.swa;
+            const sem1Avail = isSubjectInSem(currentStd, subName, 'Sem1');
+            const sem2Avail = isSubjectInSem(currentStd, subName, 'Sem2');
+            let obtained = 0, max = 0;
+            if (examType === 'Sem1') { if (sem1Avail) { obtained = t1; max = 100; } else { return; } }
+            else if (examType === 'Sem2') { if (sem2Avail) { obtained = t2; max = 100; } else { return; } }
+            else {
+                if (sem1Avail) { obtained += t1; max += 100; }
+                if (sem2Avail) { obtained += t2; max += 100; }
+                if (max === 0) return;
+            }
+            const grade = getGrade((obtained / max) * 100);
+            const gc = (grade === 'E') ? 'grade-F' : 'grade-A';
+            grandTotal += max;
+            totalObtained += obtained;
+            marksRows += `<tr>
+                <td>${idx + 1}</td>
+                <td class="subject">${subName}</td>
+                <td>${max}</td>
+                <td style="font-weight:800;">${Math.round(obtained)}</td>
+                <td class="${gc}">${grade}</td>
+                <td style="font-size:14px;">${getRemark(grade)}</td>
+            </tr>`;
+        });
+
+        const pbConfig = getPatrakBConfig(currentStd);
+        const pbMax = pbConfig.maxTotal;
+        const pb1 = parseFloat(student.patrakB1) || 0;
+        const pb2 = parseFloat(student.patrakB2) || 0;
+        let pbO = 0;
+        if (examType === 'Sem1') pbO = pb1;
+        else if (examType === 'Sem2') pbO = pb2;
+        else pbO = (pb1 + pb2) / 2;
+        const pbGrade = getGrade((pbO / pbMax) * 100);
+        const pbGC = (pbGrade === 'E') ? 'grade-F' : 'grade-A';
+
+        marksRows += `<tr>
+            <td>${subjects.length + 1}</td>
+            <td class="subject">વ્યક્તિત્વ વિકાસ</td>
+            <td>${pbMax}</td>
+            <td style="font-weight:800;">${Math.round(pbO)}</td>
+            <td class="${pbGC}">${pbGrade}</td>
+            <td style="font-size:14px;">${getRemark(pbGrade)}</td>
+        </tr>`;
+        grandTotal += pbMax;
+        totalObtained += pbO;
+
+        const overallPct = ((totalObtained / grandTotal) * 100).toFixed(2);
+        const overallGrade = getGrade(overallPct);
+        const overallGC = (overallGrade === 'E') ? 'grade-F' : 'grade-A';
+
+        let resultDate = '---';
+        if (examType === 'Sem1' && schoolInfo.exam1Date) resultDate = formatDate(schoolInfo.exam1Date);
+        else if (schoolInfo.exam2Date) resultDate = formatDate(schoolInfo.exam2Date);
+
+        const schoolOpening = schoolInfo.schoolOpeningDate || '09-06-2026 07:00 AM';
+        const teacherSign = schoolInfo.teacherSign ? `<img src="${schoolInfo.teacherSign}">` : '';
+        const principalSign = schoolInfo.principalSign ? `<img src="${schoolInfo.principalSign}">` : '';
+
+        return `
+            <div class="half-page tbl-page">
+                <div class="tbl-title">શાળાકીય સર્વગ્રાહી મૂલ્યાંકન</div>
+                <div class="tbl-student-name">વિદ્યાર્થીનું નામ : <span style="color:#C62828;">${student.name || '--'}</span></div>
+                <div class="tbl-info-row">
+                    <div class="item"><span>ધોરણ :</span><span class="val">${currentStd}</span></div>
+                    <div class="item"><span>વર્ગ :</span><span class="val">${schoolInfo.class || 'A'}</span></div>
+                    <div class="item"><span>હાજરી નંબર :</span><span class="val">${student.roll || '--'}</span></div>
+                </div>
+                <table class="tbl-marks">
+                    <thead>
+                        <tr>
+                            <th style="width:8%;">ક્રમ</th>
+                            <th style="width:24%;">વિષય</th>
+                            <th style="width:12%;">કુલ ગુણ</th>
+                            <th style="width:14%;">મેળવેલ ગુણ</th>
+                            <th style="width:10%;">ગ્રેડ</th>
+                            <th style="width:32%;">વિષય સંદર્ભે વિશેષ નોંધ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${marksRows}
+                        <tr>
+                            <td colspan="2" class="total-lbl">મેળવેલ એકંદરે કુલ</td>
+                            <td class="total-val">${grandTotal}</td>
+                            <td class="total-val">${Math.round(totalObtained)}</td>
+                            <td class="${overallGC}" style="background:#FFF9C4;">${overallGrade}</td>
+                            <td style="background:#FFF9C4; font-size:14px; font-weight:700;">એકંદરે અભ્યાસ ઉત્તમ</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="tbl-summary-row">
+                    <div class="item"><span class="lbl">ટકા :</span><span class="val">${overallPct}%</span></div>
+                    <div class="item"><span class="lbl">પરિણામ :</span><span class="val ${resultClass}">${result}</span></div>
+                    <div class="item"><span class="lbl">રેન્ક :</span><span class="val">${student.rank || '--'}</span></div>
+                    <div class="item"><span class="lbl">હાજરી :</span><span class="val">${totalDays} માંથી ${presentDays}</span></div>
+                </div>
+                <div class="tbl-place-date">
+                    <div>સ્થળ : <strong>${schoolInfo.resultPlace || 'કોરાડા'}</strong></div>
+                    <div>તારીખ : <strong>${resultDate}</strong></div>
+                    <div>શાળા ઉઘડવાની : <strong>${schoolOpening}</strong></div>
+                </div>
+                <div class="tbl-signatures">
+                    <div class="sig-cell"><div class="sig-img"></div><div class="sig-line">વાલીની સહી</div></div>
+                    <div class="sig-cell"><div class="sig-img">${teacherSign}</div><div class="sig-line">વર્ગ શિક્ષકની સહી</div></div>
+                    <div class="sig-cell"><div class="sig-img">${principalSign}</div><div class="sig-line">આચાર્યની સહી</div></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function buildProgressHalf(student) {
+        if (!student) return '';
+        const { village, taluka, district } = getSchoolAddressParts(schoolInfo);
+        const districtName = district || 'દેવભૂમિ દ્વારકા';
+        const studentPhotoSrc = student.photo || 'saraswati.png';
+        const photoStyle = student.photo ? 'border:1.5px solid #1B5E20; border-radius:3px;' : '';
+        const sessionYear = schoolInfo.sessionYear || "2025-'26";
+
+        return `
+            <div class="half-page prg-page">
+                <div class="prg-header">
+                    <div class="prg-saraswati">
+                        <img src="saraswati.png" alt="સરસ્વતી">
+                    </div>
+                    <div class="prg-header-center">
+                        <div class="prg-main-title">શાળાકીય સર્વગ્રાહી મૂલ્યાંકન</div>
+                        <div class="prg-sub-title">જિલ્લા શિક્ષણ સમિતિ, ${districtName}</div>
+                        <div class="prg-patrak-title">પ્રગતિ પત્રક</div>
+                        <div class="prg-badge">પત્રક F</div>
+                        <div class="prg-report-text">( PROGRESS REPORT )</div>
+                    </div>
+                    <div class="prg-saraswati">
+                        <img src="${studentPhotoSrc}" alt="ફોટો" style="${photoStyle}">
+                    </div>
+                </div>
+                <div class="prg-info">
+                    <div class="prg-line"><span class="lbl">ધોરણ :</span><span class="val">${currentStd}</span></div>
+                    <div class="prg-line"><span class="lbl">વર્ગ :</span><span class="val">${schoolInfo.class || 'A'}</span></div>
+                    <div class="prg-line"><span class="lbl">હાજરી નં. :</span><span class="val">${student.roll || '--'}</span></div>
+                    <div class="prg-line"><span class="lbl">શાળા :</span><span class="val">${schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રા. શાળા'}</span></div>
+                    <div class="prg-line"><span class="lbl">તાલુકો :</span><span class="val">${taluka || schoolInfo.taluka || '---'}</span></div>
+                    <div class="prg-line"><span class="lbl">જિલ્લો :</span><span class="val">${district || schoolInfo.district || '---'}</span></div>
+                    <div class="prg-line full-width"><span class="lbl">વિદ્યાર્થીનું નામ :</span><span class="val" style="font-weight:800;">${student.name || '--'}</span></div>
+                    <div class="prg-line center-hint full-width">( વિદ્યાર્થીનું આખું નામ - અટક સાથે લખવું. )</div>
+                    <div class="prg-line full-width"><span class="lbl">સરનામું :</span><span class="val">${student.address || '--'}</span></div>
+                    <div class="prg-line center-hint full-width">મૂ. :- ${village || '---'} તા. :- ${taluka || '---'} જિ. :- ${district || '---'}</div>
+                    <div class="prg-line"><span class="lbl">પિતાનું નામ :</span><span class="val">${student.fatherName || '--'}</span></div>
+                    <div class="prg-line"><span class="lbl">માતાનું નામ :</span><span class="val">${student.motherName || '--'}</span></div>
+                    <div class="prg-line"><span class="lbl">જ.ર.નં. :</span><span class="val">${student.gr || '--'}</span></div>
+                    <div class="prg-line"><span class="lbl">જન્મ તારીખ :</span><span class="val">${student.dob || '--'}</span></div>
+                    <div class="prg-line"><span class="lbl">સંપર્ક નં. :</span><span class="val">${student.contact || '--'}</span></div>
+                    <div class="prg-line"><span class="lbl">UID :</span><span class="val">${student.uid || '--'}</span></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function updateNavDisplay() {
+        const total = pairs.length;
+        document.getElementById('pairNavDisplay').innerText = `${currentPairIndex + 1} / ${total}`;
+        document.getElementById('pairInfo').innerText = `પેજ ${currentPairIndex + 1} / ${total} (2 વિદ્યાર્થી/પેજ)`;
+    }
+    
+    function nextPair() {
+        if (currentPairIndex < pairs.length - 1) {
+            currentPairIndex++;
+            updateNavDisplay();
+            const pages = document.querySelectorAll('.a4-page');
+            if (pages[currentPairIndex * 2]) {
+                pages[currentPairIndex * 2].scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+    
+    function prevPair() {
+        if (currentPairIndex > 0) {
+            currentPairIndex--;
+            updateNavDisplay();
+            const pages = document.querySelectorAll('.a4-page');
+            if (pages[currentPairIndex * 2]) {
+                pages[currentPairIndex * 2].scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+
+    function bulkPrint() { window.print(); }
+    function bulkPDF() {
+        alert("પ્રિન્ટ ડાયલોગ ખુલશે.\n\n'Destination' → 'Save as PDF'\n'Layout' → 'Landscape'");
+        bulkPrint();
+    }
+
+    function sendWhatsappCurrent() {
+        const pair = pairs[currentPairIndex];
+        if (!pair || pair.length === 0) { alert('કોઈ વિદ્યાર્થી નથી.'); return; }
+        pair.forEach((student, idx) => {
+            if (!student || !student.contact) return;
+            setTimeout(() => {
+                let phone = student.contact.replace(/\D/g, '');
+                if (phone.length === 10) phone = '91' + phone;
+                const calc = getStudentTotal(student);
+                const result = getResultStatus(student);
+                let msg = customWhatsappMsg || 
+                    `*${schoolInfo.schoolName || 'શાળા'}*\n*ધોરણ:* ${currentStd}\n*વિદ્યાર્થી:* ${student.name}\n*ટકાવારી:* ${calc.pct.toFixed(2)}%\n*પરિણામ:* ${result}\n*વધુ માહિતી માટે શાળાનો સંપર્ક કરો.*`;
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+            }, idx * 500);
+        });
+    }
+    
+    function sendWhatsappBulk() {
+        if (!confirm(`બધા ${students.length} વિદ્યાર્થીને WhatsApp મેસેજ મોકલવા છે?`)) return;
+        students.forEach((s, i) => {
+            if (s.contact) {
+                setTimeout(() => {
+                    let phone = s.contact.replace(/\D/g, '');
+                    if (phone.length === 10) phone = '91' + phone;
+                    const calc = getStudentTotal(s);
+                    const result = getResultStatus(s);
+                    let msg = customWhatsappMsg || 
+                        `*${schoolInfo.schoolName || 'શાળા'}*\n*ધોરણ:* ${currentStd}\n*વિદ્યાર્થી:* ${s.name}\n*ટકાવારી:* ${calc.pct.toFixed(2)}%\n*પરિણામ:* ${result}\n*વધુ માહિતી માટે શાળાનો સંપર્ક કરો.*`;
+                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                }, i * 2000);
+            }
+        });
+    }
+    
+    function editWhatsappMessage() {
+        let m = prompt("WhatsApp મેસેજ બદલો:", customWhatsappMsg);
+        if (m !== null) customWhatsappMsg = m;
+    }
+</script>
+
+</body>
+</html>

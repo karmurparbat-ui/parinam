@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ધોરણ ૨ — ડેટા એન્ટ્રી</title>
+<link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Rasa:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+*{box-sizing:border-box;}
+body{font-family:'Rasa',sans-serif;background:linear-gradient(135deg,#f5e6d3,#fce4d0);margin:0;padding:14px;font-size:15px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.topbar a{color:#8B4513;text-decoration:none;font-weight:600;padding:8px 14px;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);font-size:.9em;}
+.title{font-family:'Shrikhand',cursive;color:#8B4513;font-size:1.3em;}
+.panel{background:#fff;border-radius:14px;padding:14px;box-shadow:0 6px 16px rgba(139,69,19,.15);margin-bottom:14px;}
+.panel h3{font-family:'Shrikhand',cursive;color:#8B4513;margin:0 0 10px;font-size:1.15em;}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.tab{padding:9px 16px;border:2px solid #E5A663;background:#fff;color:#8B4513;border-radius:8px;cursor:pointer;font-family:'Rasa',sans-serif;font-weight:600;font-size:.95em;}
+.tab.active{background:linear-gradient(180deg,#FF8C42,#E55A1E);color:#fff;border-color:#E55A1E;}
+.tab.session.active{background:linear-gradient(180deg,#4CAF50,#2E7D32);border-color:#2E7D32;}
+.tableWrap{overflow-x:auto;border-radius:8px;}
+table{border-collapse:collapse;width:100%;font-size:.85em;background:#fff;}
+th,td{border:1px solid #d8d8d8;padding:4px 6px;text-align:center;vertical-align:middle;}
+th{background:linear-gradient(180deg,#FFE0B2,#FFCC80);color:#5D2E0F;font-weight:700;}
+th.itemHeader{padding:8px 6px;min-width:64px;font-size:14px;}
+th.itemHeader .itemText{writing-mode:vertical-rl;transform:rotate(180deg);height:260px;line-height:1.5;text-align:left;white-space:normal;overflow-wrap:break-word;}
+th.nameCol,td.nameCol{text-align:left;min-width:150px;padding:6px 8px;}
+th.rollCol,td.rollCol{width:36px;min-width:36px;}
+th.calcCol,td.calcCol{background:#F0F4F8;font-weight:600;min-width:40px;font-size:.9em;}
+td.itemCell{padding:0;}
+td.itemCell select{width:100%;border:none;padding:7px 2px;background:transparent;font-family:'Rasa',sans-serif;font-size:1.05em;text-align:center;cursor:pointer;font-weight:700;color:#333;appearance:none;}
+td.itemCell select.gA{background:#C8E6C9;color:#1B5E20;}
+td.itemCell select.gB{background:#FFF9C4;color:#827717;}
+td.itemCell select.gC{background:#FFCDD2;color:#B71C1C;}
+td input,td select.info{border:1px solid #ddd;border-radius:4px;padding:4px 6px;font-family:'Rasa',sans-serif;font-size:.95em;width:100%;}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.btn{padding:10px 16px;border:none;border-radius:8px;font-family:'Rasa',sans-serif;font-weight:600;font-size:.95em;cursor:pointer;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.3);transition:.15s;}
+.btn:hover{transform:translateY(-1px);}
+.btn:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.3);}
+.btn.green{background:linear-gradient(180deg,#4CAF50,#2E7D32);}
+.btn.red{background:linear-gradient(180deg,#E74C3C,#B03A2E);}
+.btn.blue{background:linear-gradient(180deg,#4A90D9,#2E6BA8);}
+.btn.orange{background:linear-gradient(180deg,#FF8C42,#E55A1E);}
+.btn.purple{background:linear-gradient(180deg,#9B59B6,#6D3E8A);}
+.toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;background:#2E7D32;color:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3);opacity:0;transition:.3s;z-index:9999;font-weight:600;}
+.toast.show{opacity:1;}
+.toast.error{background:#B71C1C;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="home_std2.html">← ડેશબોર્ડ</a>
+  <div class="title">ધોરણ ૨ — ડેટા એન્ટ્રી</div>
+  <a href="index.html">🏠 મુખ્ય</a>
+</div>
+
+<!-- વિદ્યાર્થી માહિતી -->
+<div class="panel">
+  <h3>👦 વિદ્યાર્થી માહિતી</h3>
+  <div class="actions">
+    <button class="btn green" onclick="addStudent()">+ નવો વિદ્યાર્થી</button>
+    <button class="btn orange" onclick="document.getElementById('excelImportInput').click()">📥 Excel Import</button>
+    <input type="file" id="excelImportInput" accept=".xlsx,.xls" hidden>
+    <button class="btn blue" onclick="exportExcel()">📤 Excel Export</button>
+    <button class="btn purple" onclick="saveAll()">💾 બધો ડેટા સેવ</button>
+    <a class="btn blue" href="patrak_std2.html?session=sem1&amp;sheet=bhasha">🖨️ D2 પત્રક પ્રિન્ટ</a>
+  </div>
+  <div class="tableWrap">
+    <table id="infoTable">
+      <thead>
+        <tr>
+          <th class="rollCol">ક્રમ</th>
+          <th class="nameCol">નામ</th>
+          <th>જી.આર.નં</th>
+          <th>જન્મ તારીખ</th>
+          <th>સરનામું</th>
+          <th>હાજર</th>
+          <th>માતા</th>
+          <th>સંપર્ક</th>
+          <th>યુનિક ID</th>
+          <th>જાતિ</th>
+          <th>કુમાર/કન્યા</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="infoBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- માર્ક્સ એન્ટ્રી -->
+<div class="panel">
+  <h3>📝 D2 પત્રક — A / B / C એન્ટ્રી</h3>
+  <div class="tabs">
+    <button class="tab active" data-sheet="bhasha">ભાષા પર્યાવરણ (20)</button>
+    <button class="tab" data-sheet="ganit">ગણિત (20)</button>
+    <button class="tab" data-sheet="vyaktitva">વ્યક્તિત્વ વિકાસ (11)</button>
+  </div>
+  <div class="tabs">
+    <button class="tab session active" data-session="sem1">પ્રથમ સત્ર</button>
+    <button class="tab session" data-session="sem2">દ્વિતીય સત્ર</button>
+  </div>
+  <div class="tableWrap">
+    <table id="marksTable">
+      <thead id="marksHead"></thead>
+      <tbody id="marksBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="std2_config.js"></script>
+<script src="std2_db.js"></script>
+<script>
+const state = { students: [], sheet: 'bhasha', session: 'sem1' };
+
+function toast(msg, isError = false){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show', 'error'), 2500);
+}
+function esc(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+const STUDENT_FIELDS = [
+  ['વિદ્યાર્થીનું નામ', 'name'],
+  ['GR નંબર', 'gr'],
+  ['જન્મ તારીખ', 'dob'],
+  ['સરનામું', 'address'],
+  ['હાજરી', 'attendance'],
+  ['માતાનું નામ', 'mother'],
+  ['સંપર્ક', 'contact'],
+  ['યુનિક ID', 'uid'],
+  ['જાતિ', 'caste'],
+  ['કુમાર/કન્યા', 'gender']
+];
+const SESSION_LABELS = { sem1: 'પ્રથમ સત્ર', sem2: 'દ્વિતીય સત્ર' };
+const SHEET_LABELS = Object.fromEntries(STD2_SHEETS.map(sheet => [sheet.key, sheet.short]));
+
+function createEmptyStudent(){
+  return {
+    id: 's2_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+    std: 2,
+    name: '',
+    sem1: { bhasha: [], ganit: [], vyaktitva: [] },
+    sem2: { bhasha: [], ganit: [], vyaktitva: [] }
+  };
+}
+
+function excelColumns(){
+  const columns = [...STUDENT_FIELDS.map(([label, key]) => ({ label, key, kind: 'student' }))];
+  for(const session of ['sem1', 'sem2']){
+    for(const sheet of STD2_SHEETS){
+      sheet.items.forEach((item, index) => columns.push({
+        label: `${SESSION_LABELS[session]} - ${SHEET_LABELS[sheet.key]} - ક્રમ ${index + 1}`,
+        key: `${session}.${sheet.key}.${index}`,
+        kind: 'mark'
+      }));
+    }
+  }
+  return columns;
+}
+
+function excelCellValue(student, column){
+  if(column.kind === 'student') return student[column.key] ?? '';
+  const [session, sheet, index] = column.key.split('.');
+  return student[session]?.[sheet]?.[Number(index)] ?? '';
+}
+
+function exportExcel(){
+  if(!state.students.length){ alert('નિકાસ કરવા માટે કોઈ વિદ્યાર્થીનો ડેટા નથી.'); return; }
+  try{
+    const columns = excelColumns();
+    const rows = [columns.map(column => column.label)];
+    state.students.forEach(student => rows.push(columns.map(column => excelCellValue(student, column))));
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    worksheet['!cols'] = columns.map((column, index) => ({
+      wch: index < STUDENT_FIELDS.length ? [24, 14, 14, 24, 10, 20, 16, 18, 10, 15][index] : 12
+    }));
+    worksheet['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length - 1, c: columns.length - 1 } }) };
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'D2 ડેટા');
+    XLSX.writeFile(workbook, `D2_Data_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  }catch(error){
+    console.error('Excel export error:', error);
+    alert('Excel Export ભૂલ: ' + error.message);
+  }
+}
+
+function parseExcelDate(value){
+  if(value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+  const text = String(value ?? '').trim();
+  const iso = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(iso) return `${iso[1]}-${iso[2].padStart(2, '0')}-${iso[3].padStart(2, '0')}`;
+  const dmy = text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+  if(dmy) return `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+  return text;
+}
+
+function normalizeGrade(value){
+  const grade = String(value ?? '').trim().toUpperCase();
+  if(!grade) return '';
+  if(!['A', 'B', 'C'].includes(grade)) throw new Error(`અમાન્ય ગ્રેડ "${grade}". માત્ર A, B, C અથવા ખાલી મૂલ્ય સ્વીકાર્ય છે.`);
+  return grade;
+}
+
+async function importExcel(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  event.target.value = '';
+  try{
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    if(!worksheet || !worksheet['!ref']) throw new Error('Excel ફાઈલ ખાલી છે.');
+    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
+    const headers = (rows[0] || []).map(value => String(value).trim());
+    const columns = excelColumns();
+    const nameColumn = headers.indexOf('વિદ્યાર્થીનું નામ');
+    const grColumn = headers.indexOf('GR નંબર');
+    const uidColumn = headers.indexOf('યુનિક ID');
+    if(nameColumn < 0 && grColumn < 0 && uidColumn < 0) throw new Error('આ Excel ફાઈલ D2 Export ફોર્મેટમાં નથી. પહેલા D2 Excel Export કરી નમૂનો મેળવો.');
+    const columnIndexes = columns.map(column => headers.indexOf(column.label));
+    const records = rows.slice(1).filter(row => row.some(value => String(value ?? '').trim() !== ''));
+    if(!records.length) throw new Error('Excel ફાઈલમાં વિદ્યાર્થીની પંક્તિઓ મળી નથી.');
+    if(!confirm(`${records.length} Excel પંક્તિઓ Import કરવી છે?\n\nGR નંબર, Unique ID અથવા નામથી હાજર વિદ્યાર્થીઓ અપડેટ થશે; નવા વિદ્યાર્થીઓ ઉમેરાશે. Excelમાં ન હોય તેવા વિદ્યાર્થીઓ દૂર નહીં થાય.`)) return;
+
+    const nextStudents = [...state.students];
+    let imported = 0;
+    for(const row of records){
+      const values = columns.map((_, index) => columnIndexes[index] < 0 ? undefined : row[columnIndexes[index]]);
+      const incoming = {};
+      columns.forEach((column, index) => {
+        if(values[index] !== undefined && column.kind === 'student') incoming[column.key] = values[index];
+      });
+      const name = String(incoming.name ?? '').trim();
+      const gr = String(incoming.gr ?? '').trim();
+      const uid = String(incoming.uid ?? '').trim();
+      if(!name && !gr && !uid) continue;
+
+      let existingIndex = uid ? nextStudents.findIndex(student => String(student.uid ?? '').trim() === uid) : -1;
+      if(existingIndex < 0 && gr) existingIndex = nextStudents.findIndex(student => String(student.gr ?? '').trim() === gr);
+      if(existingIndex < 0 && name) existingIndex = nextStudents.findIndex(student => String(student.name ?? '').trim() === name);
+      const student = existingIndex >= 0 ? nextStudents[existingIndex] : createEmptyStudent();
+      for(const [label, key] of STUDENT_FIELDS){
+        if(Object.prototype.hasOwnProperty.call(incoming, key)){
+          student[key] = key === 'dob' ? parseExcelDate(incoming[key]) : String(incoming[key] ?? '').trim();
+        }
+      }
+      student.std = 2;
+      for(let columnIndex = 0; columnIndex < columns.length; columnIndex++){
+        const column = columns[columnIndex];
+        const cellIndex = columnIndexes[columnIndex];
+        if(column.kind !== 'mark' || cellIndex < 0) continue;
+        const [session, sheet, itemIndex] = column.key.split('.');
+        if(!student[session]) student[session] = { bhasha: [], ganit: [], vyaktitva: [] };
+        if(!Array.isArray(student[session][sheet])) student[session][sheet] = [];
+        student[session][sheet][Number(itemIndex)] = normalizeGrade(row[cellIndex]);
+      }
+      if(existingIndex >= 0) nextStudents[existingIndex] = student;
+      else nextStudents.push(student);
+      imported++;
+    }
+    if(!imported) throw new Error('નામ, GR નંબર અથવા Unique ID ધરાવતી કોઈ પંક્તિ મળી નથી.');
+    for(const student of nextStudents) await s2SaveStudent(student);
+    state.students = nextStudents;
+    renderInfo();
+    renderMarks();
+    toast(`${imported} વિદ્યાર્થીનો ડેટા Import થયો.`);
+  }catch(error){
+    console.error('Excel import error:', error);
+    alert('Excel Import ભૂલ: ' + error.message);
+  }
+}
+
+async function saveAll(){
+  try{
+    for(const student of state.students) await s2SaveStudent(student);
+    toast('બધો ડેટા સફળતાપૂર્વક સેવ થયો.');
+  }catch(error){
+    console.error('Save all error:', error);
+    toast('સેવ કરવામાં ભૂલ: ' + error.message, true);
+  }
+}
+
+async function loadAll(){
+  state.students = await s2GetAllStudents(2);
+  // URL params
+  const p = new URLSearchParams(location.search);
+  if(p.get('session')) state.session = p.get('session');
+  document.querySelectorAll('.tab.session').forEach(x=>{
+    x.classList.toggle('active', x.dataset.session === state.session);
+  });
+  renderInfo();
+  renderMarks();
+}
+
+function renderInfo(){
+  const tb = document.getElementById('infoBody');
+  tb.innerHTML = '';
+  state.students.forEach((s,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="rollCol">${i+1}</td>
+      <td class="nameCol"><input value="${esc(s.name)}" onchange="upd(${i},'name',this.value)"></td>
+      <td><input value="${esc(s.gr)}" onchange="upd(${i},'gr',this.value)" style="width:70px"></td>
+      <td><input type="date" value="${s.dob||''}" onchange="upd(${i},'dob',this.value)"></td>
+      <td><input value="${esc(s.address)}" onchange="upd(${i},'address',this.value)"></td>
+      <td><input type="number" value="${s.attendance||''}" onchange="upd(${i},'attendance',this.value)" style="width:60px"></td>
+      <td><input value="${esc(s.mother)}" onchange="upd(${i},'mother',this.value)"></td>
+      <td><input value="${esc(s.contact)}" onchange="upd(${i},'contact',this.value)" style="width:100px"></td>
+      <td><input value="${esc(s.uid)}" onchange="upd(${i},'uid',this.value)" style="width:110px"></td>
+      <td><select class="info" onchange="upd(${i},'caste',this.value)">
+        <option value="">-</option>
+        ${['SC','ST','OBC','GEN'].map(x=>`<option ${s.caste===x?'selected':''}>${x}</option>`).join('')}
+      </select></td>
+      <td><select class="info" onchange="upd(${i},'gender',this.value)">
+        <option value="">-</option>
+        <option value="Boy"  ${s.gender==='Boy'?'selected':''}>કુમાર</option>
+        <option value="Girl" ${s.gender==='Girl'?'selected':''}>કન્યા</option>
+      </select></td>
+      <td><button class="btn red" style="padding:5px 9px" onclick="delStudent(${i})">✕</button></td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+async function upd(i,k,v){
+  state.students[i][k] = v;
+  state.students[i].std = 2;
+  await s2SaveStudent(state.students[i]);
+  if(k === 'name') renderMarks();
+}
+
+async function addStudent(){
+  const s = createEmptyStudent();
+  await s2SaveStudent(s);
+  state.students.push(s);
+  renderInfo(); renderMarks();
+  toast('વિદ્યાર્થી ઉમેર્યો');
+}
+async function delStudent(i){
+  if(!confirm('કાઢી નાખવો?')) return;
+  await s2DeleteStudent(state.students[i].id);
+  state.students.splice(i,1);
+  renderInfo(); renderMarks();
+  toast('કાઢી નાખ્યો');
+}
+
+function getSheet(){ return STD2_SHEETS.find(x=>x.key===state.sheet); }
+function getMarks(s, sess, key, len){
+  if(!s[sess]) s[sess] = {bhasha:[],ganit:[],vyaktitva:[]};
+  if(!Array.isArray(s[sess][key])) s[sess][key] = [];
+  while(s[sess][key].length < len) s[sess][key].push('');
+  return s[sess][key];
+}
+
+function renderMarks(){
+  const sheet = getSheet();
+  const items = sheet.items;
+  const head = document.getElementById('marksHead');
+  const body = document.getElementById('marksBody');
+
+  // header
+  let h = '<tr><th class="rollCol">ક્રમ</th><th class="nameCol">વિદ્યાર્થી</th>';
+  items.forEach((it,ix)=>{ h += `<th class="itemHeader" scope="col" title="${esc(it)}"><div class="itemText">${ix+1}. ${esc(it)}</div></th>`; });
+  h += '<th class="calcCol">A</th><th class="calcCol">B</th><th class="calcCol">C</th><th class="calcCol">કુલ</th><th class="calcCol">%</th><th class="calcCol">ગ્રેડ</th></tr>';
+  head.innerHTML = h;
+
+  // body
+  body.innerHTML = '';
+  state.students.forEach((s,si)=>{
+    const marks = getMarks(s, state.session, state.sheet, items.length);
+    const calc = std2Calc(marks);
+    const tr = document.createElement('tr');
+    let row = `<td class="rollCol">${si+1}</td><td class="nameCol">${esc(s.name) || '<i style="color:#999">—</i>'}</td>`;
+    items.forEach((_,ii)=>{
+      const v = marks[ii] || '';
+      const cls = v==='A'?'gA':v==='B'?'gB':v==='C'?'gC':'';
+      row += `<td class="itemCell"><select class="${cls}" onchange="setMark(${si},${ii},this.value,this)">
+        <option value=""></option>
+        <option value="A" ${v==='A'?'selected':''}>A</option>
+        <option value="B" ${v==='B'?'selected':''}>B</option>
+        <option value="C" ${v==='C'?'selected':''}>C</option>
+      </select></td>`;
+    });
+    row += `<td class="calcCol">${calc.a}</td><td class="calcCol">${calc.b}</td><td class="calcCol">${calc.c}</td>
+            <td class="calcCol">${calc.points}/${calc.maxPoints}</td>
+            <td class="calcCol">${calc.filled?calc.pct+'%':'-'}</td>
+            <td class="calcCol">${calc.grade||'-'}</td>`;
+    tr.innerHTML = row;
+    body.appendChild(tr);
+  });
+}
+
+async function setMark(si, ii, val, el){
+  const s = state.students[si];
+  const sheet = getSheet();
+  const marks = getMarks(s, state.session, state.sheet, sheet.items.length);
+  marks[ii] = val;
+  s.std = 2;
+  el.className = val==='A'?'gA':val==='B'?'gB':val==='C'?'gC':'';
+  await s2SaveStudent(s);
+
+  // recalc row
+  const tr = el.closest('tr');
+  const calc = std2Calc(marks);
+  const cells = tr.querySelectorAll('.calcCol');
+  cells[0].textContent = calc.a;
+  cells[1].textContent = calc.b;
+  cells[2].textContent = calc.c;
+  cells[3].textContent = calc.points + '/' + calc.maxPoints;
+  cells[4].textContent = calc.filled ? calc.pct + '%' : '-';
+  cells[5].textContent = calc.grade || '-';
+}
+
+// tab switches
+document.querySelectorAll('.tab:not(.session)').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('.tab:not(.session)').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    state.sheet = t.dataset.sheet;
+    renderMarks();
+  };
+});
+document.querySelectorAll('.tab.session').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('.tab.session').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    state.session = t.dataset.session;
+    renderMarks();
+  };
+});
+
+window.addEventListener('DOMContentLoaded', loadAll);
+document.getElementById('excelImportInput').addEventListener('change', importExcel);
+</script>
+</body>
+</html>

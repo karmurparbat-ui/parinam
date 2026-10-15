@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ધોરણ ૨ — ડેશબોર્ડ</title>
+<link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Rasa:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family:'Rasa',sans-serif; background:linear-gradient(135deg,#f5e6d3,#fce4d0); margin:0; padding:20px; min-height:100vh; }
+.topbar { max-width:1400px; margin:0 auto 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+.topbar a { color:#8B4513; text-decoration:none; font-weight:600; padding:10px 18px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+.header { text-align:center; margin-bottom:24px; }
+.header h1 { font-family:'Shrikhand',cursive; color:#8B4513; margin:0; font-size:2.4em; text-shadow:2px 2px 0 #fff, 4px 4px 10px rgba(0,0,0,.15); }
+.header .sub { font-size:1.15em; color:#A0522D; margin-top:6px; font-weight:600; }
+.grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; max-width:1400px; margin:0 auto; }
+.col { background:#fff; border-radius:18px; padding:18px; box-shadow:0 10px 24px rgba(139,69,19,.18), inset 0 1px 0 #fff; }
+.col h2 { font-family:'Shrikhand',cursive; color:#8B4513; margin:0 0 14px; text-align:center; font-size:1.35em; border-bottom:3px solid #f0d0a0; padding-bottom:10px; }
+.btn { display:block; width:100%; padding:14px; margin:10px 0; border:none; border-radius:12px; font-family:'Rasa',sans-serif; font-size:1.05em; font-weight:600; color:#fff; cursor:pointer; text-align:center; text-decoration:none; box-shadow:0 5px 0 #7a2f0f, 0 8px 16px rgba(0,0,0,.2); transition:.15s; }
+.btn:hover { transform:translateY(-2px); box-shadow:0 7px 0 #7a2f0f, 0 10px 20px rgba(0,0,0,.25); }
+.btn:active { transform:translateY(2px); box-shadow:0 3px 0 #7a2f0f; }
+.btn.orange { background:linear-gradient(180deg,#FF8C42,#E55A1E); }
+.btn.brown  { background:linear-gradient(180deg,#A0522D,#7B3417); }
+.btn.green  { background:linear-gradient(180deg,#4CAF50,#2E7D32); box-shadow:0 5px 0 #1B5E20,0 8px 16px rgba(0,0,0,.2); }
+.btn.blue   { background:linear-gradient(180deg,#4A90D9,#2E6BA8); box-shadow:0 5px 0 #1B4A7A,0 8px 16px rgba(0,0,0,.2); }
+.btn.purple { background:linear-gradient(180deg,#9B59B6,#6D3E8A); box-shadow:0 5px 0 #4A2A5E,0 8px 16px rgba(0,0,0,.2); }
+@media (max-width:900px){ .grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html">← મુખ્ય પેજ</a>
+  <a href="school_info.html?std=2">🏫 શાળાકીય માહિતી</a>
+</div>
+
+<div class="header">
+  <h1>ધોરણ ૨ — ડેશબોર્ડ</h1>
+  <div class="sub">શ્રી કોરાડા વાડી પ્રાથમિક શાળા</div>
+</div>
+
+<div class="grid">
+  <div class="col">
+    <h2>📋 માહિતી</h2>
+    <a class="btn orange" href="school_info.html?std=2">🏫 શાળાકીય માહિતી</a>
+    <a class="btn brown" href="marks_entry_std2.html">👦 વિદ્યાર્થી માહિતી + એન્ટ્રી</a>
+  </div>
+
+  <div class="col">
+    <h2>📗 પ્રથમ સત્ર</h2>
+    <a class="btn purple" href="covers.html?std=2&amp;exam=Sem1">🎨 પ્રથમ સત્ર કવર પેજ</a>
+    <a class="btn green"  href="marks_entry_std2.html?session=sem1">📝 D2 પત્રક એન્ટ્રી</a>
+    <a class="btn blue"   href="patrak_std2.html?session=sem1&sheet=bhasha">🖨️ ભાષા પર્યાવરણ પત્રક</a>
+    <a class="btn blue"   href="patrak_std2.html?session=sem1&sheet=ganit">🖨️ ગણિત પત્રક</a>
+    <a class="btn blue"   href="patrak_std2.html?session=sem1&sheet=vyaktitva">🖨️ વ્યક્તિત્વ વિકાસ પત્રક</a>
+    <a class="btn purple" href="patrak_std2.html?session=sem1&amp;all=1">🖨️ ત્રણેય D2 પત્રક પ્રિન્ટ</a>
+  </div>
+
+  <div class="col">
+    <h2>📕 દ્વિતીય સત્ર (વાર્ષિક)</h2>
+    <a class="btn purple" href="covers.html?std=2&amp;exam=Sem2">🎨 દ્વિતીય સત્ર કવર પેજ</a>
+    <a class="btn green"  href="marks_entry_std2.html?session=sem2">📝 D2 પત્રક એન્ટ્રી</a>
+    <a class="btn blue"   href="patrak_std2.html?session=sem2&sheet=bhasha">🖨️ ભાષા પર્યાવરણ પત્રક</a>
+    <a class="btn blue"   href="patrak_std2.html?session=sem2&sheet=ganit">🖨️ ગણિત પત્રક</a>
+    <a class="btn blue"   href="patrak_std2.html?session=sem2&sheet=vyaktitva">🖨️ વ્યક્તિત્વ વિકાસ પત્રક</a>
+    <a class="btn purple" href="patrak_std2.html?session=sem2&amp;all=1">🖨️ ત્રણેય D2 પત્રક પ્રિન્ટ</a>
+  </div>
+</div>
+
+</body>
+</html>

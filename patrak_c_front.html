@@ -580,21 +580,7 @@
 
     function renderSchoolInfo() {
         const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
-        const address = schoolInfo.address || '';
-
-        let village = '', taluka = '', district = '';
-        if (address) {
-            const parts = address.split(/[,，]/).map(p => p.trim());
-            parts.forEach(p => {
-                if (p.includes('તા.') || p.toLowerCase().includes('તાલુકા')) {
-                    taluka = p.replace(/^તા\.\s*/, '').trim();
-                } else if (p.includes('જિ.') || p.toLowerCase().includes('જિલ્લ')) {
-                    district = p.replace(/^જિ\.\s*/, '').trim();
-                } else if (p.includes('ગું.') || p.toLowerCase().includes('ગામ')) {
-                    village = p.replace(/^ગું\.\s*/, '').trim();
-                }
-            });
-        }
+        const { village, taluka, district } = getSchoolAddressParts(schoolInfo);
         if (!village) village = '---';
         if (!taluka) taluka = '---';
         if (!district) district = '---';

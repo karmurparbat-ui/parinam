@@ -120,6 +120,15 @@
             padding: 2px 4px;
             field-sizing: content;
         }
+        td input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        td input[type="number"]::-webkit-inner-spin-button,
+        td input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
         td.s3 input { text-align: left; }
         td input:focus, td select:focus { 
             background-color: #FFF3E0; 
@@ -135,6 +144,74 @@
         input[type="file"] { font-size: 9px; width: 100%; min-width: 65px; }
 
         .note { color: #D22B2B; font-size: 12px; font-weight: 700; }
+
+        .table-wrapper {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        .btn:focus-visible,
+        select:focus-visible,
+        td input:focus-visible,
+        td select:focus-visible {
+            outline: 3px solid #FF6F00;
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 6px; }
+
+            .top-controls {
+                align-items: stretch;
+                padding: 8px;
+                gap: 10px;
+            }
+
+            .top-controls > div {
+                width: 100%;
+            }
+
+            .top-controls > div:last-child {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px !important;
+            }
+
+            .top-controls .btn {
+                min-height: 44px;
+                padding: 8px;
+                font-size: 13px;
+                white-space: normal;
+            }
+
+            .top-controls > div:first-child {
+                gap: 6px !important;
+            }
+
+            .table-wrapper {
+                max-height: 68vh;
+                max-height: 68dvh;
+            }
+
+            th, td { padding: 5px 4px; }
+
+            th.s1, td.s1 { width: 30px; min-width: 30px; max-width: 30px; }
+            th.s2, td.s2 { width: 42px; min-width: 42px; max-width: 42px; }
+            th.s3, td.s3 { width: 145px; min-width: 145px; max-width: 145px; }
+            th.s4, td.s4 {
+                position: static !important;
+                z-index: auto !important;
+                width: 64px;
+                min-width: 64px;
+                max-width: 64px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .std-badge { font-size: 13px; }
+            .save-status { font-size: 12px; }
+            .note { width: 100%; }
+        }
     </style>
 </head>
 <body>

@@ -152,6 +152,31 @@ function saveStudents(students, std) {
 // ============================================================
 // SCHOOL INFO
 // ============================================================
+function getSchoolAddressParts(school = {}) {
+    const parts = String(school.address || '').split(/[,，]/).map(part => part.trim()).filter(Boolean);
+    const valueFromAddress = (pattern) => {
+        const part = parts.find(item => pattern.test(item));
+        return part ? part.replace(pattern, '').trim() : '';
+    };
+
+    return {
+        village: school.village || valueFromAddress(/^(?:મુ(?:કામ)?\.?|ગું\.?|ગામ)\s*[:.-]?\s*/),
+        taluka: school.taluka || valueFromAddress(/^(?:તા(?:લુકો)?\.?|તાલુકા)\s*[:.-]?\s*/),
+        district: school.district || valueFromAddress(/^(?:જિ(?:લ્લો)?\.?|જિલ્લા)\s*[:.-]?\s*/)
+    };
+}
+
+function formatSchoolAddress(school = {}, fallback = '') {
+    const addressParts = getSchoolAddressParts(school);
+    const formatted = [
+        addressParts.village && `મુ. ${addressParts.village}`,
+        addressParts.taluka && `તા. ${addressParts.taluka}`,
+        addressParts.district && `જિ. ${addressParts.district}`
+    ].filter(Boolean).join(', ');
+
+    return formatted || school.address || fallback;
+}
+
 function saveSchoolInfoDB(info, std) {
     return new Promise((resolve, reject) => {
         const tx = db.transaction([SCHOOL_STORE], 'readwrite');

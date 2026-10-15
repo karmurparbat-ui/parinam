@@ -23,38 +23,19 @@
         .std-badge { background: #1A237E; color: #FFD700; padding: 5px 12px; border-radius: 5px; font-weight: 700; font-size: 13px; }
 
         .page {
-            background: #fff; width: 210mm; height: 297mm;
+            background: #fff url("frame.png") center / 100% 100% no-repeat;
+            width: 210mm; height: 297mm;
             margin: 0 auto 12px auto;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             position: relative; overflow: hidden;
-            border: 7px solid #1A237E; padding: 4mm;
+            padding: 5mm;
         }
         .page-inner {
             width: 100%; height: 100%;
-            border: 2px solid #FFA000;
-            box-shadow: inset 0 0 0 1px #FFD700, inset 0 0 0 2px #1A237E;
             padding: 7mm 8mm 5mm 8mm;
             position: relative; display: flex; flex-direction: column;
         }
-        .corner { position: absolute; width: 32px; height: 32px; background: linear-gradient(135deg, #FFD700, #FFA000); border: 2px solid #1A237E; z-index: 5; overflow: hidden; }
-        .corner::before { content: ''; position: absolute; width: 12px; height: 12px; background: #1A237E; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .corner::after { content: ''; position: absolute; width: 0; height: 0; border-style: solid; }
-        .corner-tl { top: 5px; left: 5px; }
-        .corner-tr { top: 5px; right: 5px; }
-        .corner-bl { bottom: 5px; left: 5px; }
-        .corner-br { bottom: 5px; right: 5px; }
-        .corner-tl::after { bottom: -2px; right: -2px; border-width: 0 0 12px 12px; border-color: transparent transparent #B71C1C transparent; }
-        .corner-tr::after { bottom: -2px; left: -2px; border-width: 0 12px 12px 0; border-color: transparent #B71C1C transparent transparent; }
-        .corner-bl::after { top: -2px; right: -2px; border-width: 12px 0 0 12px; border-color: transparent transparent transparent #B71C1C; }
-        .corner-br::after { top: -2px; left: -2px; border-width: 12px 12px 0 0; border-color: #B71C1C transparent transparent transparent; }
-
-        .side-diamond { position: absolute; width: 12px; height: 12px; background: linear-gradient(135deg, #FFD700, #FFA000); border: 1.5px solid #1A237E; transform: rotate(45deg); z-index: 4; }
-        .sd-l1 { left: 8px; top: 22%; } .sd-l2 { left: 8px; top: 50%; } .sd-l3 { left: 8px; top: 78%; }
-        .sd-r1 { right: 8px; top: 22%; } .sd-r2 { right: 8px; top: 50%; } .sd-r3 { right: 8px; top: 78%; }
-
         .page-badge { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: #1A237E; color: #FFD700; padding: 3px 20px; font-size: 13px; font-weight: 700; border: 2px solid #FFD700; border-radius: 4px; z-index: 5; }
-        .top-diamond, .bottom-diamond { position: absolute; left: 50%; width: 14px; height: 14px; background: linear-gradient(135deg, #FFD700, #FFA000); border: 2px solid #1A237E; transform: translateX(-50%) rotate(45deg); z-index: 5; }
-        .top-diamond { top: 6px; } .bottom-diamond { bottom: 6px; }
 
         .print-header { text-align: center; margin-bottom: 2.5mm; padding: 5px 8px; background: #FFF9C4; border: 1.2px solid #1A237E; border-radius: 3px; white-space: nowrap; overflow: hidden; font-size: 13px; font-weight: 700; }
         .print-header .h-school { color: #B71C1C; }
@@ -64,8 +45,14 @@
         .table-wrapper { flex: 1; overflow: hidden; }
         table.marks { border-collapse: collapse; white-space: nowrap; width: 100%; }
         table.marks th, table.marks td { border: 1.2px solid #1A237E; padding: 4px 4px; text-align: center; vertical-align: middle; font-weight: 700; font-size: 11.5px; line-height: 1.15; }
-        table.marks thead th { background-color: #FFF2CC; font-size: 11.5px; }
+        table.marks thead th { background-color: #FFF2CC; font-size: 11.5px; padding: 2px; }
         table.marks .vh { height: 88px; font-size: 10.5px; }
+        table.marks thead { height: 132px; }
+        table.marks thead tr { height: 22px; }
+        table.marks thead tr:last-child { height: 88px; }
+        table.marks.summary-table thead tr, table.marks.summary-table thead .vh { height: 132px; }
+        table.marks tbody tr { height: 22px; }
+        table.marks tbody td { height: 22px; padding: 0 2px; line-height: 14px; }
 
         .h-subject { background-color: #C8E6C9 !important; color: #1B5E20; font-size: 12px !important; }
         .h-sem1 { background-color: #FFF2CC !important; }
@@ -81,6 +68,11 @@
         .h-subtotal { background-color: #D1C4E9 !important; }
 
         .vh { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; vertical-align: middle; padding: 2px 1px; }
+        table.marks.info-table, table.marks.summary-table { table-layout: fixed; }
+        table.marks.info-table th, table.marks.info-table td { padding-left: 2px; padding-right: 2px; }
+        table.marks .student-name { text-align: left; padding-left: 5px; font-size: 10px; }
+        .student-name-text { display: block; white-space: nowrap; }
+        table.marks .horizontal-header { writing-mode: horizontal-tb; transform: none; text-align: center; }
         .val { font-weight: 700; }
         .grade-A { color: green; font-weight: 700; }
         .grade-F { color: red; font-weight: 700; }
@@ -147,11 +139,6 @@
     function getPageWrapper(innerHTML, pageNum, totalPages) {
         return `
             <div class="page">
-                <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
-                <div class="corner corner-bl"></div><div class="corner corner-br"></div>
-                <div class="side-diamond sd-l1"></div><div class="side-diamond sd-l2"></div><div class="side-diamond sd-l3"></div>
-                <div class="side-diamond sd-r1"></div><div class="side-diamond sd-r2"></div><div class="side-diamond sd-r3"></div>
-                <div class="top-diamond"></div><div class="bottom-diamond"></div>
                 <div class="page-badge">પેજ ${pageNum} / ${totalPages}</div>
                 <div class="page-inner">${innerHTML}</div>
             </div>
@@ -315,11 +302,10 @@
 
         let headerRow1 = `
             <tr>
-                <th rowspan="3" class="vh h-info">ક્રમ</th>
                 <th rowspan="3" class="vh h-info">રોલ નંબર</th>
-                <th rowspan="3" class="vh h-info">વિદ્યાર્થીનું નામ</th>
-                <th rowspan="3" class="vh h-info">જન્મ તારીખ</th>
-                <th rowspan="3" class="vh h-info">GR No.</th>
+                <th rowspan="3" class="horizontal-header h-info">વિદ્યાર્થીનું નામ</th>
+                <th rowspan="3" class="horizontal-header h-info">જન્મ તારીખ</th>
+                <th rowspan="3" class="horizontal-header h-info">GR No.</th>
                 <th rowspan="3" class="vh h-info">હાજરી<br>દિવસો</th>
                 <th rowspan="3" class="vh h-info">જાતિ</th>
                 <th rowspan="3" class="vh h-info">M/F</th>
@@ -330,11 +316,10 @@
         let headerRow3 = `<tr>${h3}</tr>`;
 
         let bodyHTML = '';
-        studentList.forEach((student, idx) => {
+        studentList.forEach((student) => {
             let row = '<tr>';
-            row += `<td class="val">${student._globalIdx || (idx + 1)}</td>`;
             row += `<td class="val">${student.roll || ''}</td>`;
-            row += `<td class="val" style="text-align:left; padding-left:5px;">${student.name || ''}</td>`;
+            row += `<td class="val student-name"><span class="student-name-text">${student.name || ''}</span></td>`;
             row += `<td>${student.dob || ''}</td>`;
             row += `<td>${student.gr || ''}</td>`;
             row += `<td>${student.attendance || ''}</td>`;
@@ -345,7 +330,8 @@
             bodyHTML += row;
         });
 
-        const inner = `${getSchoolHeader()}<div class="table-wrapper"><table class="marks"><thead>${headerRow1}${headerRow2}${headerRow3}</thead><tbody>${bodyHTML}</tbody></table></div>${getSignatures()}`;
+        const columns = `<colgroup><col style="width:4%"><col style="width:29%"><col style="width:14%"><col style="width:9%"><col style="width:5%"><col style="width:7%"><col style="width:4%"><col span="${firstCols}"></colgroup>`;
+        const inner = `${getSchoolHeader()}<div class="table-wrapper"><table class="marks info-table">${columns}<thead>${headerRow1}${headerRow2}${headerRow3}</thead><tbody>${bodyHTML}</tbody></table></div>${getSignatures()}`;
         return getPageWrapper(inner, pageNum, totalPages);
     }
 
@@ -383,9 +369,8 @@
 
         let headerRow = `
             <tr>
-                <th class="vh h-info">ક્રમ</th>
                 <th class="vh h-info">રોલ<br>નંબર</th>
-                <th class="vh h-info">વિદ્યાર્થીનું નામ</th>
+                <th class="horizontal-header h-info">વિદ્યાર્થીનું નામ</th>
                 <th class="vh h-subtotal">તમામ વિષયોનો<br>કુલ ગુણ (${subMaxTotal})</th>
                 <th class="vh h-pb">પત્રક-B<br>(${pbMax})</th>
                 <th class="vh h-kul">કુલ ગુણ<br>(${grandMax})</th>
@@ -397,7 +382,7 @@
         `;
 
         let bodyHTML = '';
-        studentList.forEach((student, idx) => {
+        studentList.forEach((student) => {
             const calc = getStudentTotal(student);
             const overallGrade = getGrade(calc.pct);
             const gc = (overallGrade === 'E') ? 'grade-F' : 'grade-A';
@@ -406,9 +391,8 @@
 
             bodyHTML += `
                 <tr>
-                    <td>${student._globalIdx || (idx + 1)}</td>
                     <td>${student.roll || ''}</td>
-                    <td style="text-align:left; padding-left:5px;">${student.name || ''}</td>
+                    <td class="student-name"><span class="student-name-text">${student.name || ''}</span></td>
                     <td style="background:#D1C4E9;">${Math.round(calc.subjectTotal)}</td>
                     <td style="background:#B3E5FC;">${Math.round(calc.patrakB)}</td>
                     <td style="background:#FFCDD2;">${Math.round(calc.total)}</td>
@@ -420,7 +404,8 @@
             `;
         });
 
-        const inner = `${getSchoolHeader()}<div class="table-wrapper"><table class="marks summary-table"><thead>${headerRow}</thead><tbody>${bodyHTML}</tbody></table></div>${getSignatures()}`;
+        const columns = '<colgroup><col style="width:5%"><col style="width:30%"><col span="7"></colgroup>';
+        const inner = `${getSchoolHeader()}<div class="table-wrapper"><table class="marks summary-table">${columns}<thead>${headerRow}</thead><tbody>${bodyHTML}</tbody></table></div>${getSignatures()}`;
         return getPageWrapper(inner, pageNum, totalPages);
     }
 
@@ -466,6 +451,18 @@
         });
 
         document.getElementById('pagesContainer').innerHTML = html;
+        fitStudentNames();
+        document.fonts.ready.then(fitStudentNames);
+    }
+
+    function fitStudentNames() {
+        document.querySelectorAll('.student-name-text').forEach(name => {
+            name.style.fontSize = '';
+            if (name.clientWidth > 0 && name.scrollWidth > name.clientWidth) {
+                const fontSize = parseFloat(getComputedStyle(name).fontSize);
+                name.style.fontSize = `${fontSize * name.clientWidth / name.scrollWidth - 0.1}px`;
+            }
+        });
     }
 
     // ============================================
@@ -547,9 +544,9 @@
     // ============================================
     function createGujaratiSheet(wb, isAnnual) {
         const ws = {};
-        const gujSub = SUBJECTS[0];
+        const gujSub = { name: subjects[0], idx: 0 };
         const gujCols = isAnnual ? 8 : 5;
-        const infoCols = 8;
+        const infoCols = 7;
         const totalCols = infoCols + gujCols;
 
         // ---- Row 1: School Header (merged) ----
@@ -570,15 +567,16 @@
         ws['!rows'][0] = { hpt: 28 };
 
         // ---- Row 2: Subject Names ----
-        // Info headers (vertical) + Gujarati subject name
-        const infoLabels = ['ક્રમ', 'રોલ નંબર', 'વિદ્યાર્થીનું નામ', 'જન્મ તારીખ', 'GR No.', 'હાજરી દિવસો', 'જાતિ', 'M/F'];
+        // Info headers + Gujarati subject name
+        const infoLabels = ['રોલ નંબર', 'વિદ્યાર્થીનું નામ', 'જન્મ તારીખ', 'GR No.', 'હાજરી દિવસો', 'જાતિ', 'M/F'];
         for (let i = 0; i < infoCols; i++) {
             ws[String.fromCharCode(65 + i) + '2'] = cell(infoLabels[i], {
                 font: { name: 'Noto Sans Gujarati', sz: 10, bold: true, color: { rgb: C.blue } },
                 fill: { fgColor: { rgb: C.blueLight } },
-                alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: (i >= 1 && i <= 3) ? 0 : 90 },
                 border: bdr()
             });
+            addMerge(ws, 1, i, 3, i);
         }
         // Gujarati subject name
         ws[String.fromCharCode(65 + infoCols) + '2'] = cell(gujSub.name, {
@@ -663,21 +661,20 @@
             const rIdx = rowNum - 1;
             ws['!rows'][rIdx] = { hpt: 20 };
 
-            ws[`A${rowNum}`] = cell(s._globalIdx || (idx + 1), styleData(C.blueLight));
-            ws[`B${rowNum}`] = cell(s.roll || '', styleData(C.blueLight));
-            ws[`C${rowNum}`] = cell(s.name || '', styleData(C.blueLight, true, "000000", 'left'));
-            ws[`D${rowNum}`] = cell(s.dob || '', styleData(C.white));
-            ws[`E${rowNum}`] = cell(s.gr || '', styleData(C.white));
-            ws[`F${rowNum}`] = cell(s.attendance || '', styleData(C.white));
-            ws[`G${rowNum}`] = cell(s.caste || '', styleData(C.white));
-            ws[`H${rowNum}`] = cell(s.gender || '', styleData(C.white));
+            ws[`A${rowNum}`] = cell(s.roll || '', styleData(C.blueLight));
+            ws[`B${rowNum}`] = cell(s.name || '', styleData(C.blueLight, true, "000000", 'left'));
+            ws[`C${rowNum}`] = cell(s.dob || '', styleData(C.white));
+            ws[`D${rowNum}`] = cell(s.gr || '', styleData(C.white));
+            ws[`E${rowNum}`] = cell(s.attendance || '', styleData(C.white));
+            ws[`F${rowNum}`] = cell(s.caste || '', styleData(C.white));
+            ws[`G${rowNum}`] = cell(s.gender || '', styleData(C.white));
 
             // Gujarati marks
             const s1 = sem1Parts(s, gujSub.idx);
             const s2 = sem2Parts(s, gujSub.idx);
             const t1 = Math.round((s1.tri + s1.sat + s1.swa) * 100) / 100;
             const t2 = Math.round((s2.tri + s2.sat + s2.swa) * 100) / 100;
-            let cc = 8;
+            let cc = infoCols;
             if (isAnnual) {
                 const subTotal = t1 + t2;
                 const subGrade = getGrade((subTotal / 200) * 100);
@@ -715,15 +712,14 @@
 
         // ---- Column Widths ----
         ws['!cols'] = [];
-        ws['!cols'][0] = { wch: 5 };
-        ws['!cols'][1] = { wch: 6 };
-        ws['!cols'][2] = { wch: 25 };
-        ws['!cols'][3] = { wch: 11 };
+        ws['!cols'][0] = { wch: 6 };
+        ws['!cols'][1] = { wch: 22 };
+        ws['!cols'][2] = { wch: 11 };
+        ws['!cols'][3] = { wch: 7 };
         ws['!cols'][4] = { wch: 7 };
-        ws['!cols'][5] = { wch: 7 };
-        ws['!cols'][6] = { wch: 6 };
-        ws['!cols'][7] = { wch: 5 };
-        for (let i = 8; i < totalCols; i++) ws['!cols'][i] = { wch: 4.5 };
+        ws['!cols'][5] = { wch: 6 };
+        ws['!cols'][6] = { wch: 5 };
+        for (let i = infoCols; i < totalCols; i++) ws['!cols'][i] = { wch: 4.5 };
 
         ws['!ref'] = `A1:${String.fromCharCode(65 + totalCols - 1)}${sigRow}`;
         XLSX.utils.book_append_sheet(wb, ws, '1_ગુજરાતી');
@@ -916,9 +912,8 @@
     // ============================================
     function createSummarySheet(wb, isAnnual) {
         const ws = {};
-        const totalCols = 10;
+        const totalCols = 9;
         const labels = [
-            { l: 'ક્રમ', c: C.blueLight },
             { l: 'રોલ નંબર', c: C.blueLight },
             { l: 'વિદ્યાર્થીનું નામ', c: C.blueLight },
             { l: `તમામ વિષયોનો કુલ ગુણ (${isAnnual ? 1400 : 700})`, c: C.purple },
@@ -952,7 +947,7 @@
             ws[String.fromCharCode(65 + i) + '2'] = cell(lbl.l, {
                 font: { name: 'Noto Sans Gujarati', sz: 10, bold: true, color: { rgb: C.blue } },
                 fill: { fgColor: { rgb: lbl.c } },
-                alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: 90 },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true, textRotation: i === 1 ? 0 : 90 },
                 border: bdr()
             });
         });
@@ -968,16 +963,15 @@
             const result = getResultStatus(s);
             const rc = (result === 'PASS') ? C.gradeGreen : C.gradeRed;
 
-            ws[`A${rowNum}`] = cell(s._globalIdx || (idx + 1), styleData(C.blueLight));
-            ws[`B${rowNum}`] = cell(s.roll || '', styleData(C.blueLight, true));
-            ws[`C${rowNum}`] = cell(s.name || '', styleData(C.white, true, "000000", 'left'));
-            ws[`D${rowNum}`] = cell(Math.round(calc.subjectTotal), styleData(C.purple, true));
-            ws[`E${rowNum}`] = cell(Math.round(calc.patrakB), styleData(C.blueSky, true));
-            ws[`F${rowNum}`] = cell(Math.round(calc.total), styleData(C.redLight, true));
-            ws[`G${rowNum}`] = cell(calc.pct.toFixed(2), styleData(C.pink));
-            ws[`H${rowNum}`] = cell(overallGrade, styleData(C.greenLight, true, gc));
-            ws[`I${rowNum}`] = cell(result, styleData(C.peach, true, rc));
-            ws[`J${rowNum}`] = cell(s.rank || '-', styleData(C.rank, true));
+            ws[`A${rowNum}`] = cell(s.roll || '', styleData(C.blueLight, true));
+            ws[`B${rowNum}`] = cell(s.name || '', styleData(C.white, true, "000000", 'left'));
+            ws[`C${rowNum}`] = cell(Math.round(calc.subjectTotal), styleData(C.purple, true));
+            ws[`D${rowNum}`] = cell(Math.round(calc.patrakB), styleData(C.blueSky, true));
+            ws[`E${rowNum}`] = cell(Math.round(calc.total), styleData(C.redLight, true));
+            ws[`F${rowNum}`] = cell(calc.pct.toFixed(2), styleData(C.pink));
+            ws[`G${rowNum}`] = cell(overallGrade, styleData(C.greenLight, true, gc));
+            ws[`H${rowNum}`] = cell(result, styleData(C.peach, true, rc));
+            ws[`I${rowNum}`] = cell(s.rank || '-', styleData(C.rank, true));
         });
 
         // Signature
@@ -994,12 +988,12 @@
 
         // Column widths
         ws['!cols'] = [
-            { wch: 5 }, { wch: 7 }, { wch: 26 }, { wch: 11 },
+            { wch: 7 }, { wch: 22 }, { wch: 11 },
             { wch: 9 }, { wch: 10 }, { wch: 9 }, { wch: 9 },
             { wch: 9 }, { wch: 7 }
         ];
 
-        ws['!ref'] = `A1:J${sigRow}`;
+        ws['!ref'] = `A1:I${sigRow}`;
         XLSX.utils.book_append_sheet(wb, ws, '4_Summary');
     }
 
@@ -1018,11 +1012,14 @@
         students.forEach((s, i) => { if (!s._globalIdx) s._globalIdx = i + 1; });
 
         const wb = XLSX.utils.book_new();
+        const exportSubjects = subjects.map((name, index) => ({ name, idx: index * 6 }));
 
         // Create 4 sheets
         createGujaratiSheet(wb, isAnnual);
-        createSubjectSheet(wb, [SUBJECTS[1], SUBJECTS[2], SUBJECTS[3]], '2_ગણિત-હિન્દી-અંગ્રેજી', isAnnual);
-        createSubjectSheet(wb, [SUBJECTS[4], SUBJECTS[5], SUBJECTS[6]], '3_વિજ્ઞાન-સામાજિક-સંસ્કૃત', isAnnual);
+        createSubjectSheet(wb, exportSubjects.slice(1, 4), '2_ગણિત-હિન્દી-અંગ્રેજી', isAnnual);
+        if (exportSubjects.length > 4) {
+            createSubjectSheet(wb, exportSubjects.slice(4, 7), '3_વિજ્ઞાન-સામાજિક-સંસ્કૃત', isAnnual);
+        }
         createSummarySheet(wb, isAnnual);
 
         // Save
