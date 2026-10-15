@@ -226,6 +226,9 @@
     </div>
     <div style="display:flex; gap:6px; flex-wrap:wrap;">
         <button class="btn btn-blue" onclick="addNewRow()">+ નવો વિદ્યાર્થી</button>
+        <button class="btn btn-purple" onclick="editStudent()">વિદ્યાર્થી એડિટ</button>
+        <button class="btn btn-orange" onclick="clearAllStudents()">Clear All</button>
+        <span class="note">નામ સીધું એડિટ કરી શકો છો. રોલ નંબર રોના ક્રમમાં આપમેળે ગોઠવાશે.</span>
         <button class="btn btn-purple" onclick="document.getElementById('photoFolderInput').click()">🖼️ બધા ફોટા એકસાથે</button>
         <input type="file" id="photoFolderInput" webkitdirectory directory multiple accept="image/*" style="display:none">
         <button class="btn btn-green" onclick="saveData(true)">💾 ડેટા સેવ કરો</button>
@@ -252,6 +255,7 @@
     let subjects = [];
     let autoSaveTimer = null;
     let isSaving = false;
+    let isClearing = false;
 
     document.getElementById('stdBadge').innerText = currentStd;
 
@@ -352,6 +356,7 @@
     // AUTO-SAVE (debounced)
     // ============================================================
     function scheduleAutoSave() {
+        if (isClearing) return;
         if (autoSaveTimer) clearTimeout(autoSaveTimer);
         const statusEl = document.getElementById('saveStatus');
         statusEl.className = 'save-status saving';
@@ -598,7 +603,7 @@
         const tr = document.createElement('tr');
         let html = `
             <td class="sticky-col s1">${index + 1}</td>
-            <td class="sticky-col s2"><input type="text" class="inp-roll" value="${data.roll || ''}"></td>
+            <td class="sticky-col s2"><input type="text" class="inp-roll" value="${data.roll || ''}" readonly title="રોલ નંબર આપમેળે ગોઠવાય છે"></td>
             <td class="sticky-col s3"><input type="text" class="inp-name" value="${data.name || ''}"></td>
             <td class="sticky-col s4">
                 <input type="file" accept="image/*" onchange="uploadStudentPhoto(event, ${index})">
@@ -659,20 +664,8 @@
 
             // ===== AUTO ROLL NUMBER =====
             const nameInput = tr.querySelector('.inp-name');
-            const rollInput = tr.querySelector('.inp-roll');
-            if (nameInput && rollInput) {
-                const autoFillRoll = () => {
-                    if (nameInput.value.trim() && !rollInput.value.trim()) {
-                        const allRolls = Array.from(tableBody.querySelectorAll('.inp-roll'))
-                            .map(inp => parseInt(inp.value, 10) || 0)
-                            .filter(n => n > 0);
-                        const maxRoll = allRolls.length > 0 ? Math.max(...allRolls) : 0;
-                        rollInput.value = maxRoll + 1;
-                        autoResizeInput(rollInput);
-                        scheduleAutoSave();
-                    }
-                };
-                nameInput.addEventListener('blur', autoFillRoll);
+            if (nameInput) {
+                nameInput.addEventListener('input', updateRollNumbers);
             }
 
             updateStickyPositions();
@@ -689,6 +682,73 @@
         }, 50);
     }
 
+    function updateRollNumbers() {
+        let roll = 0;
+        let changed = false;
+        tableBody.querySelectorAll('tr').forEach(tr => {
+            const input = tr.querySelector('.inp-roll');
+            const value = tr.querySelector('.inp-name').value.trim() ? String(++roll) : '';
+            if (input.value !== value) {
+                input.value = value;
+                autoResizeInput(input);
+                changed = true;
+            }
+        });
+        return changed;
+    }
+
+    function editStudent() {
+        const roll = prompt('એડિટ કરવા માટે વિદ્યાર્થીનો હાલનો રોલ નંબર લખો:');
+        if (roll === null) return;
+        const row = Array.from(tableBody.querySelectorAll('tr')).find(tr =>
+            tr.querySelector('.inp-name').value.trim() &&
+            tr.querySelector('.inp-roll').value === roll.trim()
+        );
+        if (!row) {
+            alert('આ રોલ નંબરનો વિદ્યાર્થી મળ્યો નથી.');
+            return;
+        }
+        const name = row.querySelector('.inp-name');
+        name.scrollIntoView({ block: 'center', inline: 'center' });
+        name.focus();
+        name.select();
+    }
+
+    async function clearAllStudents() {
+        if (isSaving || isClearing) {
+            alert('ડેટા સેવ થાય છે. થોડી વાર પછી ફરી પ્રયત્ન કરો.');
+            return;
+        }
+        if (!confirm(`ધોરણ ${currentStd} ના બધા વિદ્યાર્થીઓ, ગુણ અને ફોટા કાઢવા છે? પહેલાં Excel Exportથી બેકઅપ રાખો. શાળાની માહિતી રહેશે.`)) return;
+        if (!confirm('છેલ્લી પુષ્ટિ: આ ડેટા પાછો મેળવી શકાશે નહીં. ખરેખર Clear All કરવું છે?')) return;
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = null;
+        isClearing = true;
+        const controls = document.querySelector('.top-controls');
+        controls.inert = true;
+        tableWrapper.inert = true;
+        const statusEl = document.getElementById('saveStatus');
+        let failed = false;
+        try {
+            await saveStudents([], currentStd);
+            tableBody.innerHTML = '';
+            for (let i = 0; i < 3; i++) addNewRow();
+            statusEl.className = 'save-status saved';
+            statusEl.innerText = 'બધા વિદ્યાર્થીઓનો ડેટા સાફ થયો.';
+        } catch (err) {
+            console.error(err);
+            statusEl.className = 'save-status';
+            statusEl.innerText = 'ડેટા સાફ કરવામાં ભૂલ.';
+            alert('ડેટા સાફ થયો નથી. ફરી પ્રયત્ન કરો.');
+            failed = true;
+        } finally {
+            isClearing = false;
+            controls.inert = false;
+            tableWrapper.inert = false;
+        }
+        if (failed) scheduleAutoSave();
+    }
+
     // ============================================================
     // LOAD DATA
     // ============================================================
@@ -699,6 +759,7 @@
         const students = await getStudents(currentStd);
         tableBody.innerHTML = '';
         students.forEach((s, i) => tableBody.appendChild(createRow(s, i)));
+        if (updateRollNumbers()) scheduleAutoSave();
         for (let i = 0; i < 3; i++) addNewRow();
 
         document.getElementById('excelImportInput').addEventListener('change', importExcel);
@@ -749,10 +810,11 @@
     // SAVE DATA
     // ============================================================
     async function saveData(manual) {
-        if (isSaving) return;
+        if (isSaving || isClearing) return;
         isSaving = true;
         const statusEl = document.getElementById('saveStatus');
         try {
+            updateRollNumbers();
             const rows = tableBody.querySelectorAll('tr');
             const dataToSave = [];
             rows.forEach((tr, i) => { const s = readRowData(tr, i); if (s) dataToSave.push(s); });
