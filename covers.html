@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પરિણામ ફાઈલનાં કવર</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="db.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans Gujarati', sans-serif; background: #eef1f5; color: #233c5c; padding: 24px; }
+        .main-container { display: flex; align-items: flex-start; gap: 24px; max-width: 1200px; margin: auto; }
+        .pages-area { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+        .control-panel { width: 280px; flex-shrink: 0; position: sticky; top: 24px; padding: 18px; border: 1px solid #dce2ea; border-radius: 16px; background: white; display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 48px); overflow: auto; }
+        h1 { font-size: 20px; line-height: 1.6; }
+        .panel-note { font-size: 12px; line-height: 1.8; color: #63748a; }
+        .badge { padding: 10px; border-radius: 8px; background: #edf2fa; text-align: center; font-weight: 700; font-size: 14px; }
+        .btn { min-height: 44px; padding: 10px 12px; border: none; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; }
+        .btn-home { background: #233c5c; color: #fff; }
+        .btn-print { background: #e46b24; color: #fff; }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        button:focus-visible, a:focus-visible { outline: 3px solid #d98c27; outline-offset: 2px; }
+        .cover-list { display: grid; gap: 6px; }
+        .cover-item { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border: 1px solid #e1e7ef; border-radius: 8px; background: #f8fafc; color: #33465e; cursor: pointer; font: inherit; font-size: 12px; text-align: left; }
+        .cover-item:hover { background: #edf2fa; border-color: #9aadc7; }
+        .cover-item img { width: 30px; height: 42px; object-fit: cover; border-radius: 2px; }
+        .preview-slot { position: relative; flex-shrink: 0; }
+        .a4-page { position: absolute; top: 0; left: 0; width: 210mm; height: 297mm; overflow: hidden; background: white; box-shadow: 0 8px 28px #18304426; transform-origin: top left; container-type: inline-size; }
+        .paper-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+        .field { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 800; line-height: 1.25; overflow: hidden; white-space: nowrap; }
+        .school { color: #4b1954; font-size: 2.6cqw; }
+        .teacher { color: #075d43; font-size: 3.5cqw; }
+        .location { color: #1d2737; font-size: 1.8cqw; }
+        .year { color: #a51f24; font-size: 2.7cqw; }
+        .grade { color: #083d91; font-size: 3.55cqw; }
+        .grade.value-only { font-size: 4.25cqw; }
+        .status { max-width: 1200px; margin: 0 auto 16px; padding: 12px 16px; background: #fff8e6; border: 1px solid #ead5a9; border-radius: 8px; font-size: 13px; line-height: 1.8; }
+        .status.error { background: #fff0ef; border-color: #dca7a2; color: #9b2820; }
+        [hidden] { display: none !important; }
+        @media (max-width: 900px) {
+            body { padding: 12px; }
+            .main-container { flex-direction: column-reverse; gap: 20px; }
+            .control-panel { position: static; width: 100%; max-height: none; }
+            .cover-list { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); }
+            .pages-area { width: 100%; }
+        }
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body { padding: 0; background: white; }
+            .control-panel, .status { display: none !important; }
+            .main-container, .pages-area { display: block; max-width: none; }
+            .preview-slot { width: 210mm !important; height: 297mm !important; break-after: page; }
+            .preview-slot:last-child { break-after: auto; }
+            .a4-page { position: relative; transform: none !important; box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div id="status" class="status" role="status">કવર અને શાળાની માહિતી લોડ થાય છે...</div>
+    <main class="main-container">
+        <div class="pages-area" id="pagesContainer"></div>
+        <aside class="control-panel" aria-label="કવર નિયંત્રણ">
+            <h1>પરિણામ ફાઈલનાં કવર</h1>
+            <div class="badge" id="classBadge"></div>
+            <a class="btn btn-home" id="homeLink">ડેશબોર્ડ</a>
+            <p class="panel-note">શાળાની માહિતીમાંથી વિગતો આપમેળે ભરાય છે. માહિતી બદલવા માટે <a id="schoolLink">શાળાની માહિતી</a> ખોલો.</p>
+            <nav class="cover-list" id="coverList" aria-label="કવર પસંદ કરો"></nav>
+            <button class="btn btn-print" id="printButton" disabled>બધા કવર પ્રિન્ટ / PDF</button>
+            <p class="panel-note">પ્રિન્ટ: A4, margins None અને headers/footers બંધ રાખો. દરેક ડિઝાઇન અલગ પાનાં પર આવશે.</p>
+        </aside>
+    </main>
+    <script>
+        const currentStd = getUrlParam('std', '6');
+        const urlExam = getUrlParam('exam', 'Sem2');
+        const commonFields = {
+            school: [102.1667, 40.8733, 325.6666, 34.3333],
+            teacher: [152.1667, 68.04, 225.6667, 40],
+            location: [72.8333, 98.54, 394.3334, 29]
+        };
+        const templates = [
+            { id: 1, name: 'પત્રક-A', year: [159.5, 235.8733, 191, 34.3333], grade: [202, 277.54, 116, 37] },
+            { id: 2, name: 'પત્રક-B', year: [159.5, 252.8733, 191, 34.3333], grade: [202, 289.54, 116, 37] },
+            { id: 4, name: 'ત્રિમાસિક પરીક્ષા', year: [159.5, 232.8733, 191, 34.3333], grade: [202, 271.54, 116, 37] },
+            { id: 6, name: 'સત્રાંત પરીક્ષા', year: [161.5, 285.8733, 191, 34.3334], grade: [202, 322.54, 116, 37] },
+            { id: 3, name: 'વાર્ષિક પરીક્ષા', year: [159.5, 217.8733, 191, 34.3333], grade: [202, 257.54, 116, 37] },
+            { id: 5, name: 'FLN', year: [159.5, 232.8733, 191, 34.3333], grade: [202, 271.54, 116, 37] },
+            { id: 7, name: 'નિપુણ ગુજરાત', year: [161.5, 270.8733, 191, 34.3334], grade: [202, 304.54, 116, 37] },
+            {
+                id: 8, name: 'પરીક્ષા ફાઈલ', school: [102.1667, 118.3733, 325.6666, 34.3333],
+                teacher: [152.1667, 143.54, 225.6667, 40], location: [72.8333, 177.04, 394.3334, 29],
+                year: [143.1667, 255.54, 227.6667, 40], grade: [202, 621.04, 116, 37]
+            },
+            {
+                id: 9, name: 'ધોરણ પરિણામ ફાઈલ', school: [102.1667, 118.8733, 325.6666, 34.3333],
+                teacher: [152.1667, 142.04, 225.6667, 40], location: [72.8333, 173.54, 394.3334, 29],
+                year: [166.3333, 376.04, 187.3333, 40], grade: [279.3333, 255.3733, 85.3333, 61.3333]
+            }
+        ];
+        const container = document.getElementById('pagesContainer');
+        const status = document.getElementById('status');
+        const printButton = document.getElementById('printButton');
+
+        function setRect(element, rect, template) {
+            const width = template.id === 9 ? 527.03003 : 525.53003;
+            const height = template.id === 9 ? 746.03998 : 748.03998;
+            const [x, y, w, h] = rect;
+            Object.assign(element.style, {
+                left: `${x / width * 100}%`, top: `${y / height * 100}%`,
+                width: `${w / width * 100}%`, height: `${h / height * 100}%`
+            });
+        }
+
+        function addField(page, name, text, rect, template) {
+            const field = document.createElement('div');
+            field.className = `field ${name}`;
+            field.textContent = text;
+            setRect(field, rect, template);
+            page.appendChild(field);
+        }
+
+        function fitPreviews() {
+            container.querySelectorAll('.preview-slot').forEach(slot => {
+                const page = slot.firstElementChild;
+                const scale = Math.min(1, container.clientWidth / page.offsetWidth);
+                slot.style.width = `${page.offsetWidth * scale}px`;
+                slot.style.height = `${page.offsetHeight * scale}px`;
+                page.style.transform = `scale(${scale})`;
+            });
+        }
+
+        function fitFields() {
+            container.querySelectorAll('.field').forEach(field => {
+                field.style.fontSize = '';
+                let size = parseFloat(getComputedStyle(field).fontSize);
+                while ((field.scrollWidth > field.clientWidth + 1 || field.scrollHeight > field.clientHeight + 1) && size > 8) {
+                    size -= .5;
+                    field.style.fontSize = `${size}px`;
+                }
+                if (field.scrollWidth > field.clientWidth + 1 || field.scrollHeight > field.clientHeight + 1) {
+                    throw new Error('કવરમાં લખાણ ખૂબ લાંબું છે: ' + field.textContent);
+                }
+            });
+        }
+
+        function getData(school) {
+            const { taluka, district } = getSchoolAddressParts(school);
+            return {
+                school: school.schoolName || 'શાળાનું નામ',
+                teacher: school.teacherName || '',
+                location: `તાલુકો : ${taluka || '---'}, જિલ્લો : ${district || '---'}, પે. સેન્ટર : ${school.centerSchool || '---'}`,
+                year: `વર્ષ : ${school.sessionYear || '---'}  -  સત્ર : ${urlExam === 'Sem1' ? '1' : '2'}`,
+                grade: `${currentStd}-${school.class || 'A'}`
+            };
+        }
+
+        async function renderCovers(school) {
+            const data = getData(school);
+            const images = [];
+            container.replaceChildren();
+            document.getElementById('coverList').replaceChildren();
+            templates.forEach((template, index) => {
+                const id = String(template.id).padStart(2, '0');
+                const slot = document.createElement('section');
+                slot.className = 'preview-slot';
+                slot.id = `cover-${index + 1}`;
+                slot.setAttribute('aria-label', template.name);
+                const page = document.createElement('div');
+                page.className = 'a4-page';
+                const background = document.createElement('img');
+                background.className = 'paper-bg';
+                background.alt = template.name;
+                background.src = `cover-design/backgrounds/design-${id}.jpeg`;
+                page.appendChild(background);
+                images.push(background);
+                ['school', 'teacher', 'location', 'year', 'grade'].forEach(name => {
+                    const text = name === 'grade' && template.id !== 9 ? `ધોરણ : ${data.grade}` : data[name];
+                    addField(page, name === 'grade' && template.id === 9 ? 'grade value-only' : name,
+                        text, template[name] || commonFields[name], template);
+                });
+                slot.appendChild(page);
+                container.appendChild(slot);
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'cover-item';
+                const thumb = document.createElement('img');
+                thumb.src = `cover-design/previews/design-${id}.jpg`;
+                thumb.alt = '';
+                item.append(thumb, document.createTextNode(`${index + 1}. ${template.name}`));
+                item.addEventListener('click', () => slot.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                document.getElementById('coverList').appendChild(item);
+            });
+            fitPreviews();
+            await Promise.all(images.map(image => image.decode().catch(() => {
+                throw new Error('કવરની ઇમેજ લોડ થઈ નથી: ' + image.getAttribute('src'));
+            })));
+            await document.fonts.ready;
+            fitFields();
+        }
+
+        new ResizeObserver(fitPreviews).observe(container);
+        document.getElementById('homeLink').href = currentStd === '2'
+            ? 'home_std2.html'
+            : `home.html?std=${encodeURIComponent(currentStd)}`;
+        document.getElementById('schoolLink').href = `school_info.html?std=${encodeURIComponent(currentStd)}`;
+        printButton.addEventListener('click', () => window.print());
+        window.addEventListener('load', async () => {
+            try {
+                await openDB();
+                const school = (await getSchoolInfoDB(currentStd)) || {};
+                document.getElementById('classBadge').textContent = `ધોરણ : ${currentStd}-${school.class || 'A'} | સત્ર : ${urlExam === 'Sem1' ? '1' : '2'}`;
+                await renderCovers(school);
+                printButton.disabled = false;
+                const missing = ['schoolName', 'teacherName', 'sessionYear', 'centerSchool'].some(key => !school[key]);
+                status.hidden = !missing;
+                status.textContent = 'કેટલીક વિગતો ખાલી છે. શાળાની માહિતીમાં નામ, શિક્ષક, વર્ષ અને પે. સેન્ટર ભરીને આ પેજ ફરી ખોલો.';
+            } catch (error) {
+                console.error('Cover loading failed:', error);
+                status.hidden = false;
+                status.classList.add('error');
+                status.textContent = 'કવર તૈયાર કરવામાં ભૂલ: ' + error.message;
+                printButton.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>

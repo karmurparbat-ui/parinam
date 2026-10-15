@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ધોરણ ૨ — D2 પત્રક પ્રિન્ટ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="std2_config.js"></script>
+<script src="std2_db.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:#eef1f5;color:#233044;font-family:'Noto Sans Gujarati',sans-serif}
+.controls{max-width:1200px;margin:0 auto 16px;padding:16px;background:#fff;border:1px solid #dce2ea;border-radius:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.controls h1{font-size:20px;margin:0 auto 0 0}
+.controls label{font-weight:700}
+.controls select,.button{min-height:42px;padding:8px 12px;border:1px solid #b9c5d3;border-radius:7px;font:inherit}
+.button{border:0;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.button:focus-visible,.controls select:focus-visible{outline:3px solid #f39a35;outline-offset:2px}
+.home{background:#233c5c}.edit{background:#287743}.print{background:#e46b24}.print-all{background:#6441a5}
+.status{max-width:1200px;margin:0 auto 14px;padding:12px 16px;border:1px solid #ead5a9;border-radius:8px;background:#fff8e6;line-height:1.7}
+.status.error{background:#fff0ef;border-color:#dca7a2;color:#9b2820}
+.pages{max-width:1200px;margin:0 auto}
+.print-page{background:#fff;margin:0 auto 20px;padding:12px;box-shadow:0 4px 16px #182b421c;overflow:hidden}
+.print-page h2{text-align:center;margin:0 0 4px;font-size:18px}
+.school{text-align:center;font-size:13px;font-weight:700}
+.subheading{text-align:center;margin:5px 0 10px;font-size:13px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}
+th,td{border:1px solid #333;padding:3px 2px;text-align:center;vertical-align:middle}
+thead th{background:#f4dfbf}
+th.roll,td.roll{width:28px}
+th.student,td.student{width:130px;text-align:left;padding-left:5px}
+th.item{width:27px;height:145px;padding:2px}
+th.item span{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;max-height:138px;overflow:hidden;line-height:1.25}
+th.summary,td.summary{width:34px;background:#f0f4f8}
+td.student{font-weight:600;overflow-wrap:anywhere}
+td.grade-a{background:#c8e6c9;color:#1b5e20;font-weight:700}
+td.grade-b{background:#fff9c4;color:#827717;font-weight:700}
+td.grade-c{background:#ffcdd2;color:#b71c1c;font-weight:700}
+.empty{text-align:center;padding:18px;color:#697586}
+[hidden]{display:none!important}
+@media(max-width:700px){body{padding:8px}.controls{padding:10px}.controls h1{width:100%}.controls select,.button{flex:1}.print-page{padding:6px}}
+@page{size:A4 landscape;margin:8mm}
+@media print{
+ body{padding:0;background:#fff}
+ .controls,.status{display:none!important}
+ .pages{max-width:none}
+ .print-page{margin:0;padding:0;box-shadow:none;overflow:visible;break-after:page;page-break-after:always}
+ .print-page:last-child{break-after:auto;page-break-after:auto}
+ .table-wrap{overflow:visible}
+ table{font-size:8px}
+ th,td{padding:2px 1px}
+ th.item{height:35mm}
+ th.item span{max-height:34mm}
+ th.student,td.student{width:32mm}
+ thead{display:table-header-group}
+ tr{break-inside:avoid;page-break-inside:avoid}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<nav class="controls" aria-label="D2 પત્રક નિયંત્રણ">
+  <h1>ધોરણ ૨ — D2 પત્રક</h1>
+  <label for="sessionSelect">સત્ર</label>
+  <select id="sessionSelect">
+    <option value="sem1">પ્રથમ સત્ર</option>
+    <option value="sem2">દ્વિતીય સત્ર</option>
+  </select>
+  <label for="sheetSelect">પત્રક</label>
+  <select id="sheetSelect"></select>
+  <a class="button home" href="home_std2.html">← ડેશબોર્ડ</a>
+  <a class="button edit" id="editLink" href="marks_entry_std2.html">✏️ ડેટા એન્ટ્રી</a>
+  <button class="button print" id="printButton" type="button">🖨️ આ પત્રક પ્રિન્ટ</button>
+  <button class="button print-all" id="printAllButton" type="button">🖨️ આ સત્રનાં ત્રણેય પત્રક</button>
+</nav>
+<div class="status" id="status" role="status">D2 પત્રક લોડ થાય છે...</div>
+<main class="pages" id="pages"></main>
+
+<script>
+const state = {
+  session: new URLSearchParams(location.search).get('session') === 'sem2' ? 'sem2' : 'sem1',
+  sheet: new URLSearchParams(location.search).get('sheet') || STD2_SHEETS[0].key,
+  printAllInitially: new URLSearchParams(location.search).get('all') === '1',
+  students: [],
+  school: null
+};
+const statusEl = document.getElementById('status');
+const pagesEl = document.getElementById('pages');
+const sessionSelect = document.getElementById('sessionSelect');
+const sheetSelect = document.getElementById('sheetSelect');
+let visibleSheetKeys = [state.sheet];
+
+function esc(value){
+  return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function gradeMarks(student, sheet){
+  const marks = student[state.session]?.[sheet.key];
+  return sheet.items.map((_, index) => {
+    const value = Array.isArray(marks) ? String(marks[index] ?? '').trim().toUpperCase() : '';
+    return ['A','B','C'].includes(value) ? value : '';
+  });
+}
+
+function buildPage(sheet){
+  const rows = state.students.map((student, index) => {
+    const marks = gradeMarks(student, sheet);
+    const calc = std2Calc(marks);
+    const itemCells = marks.map(mark => `<td class="${mark ? `grade-${mark.toLowerCase()}` : ''}">${esc(mark)}</td>`).join('');
+    return `<tr>
+      <td class="roll">${index + 1}</td>
+      <td class="student">${esc(student.name) || '—'}</td>
+      ${itemCells}
+      <td class="summary">${calc.a}</td><td class="summary">${calc.b}</td><td class="summary">${calc.c}</td>
+      <td class="summary">${calc.filled}/${sheet.items.length}</td>
+      <td class="summary">${calc.filled ? `${calc.pct}%` : '—'}</td>
+      <td class="summary">${esc(calc.grade || '—')}</td>
+    </tr>`;
+  }).join('');
+  const itemHeaders = sheet.items.map((item, index) => `<th class="item" title="${esc(item)}"><span>${index + 1}. ${esc(item)}</span></th>`).join('');
+  const year = state.school?.sessionYear ? ` | શૈક્ષણિક વર્ષ: ${esc(state.school.sessionYear)}` : '';
+  return `<section class="print-page">
+    <h2>${esc(state.school?.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા')}</h2>
+    <div class="school">ધોરણ ૨ — D2 પત્રક — ${esc(sheet.name)}</div>
+    <div class="subheading">${state.session === 'sem1' ? 'પ્રથમ સત્ર' : 'દ્વિતીય સત્ર'}${year} | કુલ વિદ્યાર્થી: ${state.students.length}</div>
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th class="roll" rowspan="2">ક્રમ</th><th class="student" rowspan="2">વિદ્યાર્થીનું નામ</th>
+        <th colspan="${sheet.items.length}">ક્ષમતા / અધ્યયન નિષ્પત્તિ (ગ્રેડ)</th>
+        <th class="summary" rowspan="2">A</th><th class="summary" rowspan="2">B</th><th class="summary" rowspan="2">C</th>
+        <th class="summary" rowspan="2">ભરેલ</th><th class="summary" rowspan="2">%</th><th class="summary" rowspan="2">ગ્રેડ</th>
+      </tr><tr>${itemHeaders}</tr></thead>
+      <tbody>${rows || `<tr><td class="empty" colspan="${sheet.items.length + 8}">હજુ વિદ્યાર્થીનો ડેટા નથી.</td></tr>`}</tbody>
+    </table></div>
+  </section>`;
+}
+
+function render(sheetKeys = [state.sheet]){
+  const selected = sheetKeys.map(key => STD2_SHEETS.find(sheet => sheet.key === key)).filter(Boolean);
+  visibleSheetKeys = selected.map(sheet => sheet.key);
+  pagesEl.innerHTML = selected.map(buildPage).join('');
+  document.getElementById('printButton').textContent = selected.length > 1 ? '🖨️ ત્રણેય પત્રક પ્રિન્ટ' : '🖨️ આ પત્રક પ્રિન્ટ';
+  document.getElementById('printButton').disabled = !state.students.length;
+  document.getElementById('printAllButton').disabled = !state.students.length;
+}
+
+async function load(){
+  try{
+    state.students = await s2GetAllStudents(2);
+    state.school = await s2GetSchool();
+    sessionSelect.value = state.session;
+    if(!STD2_SHEETS.some(sheet => sheet.key === state.sheet)) state.sheet = STD2_SHEETS[0].key;
+    sheetSelect.innerHTML = STD2_SHEETS.map(sheet => `<option value="${sheet.key}">${esc(sheet.name)}</option>`).join('');
+    sheetSelect.value = state.sheet;
+    document.title = `ધોરણ ૨ — D2 ${state.session === 'sem1' ? 'પ્રથમ' : 'દ્વિતીય'} સત્ર પત્રક`;
+    document.getElementById('editLink').href = `marks_entry_std2.html?session=${state.session}`;
+    statusEl.textContent = state.students.length
+      ? `${state.students.length} વિદ્યાર્થીઓનો ડેટા તૈયાર છે. પ્રિન્ટમાં A4 Landscape પસંદ કરો.`
+      : 'હજુ વિદ્યાર્થીનો ડેટા નથી. પહેલા ડેટા એન્ટ્રીમાં વિદ્યાર્થીઓ ઉમેરો.';
+    render(state.printAllInitially ? STD2_SHEETS.map(sheet => sheet.key) : [state.sheet]);
+  }catch(error){
+    console.error('D2 print load error:', error);
+    statusEl.textContent = `D2 પત્રક લોડ કરવામાં ભૂલ: ${error.message}`;
+    statusEl.classList.add('error');
+  }
+}
+
+sessionSelect.addEventListener('change', () => {
+  state.session = sessionSelect.value;
+  state.printAllInitially = false;
+  document.title = `ધોરણ ૨ — D2 ${state.session === 'sem1' ? 'પ્રથમ' : 'દ્વિતીય'} સત્ર પત્રક`;
+  document.getElementById('editLink').href = `marks_entry_std2.html?session=${state.session}`;
+  render();
+});
+sheetSelect.addEventListener('change', () => {
+  state.sheet = sheetSelect.value;
+  state.printAllInitially = false;
+  render();
+});
+document.getElementById('printButton').addEventListener('click', () => window.print());
+document.getElementById('printAllButton').addEventListener('click', () => {
+  render(STD2_SHEETS.map(sheet => sheet.key));
+  window.print();
+});
+window.addEventListener('afterprint', () => render(state.printAllInitially ? STD2_SHEETS.map(sheet => sheet.key) : [state.sheet]));
+window.addEventListener('DOMContentLoaded', load);
+</script>
+</body>
+</html>
