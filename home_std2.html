@@ -8,10 +8,13 @@
 <style>
 body { font-family:'Rasa',sans-serif; background:linear-gradient(135deg,#f5e6d3,#fce4d0); margin:0; padding:20px; min-height:100vh; }
 .topbar { max-width:1400px; margin:0 auto 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
-.topbar a { color:#8B4513; text-decoration:none; font-weight:600; padding:10px 18px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
-.topbar a.home-return { min-height:46px; display:inline-flex; align-items:center; justify-content:center; padding:10px 18px; border:2px solid #f4b942; border-radius:10px; background:linear-gradient(180deg,#173f68,#102d4c); color:#fff; font-weight:800; box-shadow:0 4px 0 #0b2239,0 7px 16px rgba(16,45,76,.28); }
-.topbar a.home-return:hover { background:linear-gradient(180deg,#245b8e,#173f68); transform:translateY(-1px); }
-.topbar a.home-return:focus-visible { outline:3px solid #d47700; outline-offset:3px; }
+.topbar a, .topbar button { color:#8B4513; text-decoration:none; font-weight:600; padding:10px 18px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.1); border:none; cursor:pointer; font-family:'Rasa',sans-serif; font-size:1em; }
+.topbar a.home-return, .topbar button.home-return { min-height:46px; display:inline-flex; align-items:center; justify-content:center; padding:10px 18px; border:2px solid #f4b942; border-radius:10px; background:linear-gradient(180deg,#173f68,#102d4c); color:#fff; font-weight:800; box-shadow:0 4px 0 #0b2239,0 7px 16px rgba(16,45,76,.28); }
+.topbar a.home-return:hover, .topbar button.home-return:hover { background:linear-gradient(180deg,#245b8e,#173f68); transform:translateY(-1px); }
+.topbar button.guide-btn { border:2px solid #f4b942; background:linear-gradient(135deg, rgba(244,185,66,0.25), rgba(244,185,66,0.1)); color:#8B4513; font-weight:800; position:relative; overflow:hidden; min-height:46px; }
+.topbar button.guide-btn::after { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent); animation:guideShine 3s infinite; }
+@keyframes guideShine { 0%{left:-100%} 60%{left:100%} 100%{left:100%} }
+.topbar button.guide-btn:hover { background:linear-gradient(135deg,#f4b942,#d47700); color:#fff; transform:translateY(-2px); box-shadow:0 8px 20px rgba(244,185,66,.5); }
 .header { text-align:center; margin-bottom:24px; }
 .header h1 { font-family:'Shrikhand',cursive; color:#8B4513; margin:0; font-size:2.4em; text-shadow:2px 2px 0 #fff, 4px 4px 10px rgba(0,0,0,.15); }
 .header .sub { font-size:1.15em; color:#A0522D; margin-top:6px; font-weight:600; }
@@ -27,12 +30,39 @@ body { font-family:'Rasa',sans-serif; background:linear-gradient(135deg,#f5e6d3,
 .btn.blue   { background:linear-gradient(180deg,#4A90D9,#2E6BA8); box-shadow:0 5px 0 #1B4A7A,0 8px 16px rgba(0,0,0,.2); }
 .btn.purple { background:linear-gradient(180deg,#9B59B6,#6D3E8A); box-shadow:0 5px 0 #4A2A5E,0 8px 16px rgba(0,0,0,.2); }
 @media (max-width:900px){ .grid{grid-template-columns:1fr;} }
+
+/* ============ GUIDE MODAL ============ */
+.guide-modal { display: none; position: fixed; inset: 0; background: rgba(10,15,60,0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; padding: 20px; overflow-y: auto; }
+.guide-modal.open { display: flex; align-items: flex-start; justify-content: center; }
+.guide-content { background: #fff; border-radius: 20px; max-width: 920px; width: 100%; box-shadow: 0 30px 80px rgba(0,0,0,0.6); border: 3px solid #FFD700; overflow: hidden; margin: auto; animation: guideSlide 0.4s ease; }
+@keyframes guideSlide { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+.guide-header { background: linear-gradient(135deg, #1A237E, #283593); color: #FFD700; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 5; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+.guide-header h2 { margin: 0; font-size: 22px; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.4); letter-spacing: 0.5px; font-family:'Rasa',sans-serif; }
+.guide-close { background: rgba(255,215,0,0.2); border: 2px solid #FFD700; color: #FFD700; font-size: 22px; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-weight: 800; transition: all 0.25s; font-family: inherit; display: flex; align-items: center; justify-content: center; padding: 0; }
+.guide-close:hover { background: #FFD700; color: #1A237E; transform: rotate(90deg) scale(1.1); }
+.guide-body { padding: 24px; max-height: 78vh; overflow-y: auto; background: #FAFAFA; }
+.guide-body::-webkit-scrollbar { width: 10px; }
+.guide-body::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 5px; }
+.guide-body::-webkit-scrollbar-thumb { background: #FF9800; border-radius: 5px; }
+.guide-section { margin-bottom: 22px; padding: 18px 22px; background: linear-gradient(135deg, #FFFDE7, #FFF9C4); border-left: 6px solid #FF9800; border-radius: 12px; box-shadow: 0 6px 15px rgba(255,152,0,0.15); transition: transform 0.2s; }
+.guide-section:hover { transform: translateX(4px); }
+.guide-section h3 { margin: 0 0 14px; color: #E65100; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 2px dashed #FFB74D; font-family:'Rasa',sans-serif; }
+.guide-section h3 .num { background: #FF9800; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; box-shadow: 0 3px 8px rgba(255,152,0,0.5); }
+.guide-section ol, .guide-section ul { margin: 0; padding-left: 24px; line-height: 1.95; color: #222; font-weight: 600; font-size: 14.5px; }
+.guide-section li { margin-bottom: 8px; }
+.guide-section li strong { color: #B71C1C; }
+.guide-section .tip { background: #E8F5E9; border-left: 4px solid #4CAF50; padding: 10px 14px; margin-top: 12px; border-radius: 6px; font-size: 13.5px; color: #1B5E20; font-weight: 700; }
+.guide-section .warn { background: #FFEBEE; border-left: 4px solid #E53935; padding: 10px 14px; margin-top: 12px; border-radius: 6px; font-size: 13.5px; color: #B71C1C; font-weight: 700; }
+.guide-section .contact { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border-left: 4px solid #1A237E; padding: 14px; margin-top: 12px; border-radius: 6px; font-size: 14.5px; color: #1A237E; font-weight: 700; line-height: 2; }
+.guide-section .contact a { color: #B71C1C; text-decoration: none; font-weight: 800; }
+@media (max-width: 700px) { .guide-header h2 { font-size: 16px; } .guide-close { width: 36px; height: 36px; font-size: 18px; } .guide-body { padding: 14px; } .guide-section { padding: 14px 16px; } .guide-section h3 { font-size: 15px; } .guide-section ol, .guide-section ul { font-size: 13px; padding-left: 20px; } }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <a class="home-return" href="index.html">🏠 મુખ્ય પેજ</a>
+  <button class="home-return" onclick="window.location.href='index.html'">🏠 મુખ્ય પેજ</button>
+  <button class="guide-btn" onclick="openGuide()">📖 માર્ગદર્શિકા</button>
   <a href="school_info.html?std=2">🏫 શાળાકીય માહિતી</a>
 </div>
 
@@ -69,5 +99,113 @@ body { font-family:'Rasa',sans-serif; background:linear-gradient(135deg,#f5e6d3,
   </div>
 </div>
 
+<!-- ============ GUIDE MODAL ============ -->
+<div id="guideModal" class="guide-modal" onclick="if(event.target===this)closeGuide()">
+    <div class="guide-content">
+        <div class="guide-header">
+            <h2>📖 સોફ્ટવેર ઉપયોગ માર્ગદર્શિકા (ધોરણ ૨)</h2>
+            <button class="guide-close" onclick="closeGuide()">✕</button>
+        </div>
+        <div class="guide-body">
+
+            <div class="guide-section">
+                <h3><span class="num">1</span>🏫 પ્રથમ સેટઅપ — શાળાકીય માહિતી</h3>
+                <ol>
+                    <li>ડેશબોર્ડ પર <strong>"🏫 શાળાકીય માહિતી"</strong> બટન દબાવો</li>
+                    <li>શાળાનું નામ, ગામ, તાલુકો, જિલ્લો, ડાયસ કોડ ભરો</li>
+                    <li>વર્ગ શિક્ષક, આચાર્ય, સી.આર.સી., પે. સેન્ટર ભરો</li>
+                    <li>શાળા લોગો, આચાર્યની સહી, શિક્ષકની સહી upload કરો</li>
+                    <li>💾 <strong>માહિતી સેવ કરો</strong> દબાવો</li>
+                </ol>
+                <div class="tip">💡 Std 2 નો ડેટા Std 3-8 થી સંપૂર્ણ અલગ (અલગ Database) રહે છે.</div>
+            </div>
+
+            <div class="guide-section">
+                <h3><span class="num">2</span>👦 વિદ્યાર્થી માહિતી + D2 પત્રક એન્ટ્રી</h3>
+                <ol>
+                    <li>ડેશબોર્ડ પર <strong>"👦 વિદ્યાર્થી માહિતી + એન્ટ્રી"</strong> બટન દબાવો</li>
+                    <li>વિદ્યાર્થી માહિતી ભરો: <strong>નામ, GR, જન્મ તારીખ, સરનામું, ફોટો, જાતિ, M/F</strong></li>
+                    <li>D2 પત્રક — <strong>3 tabs</strong>:
+                        <ul>
+                            <li>📗 <strong>ભાષા પર્યાવરણ</strong> — 20 items</li>
+                            <li>📘 <strong>ગણિત</strong> — 20 items</li>
+                            <li>📙 <strong>વ્યક્તિત્વ વિકાસ</strong> — 11 items</li>
+                        </ul>
+                    </li>
+                    <li>દરેક item સામે dropdown: <strong>A / B / C</strong></li>
+                        <ul>
+                            <li><strong>A</strong> = 3 points (હરિયાળો)</li>
+                            <li><strong>B</strong> = 2 points (પીળો)</li>
+                            <li><strong>C</strong> = 1 point (લાલ)</li>
+                        </ul>
+                    <li>Auto-calculate: A count, B count, C count, Total, %, Grade</li>
+                    <li>પ્રથમ સત્ર / દ્વિતીય સત્ર tabs — બંને અલગ entry</li>
+                    <li>💾 Auto-save automatic</li>
+                    <li><strong>📥 Excel Import</strong> / <strong>📤 Excel Export</strong></li>
+                </ol>
+                <div class="tip">💡 Excel Export → Excel માં ફેરફાર → Excel Import → બધા students auto update.</div>
+            </div>
+
+            <div class="guide-section">
+                <h3><span class="num">3</span>🖨️ D2 પત્રક પ્રિન્ટ</h3>
+                <ol>
+                    <li>ડેશબોર્ડ પર D2 પત્રક buttons માંથી પસંદ કરો:
+                        <ul>
+                            <li><strong>"🖨️ ભાષા પર્યાવરણ પત્રક"</strong></li>
+                            <li><strong>"🖨️ ગણિત પત્રક"</strong></li>
+                            <li><strong>"🖨️ વ્યક્તિત્વ વિકાસ પત્રક"</strong></li>
+                            <li><strong>"🖨️ ત્રણેય D2 પત્રક પ્રિન્ટ"</strong> — બધા એકસાથે</li>
+                        </ul>
+                    </li>
+                    <li>સત્ર પસંદ કરો: <strong>પ્રથમ / દ્વિતીય</strong></li>
+                    <li>A4 <strong>Landscape</strong> — Table view + A/B/C count + % + Grade</li>
+                    <li><strong>"🖨️ આ પત્રક પ્રિન્ટ"</strong> — એક પત્રક</li>
+                    <li><strong>"🖨️ આ સત્રનાં ત્રણેય પત્રક"</strong> — ત્રણેય એક PDF</li>
+                </ol>
+                <div class="tip">💡 પ્રિન્ટ પ્રિવ્યુમાં <strong>Landscape</strong>, <strong>Margins → Minimum</strong>, <strong>Background Graphics ON</strong>.</div>
+            </div>
+
+            <div class="guide-section">
+                <h3><span class="num">4</span>📋 ગ્રેડિંગ સિસ્ટમ</h3>
+                <ul>
+                    <li><strong>A</strong> → 80%+ (ઉત્તમ)</li>
+                    <li><strong>B</strong> → 65-79% (સારો)</li>
+                    <li><strong>C</strong> → 50-64% (મધ્યમ)</li>
+                    <li><strong>D</strong> → 35-49% (સુધારો જરૂરી)</li>
+                    <li><strong>E</strong> → 35% થી નીચે (નબળો)</li>
+                </ul>
+                <div class="tip">💡 Std 2 માં હંમેશા PASS — Std 8 જેવો FAIL logic નથી.</div>
+            </div>
+
+            <div class="guide-section">
+                <h3><span class="num">5</span>🖨 પ્રિન્ટ / PDF સૂચનાઓ</h3>
+                <ul>
+                    <li>Browser: <strong>Chrome</strong> / <strong>Edge</strong></li>
+                    <li>Print Color: <strong>Exact / Background Graphics ON</strong></li>
+                    <li>Orientation: <strong>Landscape</strong> (બધા D2 પત્રક)</li>
+                    <li>Margins: <strong>Minimum / None</strong></li>
+                    <li>Headers/Footers: <strong>બંધ</strong></li>
+                    <li>PDF: Print → Destination → <strong>"Save as PDF"</strong></li>
+                </ul>
+            </div>
+
+            <div class="guide-section">
+                <h3><span class="num">6</span>📞 સંપર્ક</h3>
+                <div class="contact">
+                    <strong>Developer:</strong> પરબતભાઈ કરમુર<br>
+                    <strong>મોબાઈલ:</strong> <a href="tel:9586311704">958 63 11704</a><br>
+                    <strong>શાળા:</strong> શ્રી કોરાડા વાડી પ્રાથમિક શાળા
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+  function openGuide() { document.getElementById('guideModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeGuide() { document.getElementById('guideModal').classList.remove('open'); document.body.style.overflow = ''; }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGuide(); });
+</script>
 </body>
 </html>
