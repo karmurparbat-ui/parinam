@@ -54,6 +54,9 @@
         .btn { padding: 10px; border: 1px solid transparent; border-radius: 7px; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; box-shadow: 0 2px 5px rgba(36,55,70,0.14); transition: transform 0.1s ease, box-shadow 0.1s ease; }
         .btn:active { transform: translateY(1px); box-shadow: none; }
         .btn-black { background-color: #344955; color: #fff; }
+        .btn.home-return { min-height:44px; padding:9px 16px; border:2px solid #f4b942; border-radius:9px; background:linear-gradient(180deg,#245b8e,#12375c); color:#fff; font-weight:800; box-shadow:0 4px 0 #0b2239,0 6px 12px rgba(16,45,76,.22); }
+        .btn.home-return:hover { background:linear-gradient(180deg,#3473aa,#194a78); }
+        .btn.home-return:focus-visible { outline:3px solid #d47700; outline-offset:3px; }
         .btn-orange { background-color: var(--accent); color: #fff; }
         .btn-blue { background-color: #356b82; color: #fff; }
         .btn-green { background-color: var(--primary); color: #fff; }
@@ -82,7 +85,7 @@
     <div class="marksheet-area" id="print-area"></div>
     <div class="control-panel">
         <div class="std-badge">ધોરણ : <span id="stdSide">-</span></div>
-        <button class="btn btn-black" onclick="window.location.href='home.html?std=' + currentStd">Home</button>
+        <button class="btn btn-black home-return" onclick="window.location.href='home.html?std=' + currentStd">🏠 ડેશબોર્ડ</button>
         <div class="exam-info" id="examTypeDisplay">વાર્ષિક</div>
         <div class="nav-buttons">
             <button class="btn btn-white" onclick="prevStudent()">◀</button>

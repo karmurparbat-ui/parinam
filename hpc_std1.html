@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="gu"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>સર્વગ્રાહી પ્રગતિ કાર્ડ (HPC) — ધોરણ ૧</title>
+  <style>
+    /* All visual rules are scoped so this page can also be pasted into a host application. */
+    #hpc-app {
+      --hpc-sky:#b9e9ee; --hpc-deep:#12375c; --hpc-maroon:#66372e;
+      --hpc-orange:#d77a3f; --hpc-yellow:#ffe09a; --hpc-ink:#263744;
+      width:100%; min-width:0; margin:0; color:var(--hpc-ink);
+      background:linear-gradient(145deg,#dbf5f6,#ecfaf9 48%,#d8eff4);
+      font-family:"Noto Sans Gujarati","Nirmala UI","Shruti",sans-serif;
+      line-height:1.55;
+    }
+    #hpc-app, #hpc-app *, #hpc-app *::before, #hpc-app *::after {box-sizing:border-box}
+    #hpc-app button,#hpc-app input,#hpc-app textarea,#hpc-app select {font:inherit}
+    #hpc-app button {cursor:pointer}
+    #hpc-app :focus-visible {outline:3px solid #07509b;outline-offset:3px}
+    #hpc-app .hpc-topbar {background:#103d56;color:#fff;padding:14px clamp(16px,3vw,34px);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    #hpc-app .hpc-topbar strong {font-size:1.1rem}
+    #hpc-app .hpc-subtitle {display:block;color:#d7f4f5;font-size:.85rem}
+    #hpc-app .hpc-actions {display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    #hpc-app .hpc-button {border:1px solid #9ecbd1;background:#fff;color:#16435b;border-radius:10px;padding:8px 12px;font-weight:700;min-height:42px}
+    #hpc-app .hpc-button:hover {background:#e4f7f8}
+    #hpc-app .hpc-button.hpc-highlight {background:#f5bb51;border-color:#f5bb51;color:#382317}
+    #hpc-app .hpc-button.home-return {min-height:46px;border:2px solid #f4b942;background:linear-gradient(180deg,#245b8e,#12375c);color:#fff;font-weight:800;box-shadow:0 4px 0 #0b2239}
+    #hpc-app .hpc-button.home-return:hover {background:linear-gradient(180deg,#3473aa,#194a78)}
+    #hpc-app .hpc-button.home-return:focus-visible {outline:3px solid #f5bb51;outline-offset:3px}
+    #hpc-app .hpc-button:disabled {opacity:.55;cursor:not-allowed}
+    #hpc-app .hpc-status {font-size:.8rem;color:#e0f7ed;min-height:1.4em}
+    #hpc-app .hpc-layout {display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;padding:24px;align-items:start}
+    #hpc-app .hpc-sidebar {position:sticky;top:16px;max-height:calc(100 * min(var(--vh,1vh),1vh) - 32px);overflow:auto;background:white;border:1px solid #c2e4e6;border-radius:20px;padding:16px;box-shadow:0 12px 32px #11527116}
+    #hpc-app .hpc-sidebar h2 {font-size:1rem;color:var(--hpc-deep);margin:0 0 12px}
+    #hpc-app .hpc-nav-button {width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:1px solid transparent;background:transparent;color:#37505d;border-radius:10px;padding:8px}
+    #hpc-app .hpc-nav-button:hover,#hpc-app .hpc-nav-button.hpc-active {background:#e4f5f5;border-color:#9ed9dd}
+    #hpc-app .hpc-nav-button.hpc-active {font-weight:700}
+    #hpc-app .hpc-thumb {flex:none;width:29px;height:35px;background:linear-gradient(#f7be55 0 13%,#bcdee5 13%);border:2px solid white;border-radius:3px;box-shadow:0 1px 5px #46636c50;text-align:center;line-height:31px;font-size:.75rem;color:#64372d}
+    #hpc-app .hpc-workspace {min-width:0}
+    #hpc-app .hpc-controls {background:#fff;border:1px solid #c9e5e7;border-radius:16px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+    #hpc-app .hpc-controls form,#hpc-app .hpc-controls .hpc-actions {display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    #hpc-app .hpc-controls label {font-weight:700;color:#234657}
+    #hpc-app .hpc-controls input {border:1px solid #a9cbd1;border-radius:8px;padding:7px;max-width:100%}
+    #hpc-app #hpc-page-jump {width:74px}
+    #hpc-app #hpc-search {width:min(220px,55vw)}
+    #hpc-app .hpc-indicator {font-weight:700;color:#57332f}
+    #hpc-app .hpc-document {max-width:900px;margin:0 auto}
+    #hpc-app .hpc-sheet {position:relative;display:none;width:100%;min-height:1040px;overflow:visible;margin:0 auto 22px;padding:48px clamp(20px,6%,58px) 70px;background-color:var(--hpc-sky);background-image:radial-gradient(circle at 13% 18%,#ffffffb0 0 3px,transparent 4px),repeating-linear-gradient(130deg,transparent 0 13px,#14788b0c 14px 15px);border-radius:8px;box-shadow:0 16px 45px #28556826}
+    #hpc-app .hpc-sheet.hpc-active {display:block}
+    #hpc-app .hpc-sheet:not(.hpc-cover)::before {content:"";position:absolute;right:28px;top:20px;width:90px;height:90px;border:13px solid #ec9669;border-radius:50%;opacity:.23;pointer-events:none}
+    #hpc-app .hpc-heading {position:relative;text-align:center;margin:0 0 20px;color:#243d70;font-size:1.5rem;font-weight:800;line-height:1.45}
+    #hpc-app .hpc-heading .hpc-part {display:block;color:#a43868;font-size:.8em}
+    #hpc-app .hpc-panel {position:relative;background:#fff;border:5px solid #fff;border-radius:23px;padding:clamp(16px,3vw,30px);box-shadow:0 6px 0 #70bfc940}
+    #hpc-app .hpc-panel+.hpc-panel {margin-top:20px}
+    #hpc-app .hpc-foot {position:absolute;left:35px;bottom:20px;background:#e9f8f8;border:1px solid #9dcdd3;color:#873257;padding:3px 15px;border-radius:100px;font-size:.78rem;font-weight:700}
+    #hpc-app .hpc-fields {display:grid;gap:13px}
+    #hpc-app .hpc-field {display:grid;grid-template-columns:minmax(110px,190px) minmax(0,1fr);gap:10px;align-items:center}
+    #hpc-app .hpc-field label,#hpc-app .hpc-area-label {color:#59362f;font-weight:700}
+    #hpc-app .hpc-field input,#hpc-app .hpc-mini-field input,#hpc-app .hpc-signature-input {width:100%;min-width:0;background:#fffdf7;border:0;border-bottom:2px solid #869da3;border-radius:3px;padding:7px;color:#263744}
+    #hpc-app textarea {width:100%;resize:vertical;color:#263744}
+    #hpc-app .hpc-section-title {color:#263d6a;font-size:1.12rem;margin:18px 0 12px}
+    #hpc-app .hpc-session-grid {display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:22px}
+    #hpc-app .hpc-session {background:#ffe187;border-radius:12px;padding:14px}
+    #hpc-app .hpc-session h3 {background:#bd6330;color:#fff;border-radius:20px;text-align:center;font-size:1rem;padding:5px;margin:0 0 8px}
+    #hpc-app .hpc-mini-field {display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:8px 0}
+    #hpc-app .hpc-mini-field input {flex:1;max-width:125px}
+    #hpc-app .hpc-draw {min-height:260px;display:flex;flex-direction:column;gap:10px;padding:16px;margin-top:10px;background:#fff;border:2px dashed #77b7c4;border-radius:19px}
+    #hpc-app .hpc-draw textarea {min-height:165px;flex:1;border:0;background:transparent;padding:8px}
+    #hpc-app .hpc-upload {max-width:100%;border:1px solid #96cbd2;padding:8px;border-radius:9px;background:#eaf9f9}
+    #hpc-app .hpc-upload-name {font-size:.8rem;color:#476777;overflow-wrap:anywhere}
+    #hpc-app .hpc-table-wrap {width:100%;overflow-x:auto;background:#fff;border:5px solid #fff;border-radius:14px}
+    #hpc-app table {width:100%;min-width:560px;border-collapse:collapse;font-size:.86rem;line-height:1.42;table-layout:fixed}
+    #hpc-app th,#hpc-app td {border:2px solid #fff;padding:8px;vertical-align:top;overflow-wrap:anywhere}
+    #hpc-app thead th {background:#704037;color:#fff;text-align:center;font-weight:700}
+    #hpc-app tbody td {background:#f8d7a7}
+    #hpc-app tbody tr:nth-child(even) td {background:#fbe4b9}
+    #hpc-app .hpc-group th {background:#c96e3b;color:#fff;text-align:left}
+    #hpc-app .hpc-competencies th:first-child,#hpc-app .hpc-competencies td:first-child {width:72px}
+    #hpc-app .hpc-competencies th:nth-last-child(-n+2),#hpc-app .hpc-competencies td:nth-last-child(-n+2) {width:105px}
+    #hpc-app .hpc-code {font-weight:700;color:#61362d;white-space:nowrap}
+    #hpc-app .hpc-rating {width:100%;max-width:100%;font-size:.78rem;background:#fffdf7;color:#312720;border:1px solid #a57139;border-radius:7px;padding:5px 1px}
+    #hpc-app .hpc-table-wrap textarea {min-height:77px;border:1px solid #b98e63;border-radius:6px;background:#fffaef;padding:6px}
+    #hpc-app .hpc-smiles {display:flex;justify-content:center;gap:4px;flex-wrap:wrap}
+    #hpc-app .hpc-smiles label {display:inline-flex;align-items:center;justify-content:center;min-width:35px;min-height:35px;border:2px solid transparent;border-radius:8px;cursor:pointer}
+    #hpc-app .hpc-smiles input {position:absolute;opacity:0;width:1px;height:1px}
+    #hpc-app .hpc-smiles label:has(input:checked) {background:#fff;border-color:#733e38}
+    #hpc-app .hpc-smiles label:has(input:focus-visible) {outline:3px solid #07509b}
+    #hpc-app .hpc-cover {background:#fff;padding:0 0 70px;text-align:center}
+    #hpc-app .hpc-wave {height:75px;background:#f6b333;position:relative;overflow:hidden}
+    #hpc-app .hpc-wave::after {content:"";position:absolute;bottom:-42px;left:-5%;width:110%;height:72px;background:#fff;border-radius:48% 52% 0 0;box-shadow:0 -18px 0 #673b31}
+    #hpc-app .hpc-wave.hpc-bottom {position:absolute;bottom:0;left:0;width:100%;transform:rotate(180deg)}
+    #hpc-app .hpc-logo-row {display:flex;justify-content:space-around;gap:10px;margin:25px 28px 20px}
+    #hpc-app .hpc-logo {width:32%;min-width:0;min-height:105px;background:#f8faf9;border:2px dashed #aabcc2;border-radius:14px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#183b56;font-size:.78rem;font-weight:700;line-height:1.35}
+    #hpc-app .hpc-logo svg {width:42px;height:42px;flex:none}
+    #hpc-app .hpc-logo small {font-size:.68rem;font-weight:500}
+    #hpc-app .hpc-cover h1 {font-size:2rem;color:#123c6c;margin:27px 16px 4px;line-height:1.35}
+    #hpc-app .hpc-cover-art {height:340px;margin:24px 0;background:#c4e9e7;overflow:hidden}
+    #hpc-app .hpc-cover-art svg {width:100%;height:100%;display:block}
+    #hpc-app .hpc-grade {display:inline-block;background:#f8bd47;border:3px solid #693f35;border-radius:15px;padding:8px 35px;color:#302525;font-weight:800}
+    #hpc-app .hpc-info-list {padding-left:24px}
+    #hpc-app .hpc-info-list li {margin-bottom:12px}
+    #hpc-app .hpc-note {font-size:.83rem;color:#345366}
+    @media(max-width:820px) {
+      #hpc-app .hpc-layout {grid-template-columns:1fr;padding:12px}
+      #hpc-app .hpc-sidebar {position:static;max-height:none}
+      #hpc-app .hpc-sidebar nav {display:flex;overflow:auto;gap:5px}
+      #hpc-app .hpc-nav-button {min-width:145px}
+      #hpc-app .hpc-sheet {min-height:850px;padding-top:28px}
+      #hpc-app .hpc-cover-art {height:270px}
+    }
+    @media(max-width:550px) {
+      #hpc-app .hpc-topbar {padding:12px}
+      #hpc-app .hpc-sheet {padding:24px 14px 65px}
+      #hpc-app .hpc-field {grid-template-columns:1fr;gap:0}
+      #hpc-app .hpc-session-grid {grid-template-columns:1fr}
+      #hpc-app .hpc-logo-row {margin:18px 8px;gap:5px}
+      #hpc-app .hpc-logo {font-size:.62rem;min-height:100px;padding:5px}
+      #hpc-app .hpc-logo svg {width:30px;height:30px}
+      #hpc-app .hpc-logo small {font-size:.57rem}
+      #hpc-app .hpc-panel {padding:13px}
+      #hpc-app .hpc-foot {left:12px;font-size:.68rem}
+      #hpc-app .hpc-cover-art {height:215px}
+    }
+    @page {size:A4 portrait;margin:8mm}
+    @media print {
+      #hpc-app,#hpc-app * {box-sizing:border-box!important}
+      #hpc-app {width:100%!important;min-width:0!important;background:#fff!important;color:#202b30!important;font-size:9.5pt!important;line-height:1.35!important}
+      #hpc-app .hpc-topbar,#hpc-app .hpc-sidebar,#hpc-app .hpc-controls,#hpc-app .hpc-no-print,
+      #hpc-app .hpc-upload,#hpc-app .hpc-upload-name {display:none!important}
+      #hpc-app .hpc-layout,#hpc-app .hpc-workspace,#hpc-app .hpc-document {display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important}
+      #hpc-app .hpc-sheet,#hpc-app .hpc-sheet.hpc-active {display:none!important}
+      #hpc-app.hpc-print-ready.hpc-print-all .hpc-sheet,
+      #hpc-app.hpc-print-ready.hpc-print-current .hpc-sheet.hpc-print-selected {display:block!important}
+      #hpc-app .hpc-sheet {
+        position:relative!important;width:calc(194mm / var(--hpc-print-scale,1))!important;
+        min-height:0!important;height:calc(281mm / var(--hpc-print-scale,1))!important;
+        max-height:none!important;zoom:var(--hpc-print-scale,1)!important;
+        padding:5mm 4mm 11mm!important;margin:0!important;border-radius:0!important;
+        overflow:hidden!important;box-shadow:none!important;background:#d5eef0!important;
+        break-inside:avoid!important;page-break-inside:avoid!important;
+        break-before:page;page-break-before:always;break-after:auto;page-break-after:auto;
+        print-color-adjust:exact;-webkit-print-color-adjust:exact
+      }
+      #hpc-app .hpc-sheet:first-child,#hpc-app.hpc-print-current .hpc-print-selected {break-before:auto;page-break-before:auto}
+      #hpc-app .hpc-sheet::before,#hpc-app .hpc-sheet::after {display:none!important}
+      #hpc-app .hpc-sheet,#hpc-app .hpc-panel,#hpc-app .hpc-table-wrap,#hpc-app table {max-width:100%!important}
+      #hpc-app .hpc-heading,#hpc-app .hpc-section-title,#hpc-app .hpc-field,#hpc-app .hpc-mini-field,
+      #hpc-app .hpc-session,#hpc-app .hpc-draw,#hpc-app .hpc-foot {
+        break-inside:avoid;page-break-inside:avoid;break-after:avoid;page-break-after:avoid
+      }
+      #hpc-app .hpc-heading {font-size:15pt!important;margin:0 0 3mm!important;color:#173761!important}
+      #hpc-app .hpc-panel {border:1px solid #a2cdd1!important;padding:4mm!important;border-radius:8px!important;box-shadow:none!important;background:white!important}
+      #hpc-app .hpc-panel:has(table),#hpc-app .hpc-table-wrap {break-inside:auto!important;page-break-inside:auto!important}
+      #hpc-app .hpc-table-wrap {border:0!important;border-radius:0!important;overflow:visible!important;background:white!important}
+      #hpc-app table {width:100%!important;min-width:0!important;table-layout:fixed!important;font-size:8pt!important;line-height:1.26!important}
+      #hpc-app thead {display:table-header-group}
+      #hpc-app tr,#hpc-app th,#hpc-app td {break-inside:avoid!important;page-break-inside:avoid!important}
+      #hpc-app tr {break-after:avoid;page-break-after:avoid}
+      #hpc-app th,#hpc-app td {padding:2mm 1.5mm!important;border:1px solid #fff!important}
+      #hpc-app thead th {background:#66372e!important;color:white!important}
+      #hpc-app .hpc-group th {background:#b95e31!important;color:white!important}
+      #hpc-app tbody td {background:#f8dfb9!important;color:#252525!important}
+      #hpc-app .hpc-competencies th:first-child,#hpc-app .hpc-competencies td:first-child {width:16mm!important}
+      #hpc-app .hpc-competencies th:nth-last-child(-n+2),#hpc-app .hpc-competencies td:nth-last-child(-n+2) {width:27mm!important}
+      #hpc-app .hpc-rating {width:100%!important;font-size:7pt!important;padding:1mm 0!important;color:#202020!important;background:#fff!important}
+      #hpc-app .hpc-field input,#hpc-app .hpc-mini-field input,#hpc-app .hpc-signature-input,#hpc-app textarea {color:#202020!important;background:transparent!important;box-shadow:none!important}
+      #hpc-app .hpc-table-wrap textarea {min-height:18mm!important}
+      #hpc-app .hpc-draw {min-height:45mm!important}
+      #hpc-app .hpc-draw textarea {min-height:30mm!important}
+      #hpc-app .hpc-foot {position:static!important;display:table!important;margin:5mm 0 0 auto!important;padding:1mm 3mm!important;background:#fff!important;color:#71364c!important;border:1px solid #9dcdd3!important}
+      #hpc-app .hpc-cover {background:#fff!important}
+      #hpc-app .hpc-cover h1 {font-size:21pt!important}
+      #hpc-app .hpc-logo-row {margin:3mm 0!important}
+      #hpc-app .hpc-logo {min-height:22mm!important;background:#fff!important;border:1px dashed #59737d!important;color:#183b56!important}
+      #hpc-app .hpc-cover-art {height:82mm!important;margin:6mm 0!important}
+      #hpc-app .hpc-wave {height:14mm!important}
+      #hpc-app .hpc-wave.hpc-bottom {position:relative!important;transform:rotate(180deg);margin-top:5mm}
+      #hpc-app * {animation:none!important;transition:none!important;text-shadow:none!important;filter:none!important}
+    }
+  </style>
+ </head>
+ <body>
+  <div id="hpc-app" data-template-id="__page-root" style="background: linear-gradient(145deg, rgb(219, 245, 246), rgb(236, 250, 249), rgb(216, 239, 244));">
+   <header class="hpc-topbar">
+    <div>
+     <strong data-template-id="app-title" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">સર્વગ્રાહી પ્રગતિ કાર્ડ</strong><span data-template-id="app-subtitle" class="canva-text hpc-subtitle" style="color: rgb(215, 244, 245); font-weight: 400; font-style: normal; font-size: 16px;">ધોરણ ૧ · <span id="hpc-session-label">પ્રથમ સત્ર</span> · વર્ષ <span id="hpc-academic-year">2025–2026</span> · ઇન્ટરેક્ટિવ આવૃત્તિ</span>
+    </div>
+    <div class="hpc-actions"><span id="hpc-status" class="hpc-status" role="status" aria-live="polite">ફેરફારો આ previewમાં જળવાય છે</span> <button id="hpc-print-current" data-template-id="print-current-button" class="canva-button hpc-button" type="button" style="background: rgb(255, 255, 255); color: rgb(22, 67, 91); font-weight: 700; font-style: normal; font-size: 16px;">આ પાનું Print કરો</button> <button id="hpc-print-all" data-template-id="print-all-button" class="canva-button hpc-button" type="button" style="background: rgb(255, 255, 255); color: rgb(22, 67, 91); font-weight: 700; font-style: normal; font-size: 16px;">બધાં પાનાં Print કરો</button> <button id="hpc-pdf" data-template-id="pdf-button" class="canva-button hpc-button hpc-highlight" type="button" style="background: rgb(245, 187, 81); color: rgb(56, 35, 23); font-weight: 700; font-style: normal; font-size: 16px;">બધાં પાનાં PDF માટે</button> <button id="hpc-reset" data-template-id="reset-button" class="canva-button hpc-button" type="button" style="background: rgb(255, 255, 255);"><span data-template-id="reset-normal" class="canva-text" style="color: rgb(22, 67, 91); font-weight: 700; font-style: normal; font-size: 16px;">ફોર્મ સાફ કરો</span><span data-template-id="reset-confirm" class="canva-text" hidden="" style="color: rgb(22, 67, 91); font-weight: 700; font-style: normal; font-size: 16px;">ખાતરી કરો: ફરી દબાવો</span></button>
+    </div>
+    <div class="hpc-actions">
+     <label for="hpc-student-select">વિદ્યાર્થી પસંદ કરો:</label>
+     <select id="hpc-student-select" class="hpc-button">
+      <option value="manual">મેન્યુઅલ રેકોર્ડ</option>
+     </select>
+     <button class="hpc-button home-return" type="button" onclick="window.location.href='home_std1.html'">🏠 ડેશબોર્ડ પર પાછા</button>
+    </div>
+   </header>
+   <main class="hpc-layout">
+    <aside class="hpc-sidebar" aria-label="પૃષ્ઠ સૂચિ">
+     <h2 data-template-id="sidebar-title" class="canva-text" style="color: rgb(18, 55, 92); font-weight: 700; font-style: normal; font-size: 24px;">પાનાંની સૂચિ</h2>
+     <nav id="hpc-nav" aria-label="બાર પાનાં"></nav>
+    </aside>
+    <div class="hpc-workspace">
+     <div class="hpc-controls hpc-no-print">
+      <form id="hpc-jump-form"><label data-template-id="jump-label" class="canva-text" for="hpc-page-jump" style="color: rgb(35, 70, 87); font-weight: 700; font-style: normal; font-size: 16px;">પાનું પસંદ કરો</label> <input id="hpc-page-jump" type="number" min="1" max="12" value="1"> <button data-template-id="jump-button" class="canva-button hpc-button" type="submit" style="background: rgb(255, 255, 255); color: rgb(22, 67, 91); font-weight: 700; font-style: normal; font-size: 16px;">જાઓ</button> <label data-template-id="search-label" class="canva-text" for="hpc-search" style="color: rgb(35, 70, 87); font-weight: 700; font-style: normal; font-size: 16px;">શોધો</label> <input id="hpc-search" type="search" placeholder="C-8.3 / પોર્ટફોલિયો"> <button id="hpc-search-button" data-template-id="search-button" class="canva-button hpc-button" type="button" style="background: rgb(255, 255, 255); color: rgb(22, 67, 91); font-weight: 700; font-style: normal; font-size: 16px;">શોધો</button>
+      </form>
+      <div class="hpc-actions"><button id="hpc-prev" data-template-id="previous-button" class="canva-button hpc-button" type="button" style="background: rgb(255, 255, 255); color: rgb(22, 67, 91); font-weight: 700; font-style: normal; font-size: 16px;">← અગાઉનું</button> <span id="hpc-indicator" class="hpc-indicator" aria-live="polite"></span> <button id="hpc-next" data-template-id="next-button" class="canva-button hpc-button" type="button" style="background: rgb(255, 255, 255); color: rgb(22, 67, 91); font-weight: 700; font-style: normal; font-size: 16px;">આગળનું →</button>
+      </div>
+     </div>
+     <div id="hpc-document" class="hpc-document">
+      <section class="hpc-sheet hpc-cover hpc-active" data-page="1" aria-labelledby="hpc-cover-heading">
+       <div class="hpc-wave" aria-hidden="true"></div>
+       <div class="hpc-logo-row">
+        <div class="hpc-logo" role="img" aria-label="GCERT માટેનું સ્થાન; અહીં અધિકૃત logo મૂકો">
+         <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="#e8f4f5" stroke="#164b68" stroke-width="2"></circle><path d="M11 29q7-7 13 0 6-7 13 0v8q-7-5-13 1-6-6-13-1z" fill="#f3b744" stroke="#164b68" stroke-width="1.5"></path><path d="M24 10v14m-7-8 7-6 7 6" fill="none" stroke="#164b68" stroke-width="2"></path>
+         </svg><span>GCERT</span><small>અહીં અધિકૃત logo મૂકો</small>
+        </div>
+        <div class="hpc-logo" role="img" aria-label="ભારત સરકાર માટેનું તટસ્થ ચિહ્ન સ્થાન; અહીં અધિકૃત logo મૂકો">
+         <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="#fff6e8" stroke="#704037" stroke-width="2"></circle><path d="M13 34h22M17 29h14M20 14h8v15h-8zM16 14h16M24 10v4" fill="none" stroke="#704037" stroke-width="2.5" stroke-linecap="round"></path>
+         </svg><span>ભારત સરકાર</span><small>અહીં અધિકૃત logo મૂકો</small>
+        </div>
+        <div class="hpc-logo" role="img" aria-label="સમગ્ર શિક્ષા; રંગીન શૈક્ષણિક ચિહ્ન અને Samagra Shiksha શબ્દચિહ્ન">
+         <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M24 6v36M6 24h36" stroke="#166b87" stroke-width="6" stroke-linecap="round"></path><path d="M11 11l26 26M37 11 11 37" stroke="#eaa336" stroke-width="5" stroke-linecap="round"></path><circle cx="24" cy="24" r="5" fill="#087d61"></circle>
+         </svg><span>સમગ્ર શિક્ષા</span><small>Samagra Shiksha</small>
+        </div>
+       </div>
+       <h1 id="hpc-cover-heading" data-template-id="cover-title" class="canva-text" style="color: rgb(18, 60, 108); font-weight: 800; font-style: normal; font-size: 32px;">સર્વગ્રાહી પ્રગતિ કાર્ડ (HPC)</h1>
+       <p data-template-id="pilot-text" class="canva-text" style="color: rgb(186, 68, 62); font-weight: 700; font-style: normal; font-size: 16px;">(અજમાયશી)</p>
+       <p data-template-id="year-text" class="canva-text" style="font-weight: 700; font-style: normal; font-size: 16px;">વર્ષ : <span id="hpc-cover-year">2025-2026</span></p>
+       <div class="hpc-cover-art" role="img" aria-label="વર્ગખંડમાં અભ્યાસ કરતા બાળકોનું સ્વનિર્મિત ચિત્ર">
+        <svg viewBox="0 0 900 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="900" height="360" fill="#bee8e6"></rect><rect y="0" width="900" height="120" fill="#d9eee8"></rect> <rect x="60" y="25" width="210" height="93" rx="6" fill="#9bc8cc" stroke="#427b8b" stroke-width="9"></rect> <rect x="305" y="25" width="290" height="93" rx="6" fill="#ecf8eb" stroke="#427b8b" stroke-width="9"></rect> <path d="M360 70h180m-135-25v50" stroke="#91bd8e" stroke-width="7"></path> <rect x="650" y="25" width="170" height="93" rx="6" fill="#aed6ce" stroke="#427b8b" stroke-width="9"></rect> <path d="M0 255h900v105H0z" fill="#e6b998"></path> <g fill="#6d3b32">
+          <rect x="35" y="255" width="255" height="18" rx="4"></rect>
+          <rect x="325" y="255" width="250" height="18" rx="4"></rect>
+          <rect x="610" y="255" width="255" height="18" rx="4"></rect>
+         </g> <g fill="#b84c56">
+          <path d="M80 229q65-91 130 0v34H80z"></path>
+          <path d="M375 229q65-91 130 0v34H375z"></path>
+          <path d="M660 229q65-91 130 0v34H660z"></path>
+         </g> <g fill="#b97854">
+          <circle cx="145" cy="169" r="41"></circle>
+          <circle cx="440" cy="169" r="41"></circle>
+          <circle cx="725" cy="169" r="41"></circle>
+         </g> <g fill="#342b2a">
+          <path d="M104 154q-3-62 43-60 48 0 39 61-38-30-82-1z"></path>
+          <path d="M398 153q-3-63 42-60 50 0 40 61-38-30-82-1z"></path>
+          <path d="M683 153q-3-63 42-60 50 0 40 61-38-30-82-1z"></path>
+         </g> <g fill="#fff7de">
+          <path d="M88 251l57 14 57-14v33l-57 15-57-15z"></path>
+          <path d="M382 251l58 14 58-14v33l-58 15-58-15z"></path>
+          <path d="M668 251l57 14 57-14v33l-57 15-57-15z"></path>
+         </g>
+        </svg>
+       </div>
+       <div data-template-id="grade-badge" class="canva-tag hpc-grade" style="background: rgb(248, 189, 71); color: rgb(48, 37, 37); font-weight: 800; font-style: normal; font-size: 16px;">ધોરણ - ૧</div>
+       <p class="hpc-foot">આવરણ · ૧ / ૧૨</p>
+       <div class="hpc-wave hpc-bottom" aria-hidden="true"></div>
+      </section>
+      <section class="hpc-sheet" data-page="2" aria-labelledby="hpc-p2">
+       <h2 id="hpc-p2" class="hpc-heading"><span class="hpc-part">ભાગ-(A)</span>મારા વિશે</h2>
+       <div class="hpc-panel">
+        <div class="hpc-fields">
+         <div class="hpc-field">
+          <label for="hpc-name">મારું નામ :</label><input id="hpc-name" autocomplete="off">
+         </div>
+         <div class="hpc-field">
+          <label for="hpc-village">મારું ગામ :</label><input id="hpc-village">
+         </div>
+         <div class="hpc-field">
+          <label for="hpc-birthday">મારો જન્મદિવસ :</label><input id="hpc-birthday" type="date">
+         </div>
+         <div class="hpc-field">
+          <label for="hpc-friend">મારો મિત્ર :</label><input id="hpc-friend">
+         </div>
+        </div>
+        <h3 class="hpc-section-title">મારી પ્રિય બાબત</h3>
+        <div class="hpc-fields">
+         <div class="hpc-field">
+          <label for="hpc-color">મને ગમતો રંગ :</label><input id="hpc-color">
+         </div>
+         <div class="hpc-field">
+          <label for="hpc-food">મને ભાવતી વાનગીઓ :</label><input id="hpc-food">
+         </div>
+         <div class="hpc-field">
+          <label for="hpc-game">મને ગમતી રમત :</label><input id="hpc-game">
+         </div>
+         <div class="hpc-field">
+          <label for="hpc-animal">મને ગમતાં પ્રાણીઓ :</label><input id="hpc-animal">
+         </div>
+         <div class="hpc-field">
+          <label for="hpc-things">મને ગમતી વસ્તુઓ :</label><input id="hpc-things">
+         </div>
+        </div>
+        <div class="hpc-session-grid">
+         <div class="hpc-session">
+          <h3>પ્રથમ સત્ર</h3>
+          <div class="hpc-mini-field">
+           <label for="hpc-height-1">મારી ઊંચાઈ</label><input id="hpc-height-1" inputmode="decimal"> સેન્ટિમીટર
+          </div>
+          <div class="hpc-mini-field">
+           <label for="hpc-weight-1">મારું વજન</label><input id="hpc-weight-1" inputmode="decimal"> કિલોગ્રામ
+          </div>
+         </div>
+         <div class="hpc-session">
+          <h3>દ્વિતીય સત્ર</h3>
+          <div class="hpc-mini-field">
+           <label for="hpc-height-2">મારી ઊંચાઈ</label><input id="hpc-height-2" inputmode="decimal"> સેન્ટિમીટર
+          </div>
+          <div class="hpc-mini-field">
+           <label for="hpc-weight-2">મારું વજન</label><input id="hpc-weight-2" inputmode="decimal"> કિલોગ્રામ
+          </div>
+         </div>
+        </div>
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૨ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="3" aria-labelledby="hpc-p3">
+       <h2 id="hpc-p3" class="hpc-heading">આ હું છું...</h2>
+       <div class="hpc-panel"><label class="hpc-area-label" for="hpc-portrait">તમારું ચિત્ર દોરો અથવા ફોટો ચોંટાડો.</label>
+        <div class="hpc-draw">
+         <textarea id="hpc-portrait" placeholder="ચિત્ર વિશે લખો…"></textarea><input class="hpc-upload hpc-no-print" type="file" accept="image/*" aria-label="મારું ચિત્ર અથવા ફોટો પસંદ કરો"><span class="hpc-upload-name hpc-no-print" aria-live="polite"></span>
+        </div>
+       </div>
+       <h2 class="hpc-heading" style="margin-top:32px">આ મારો પરિવાર છે.</h2>
+       <div class="hpc-panel"><label class="hpc-area-label" for="hpc-family">તમારા પરિવારનું ચિત્ર દોરો અથવા ફોટો ચોંટાડો.</label>
+        <div class="hpc-draw">
+         <textarea id="hpc-family" placeholder="પરિવાર વિશે લખો…"></textarea><input class="hpc-upload hpc-no-print" type="file" accept="image/*" aria-label="પરિવારનું ચિત્ર અથવા ફોટો પસંદ કરો"><span class="hpc-upload-name hpc-no-print" aria-live="polite"></span>
+        </div>
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૩ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="4" aria-labelledby="hpc-p4">
+       <h2 id="hpc-p4" class="hpc-heading"><span class="hpc-part">ભાગ-(B)</span>ક્ષમતા આધારિત મૂલ્યાંકન</h2>
+       <div class="hpc-table-wrap">
+        <table class="hpc-competencies">
+         <thead>
+          <tr>
+           <th>ક્રમ</th>
+           <th>ક્ષમતા</th>
+           <th>સત્ર-૧</th>
+           <th>સત્ર-૨</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૧ · સ્વાસ્થ્ય અને સુરક્ષા</th>
+          </tr>
+          <tr data-code="C-1.1">
+           <td class="hpc-code">C-1.1</td>
+           <td>પૌષ્ટિક ખોરાક પ્રત્યે રુચિ અને સમજણ દર્શાવે છે અને ખોરાકનો બગાડ કરતો નથી.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-1.2">
+           <td class="hpc-code">C-1.2</td>
+           <td>પોતાની સંભાળ અને સ્વચ્છતા રાખે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-1.6">
+           <td class="hpc-code">C-1.6</td>
+           <td>અસુરક્ષિત પરિસ્થિતિઓને સમજે છે અને મદદ માંગે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૨ · સંવેદનાત્મક વિકાસ</th>
+          </tr>
+          <tr data-code="C-2.1">
+           <td class="hpc-code">C-2.1</td>
+           <td>આકારો, રંગો અને તેમના શેડ્સ વચ્ચેનો ભેદ તારવી શકે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-2.5">
+           <td class="hpc-code">C-2.5</td>
+           <td>સ્પર્શની સંવેદનામાં ભિન્નતા તારવી શકે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-2.6">
+           <td class="hpc-code">C-2.6</td>
+           <td>અનુભવોની સર્વગ્રાહી જાગૃતિ માટે સંવેદનાત્મક ધારણાઓને એકીકૃત કરી શકે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૩ · હલનચલન અને શારીરિક વિકાસ</th>
+          </tr>
+          <tr data-code="C-3.2">
+           <td class="hpc-code">C-3.2</td>
+           <td>શારીરિક પ્રવૃત્તિઓમાં સંતુલન, સંકલન અને લવચીકતા દર્શાવે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-3.3">
+           <td class="hpc-code">C-3.3</td>
+           <td>હાથ અને આંગળીઓ વડે કામ કરવામાં ચોકસાઈ અને નિયંત્રણ દર્શાવે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-3.4">
+           <td class="hpc-code">C-3.4</td>
+           <td>ઊંચકવા, ચાલવા અને દોડવામાં તાકાત અને દૃઢતા દર્શાવે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૪ · સામાજિક-ભાવનાત્મક વિકાસ</th>
+          </tr>
+          <tr data-code="C-4.1">
+           <td class="hpc-code">C-4.1</td>
+           <td>પોતાને કુટુંબ અને સમુદાયની વ્યક્તિ તરીકે ઓળખવાનું શરૂ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-4.2">
+           <td class="hpc-code">C-4.2</td>
+           <td>વિવિધ લાગણીઓને ઓળખે છે અને તેમને યોગ્ય રીતે નિયંત્રિત કરવા પ્રયત્ન કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-4.3">
+           <td class="hpc-code">C-4.3</td>
+           <td>અન્ય બાળકો અને પુખ્ત વયના લોકો સાથે સરળતાથી વાતચીત કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-4.6">
+           <td class="hpc-code">C-4.6</td>
+           <td>જ્યારે અન્યને જરૂર હોય ત્યારે તેમના પ્રત્યે કરુણા દર્શાવે છે અને સહાયતા કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૪ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="5" aria-labelledby="hpc-p5">
+       <h2 id="hpc-p5" class="hpc-heading">ક્ષમતા આધારિત મૂલ્યાંકન</h2>
+       <div class="hpc-table-wrap">
+        <table class="hpc-competencies">
+         <thead>
+          <tr>
+           <th>ક્રમ</th>
+           <th>ક્ષમતા</th>
+           <th>સત્ર-૧</th>
+           <th>સત્ર-૨</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૫ · સહકાર અને સેવા</th>
+          </tr>
+          <tr data-code="C-5.1">
+           <td class="hpc-code">C-5.1</td>
+           <td>અન્યને મદદ કરવા માટે વય અનુરૂપ શારીરિક કાર્ય કરવાની ઈચ્છા અને સહભાગિતા દર્શાવે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૬ · જીવન અને પ્રકૃતિ</th>
+          </tr>
+          <tr data-code="C-6.1">
+           <td class="hpc-code">C-6.1</td>
+           <td>જીવનની તમામ સ્થિતિઓ પ્રત્યે કાળજી અને આનંદ દર્શાવે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૭ · અવલોકન અને તર્ક</th>
+          </tr>
+          <tr data-code="C-7.1">
+           <td class="hpc-code">C-7.1</td>
+           <td>વસ્તુઓના વિવિધ પ્રકાર અને તેમની વચ્ચેના સંબંધોનું અવલોકન કરે છે અને સમજે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-7.2">
+           <td class="hpc-code">C-7.2</td>
+           <td>સરળ પૂર્વધારણા સાથે પ્રવૃત્તિમાં કાર્યકારણ સંબંધનું અવલોકન કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૮ · ગણિતીય સમજ</th>
+          </tr>
+          <tr data-code="C-8.1">
+           <td class="hpc-code">C-8.1</td>
+           <td>એક કરતાં વધુ ગુણધર્મોના આધારે વસ્તુઓને જૂથ અને પેટાજૂથમાં વર્ગીકૃત કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-8.2">
+           <td class="hpc-code">C-8.2</td>
+           <td>આસપાસ આકારો અને સંખ્યાઓમાં સરળ પેટર્ન ઓળખે છે અને વિસ્તાર કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-8.3">
+           <td class="hpc-code">C-8.3</td>
+           <td>૧૦ અને ૨૦ જૂથમાં ૯૯ સુધીની સીધી અને ઊંધી ગણતરી કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-8.5">
+           <td class="hpc-code">C-8.5</td>
+           <td>સ્થાનકિંમતની સમજ સાથે ૯૯ સુધીની સંખ્યાઓને ઓળખે છે અને તેનો ઉપયોગ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-8.6">
+           <td class="hpc-code">C-8.6</td>
+           <td>સરવાળા અને બાદબાકીની પદ્ધતિઓનો ઉપયોગ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-8.8">
+           <td class="hpc-code">C-8.8</td>
+           <td>ભૌમિતિક આકારો અને તેમના અવલોકનક્ષમ ગુણધર્મોને ઓળખે છે, આકારો બનાવે છે અને વર્ગીકૃત કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-8.13">
+           <td class="hpc-code">C-8.13</td>
+           <td>જગ્યા, આકારો, અવકાશ અને માપનને લગતા સરળ ગણિતિક પ્રશ્નો બનાવે છે અને ઉકેલે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૫ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="6" aria-labelledby="hpc-p6">
+       <h2 id="hpc-p6" class="hpc-heading">ક્ષમતા આધારિત મૂલ્યાંકન</h2>
+       <div class="hpc-table-wrap">
+        <table class="hpc-competencies">
+         <thead>
+          <tr>
+           <th>ક્રમ</th>
+           <th>ક્ષમતા</th>
+           <th>સત્ર-૧</th>
+           <th>સત્ર-૨</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૯ · ભાષા અને સંચાર</th>
+          </tr>
+          <tr data-code="C-9.1">
+           <td class="hpc-code">C-9.1</td>
+           <td>સાદાં ગીતો, જોડકણાં અને કવિતાઓ સાંભળે છે અને માણે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-9.3">
+           <td class="hpc-code">C-9.3</td>
+           <td>અસરકારક અને અર્થપૂર્ણ રીતે વાતચીત કરી શકે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-9.4">
+           <td class="hpc-code">C-9.4</td>
+           <td>જટિલ કાર્ય માટે આપેલ મૌખિક સૂચનાઓ સમજે છે અને અન્ય લોકોને સ્પષ્ટ સૂચનાઓ આપે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-9.5">
+           <td class="hpc-code">C-9.5</td>
+           <td>વાંચેલી અથવા સાંભળેલી વાર્તાઓને સમજે છે અને પાત્રો તથા વાર્તાના વિષય વિશે પૂછે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-9.6">
+           <td class="hpc-code">C-9.6</td>
+           <td>સ્પષ્ટ શબ્દભંડોળ અને પાઠો સાથે ટૂંકી વાર્તા કહે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૧૦ · વાંચન અને લેખન</th>
+          </tr>
+          <tr data-code="C-10.3">
+           <td class="hpc-code">C-10.3</td>
+           <td>વર્ણમાળાના બધા અક્ષરો અને માત્રાઓને ઓળખે છે; વાંચવા અને લખવા માટે તેનો ઉપયોગ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-10.4">
+           <td class="hpc-code">C-10.4</td>
+           <td>યોગ્ય ઝડપ અને આરોહ-અવરોહ સાથે પરિચિત વાર્તાઓ અને ફકરા વાંચે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-10.5">
+           <td class="hpc-code">C-10.5</td>
+           <td>ટૂંકી વાર્તાઓ વાંચે છે અને પાત્રો, વાર્તા તથા વિષયનો અર્થ સમજે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-10.6">
+           <td class="hpc-code">C-10.6</td>
+           <td>ટૂંકી વાર્તાઓ વાંચે છે અને શબ્દોની પસંદગી તથા કલ્પના માટે કવિતાની પ્રશંસા કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-10.7">
+           <td class="hpc-code">C-10.7</td>
+           <td>ટૂંકા સમાચાર, સૂચનાઓ અને પ્રચાર સામગ્રી વાંચે છે અને તેનો અર્થ સમજે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૬ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="7" aria-labelledby="hpc-p7">
+       <h2 id="hpc-p7" class="hpc-heading">ક્ષમતા આધારિત મૂલ્યાંકન</h2>
+       <div class="hpc-table-wrap">
+        <table class="hpc-competencies">
+         <thead>
+          <tr>
+           <th>ક્રમ</th>
+           <th>ક્ષમતા</th>
+           <th>સત્ર-૧</th>
+           <th>સત્ર-૨</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૧૧ · બીજી ભાષા</th>
+          </tr>
+          <tr data-code="C-11.1">
+           <td class="hpc-code">C-11.1</td>
+           <td>દ્વિતીય ભાષાના અક્ષરો ઓળખે છે અને સરળ શબ્દો તથા વાક્યો વાંચવા અને લખવા તેનો ઉપયોગ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૧૨ · કલા અને સર્જનાત્મકતા</th>
+          </tr>
+          <tr data-code="C-12.1">
+           <td class="hpc-code">C-12.1</td>
+           <td>વિવિધ આકારમાં દ્વિ-પરિમાણીય અને ત્રિ-પરિમાણીય કલાકૃતિઓ બનાવે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-12.2">
+           <td class="hpc-code">C-12.2</td>
+           <td>સંગીત, રોલ પ્લે અને નૃત્ય માટે અવાજ, શરીર, જગ્યા અને અન્ય સામગ્રીનો ઉપયોગ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-12.3">
+           <td class="hpc-code">C-12.3</td>
+           <td>કલા દ્વારા વિચારો અને લાગણીઓ અભિવ્યક્ત કરવા નવીન અને કલ્પનાશીલ રીતે કાર્ય કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr class="hpc-group">
+           <th colspan="4">અભ્યાસક્રમ ધ્યેય ૧૩ · અભ્યાસની ટેવો</th>
+          </tr>
+          <tr data-code="C-13.1">
+           <td class="hpc-code">C-13.1</td>
+           <td>ધ્યાન અને હેતુપૂર્ણ ક્રિયા દ્વારા યોજના બનાવે છે, ધ્યાન કેન્દ્રિત કરે છે અને પ્રત્યક્ષ પ્રવૃત્તિઓ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr data-code="C-13.3">
+           <td class="hpc-code">C-13.3</td>
+           <td>વસ્તુઓની નાની વિગતોનું અવલોકન કરે છે અને વિવિધ ઇન્દ્રિયોનો ઉપયોગ કરીને અન્વેષણ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૭ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="8" aria-labelledby="hpc-p8">
+       <h2 id="hpc-p8" class="hpc-heading"><span class="hpc-part">ભાગ-(C)</span>શિક્ષક દ્વારા મૂલ્યાંકન</h2>
+       <p>શિક્ષકે સત્ર દરમિયાન નોંધેલી વિદ્યાર્થીની સારી બાબતો, પડકારરૂપ બાબતો અને સુધારણાની સૂચનાઓ નોંધવી.</p>
+       <div class="hpc-table-wrap">
+        <table>
+         <thead>
+          <tr>
+           <th style="width:17%">સત્ર</th>
+           <th>સારી બાબતો</th>
+           <th>પડકારરૂપ બાબતો</th>
+           <th>સુધારણાની સૂચનાઓ</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr>
+           <td>સત્ર-૧</td>
+           <td><textarea aria-label="સત્ર ૧ સારી બાબતો"></textarea></td>
+           <td><textarea aria-label="સત્ર ૧ પડકારરૂપ બાબતો"></textarea></td>
+           <td><textarea aria-label="સત્ર ૧ સુધારણાની સૂચનાઓ"></textarea></td>
+          </tr>
+          <tr>
+           <td>સત્ર-૨</td>
+           <td><textarea aria-label="સત્ર ૨ સારી બાબતો"></textarea></td>
+           <td><textarea aria-label="સત્ર ૨ પડકારરૂપ બાબતો"></textarea></td>
+           <td><textarea aria-label="સત્ર ૨ સુધારણાની સૂચનાઓ"></textarea></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <h2 class="hpc-heading" style="margin-top:30px">વાલી પ્રતિભાવ</h2>
+       <div class="hpc-table-wrap">
+        <table>
+         <thead>
+          <tr>
+           <th>અપેક્ષા</th>
+           <th>સત્ર-૧</th>
+           <th>સત્ર-૨</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr>
+           <td>મારા બાળકને સામેલ / સહભાગી થવું ગમે છે…</td>
+           <td><textarea aria-label="સહભાગિતા સત્ર ૧"></textarea></td>
+           <td><textarea aria-label="સહભાગિતા સત્ર ૨"></textarea></td>
+          </tr>
+          <tr>
+           <td>મારા બાળકને સહયોગની જરૂર છે…</td>
+           <td><textarea aria-label="સહયોગ સત્ર ૧"></textarea></td>
+           <td><textarea aria-label="સહયોગ સત્ર ૨"></textarea></td>
+          </tr>
+          <tr>
+           <td>વધુમાં હું એ પણ કહેવા માંગુ છું…</td>
+           <td><textarea aria-label="વધુ પ્રતિભાવ સત્ર ૧"></textarea></td>
+           <td><textarea aria-label="વધુ પ્રતિભાવ સત્ર ૨"></textarea></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <div class="hpc-field" style="margin-top:15px">
+        <label for="hpc-parent-name">વાલીનું નામ :</label><input id="hpc-parent-name">
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૮ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="9" aria-labelledby="hpc-p9">
+       <h2 id="hpc-p9" class="hpc-heading">સ્વ-મૂલ્યાંકન</h2>
+       <p>વર્ષ દરમિયાન કરવામાં આવતી પ્રવૃત્તિ પર સ્વ-ચિંતન. શિક્ષક જરૂર જણાય તો વિદ્યાર્થીને મદદ કરશે.</p>
+       <div class="hpc-table-wrap">
+        <table>
+         <thead>
+          <tr>
+           <th>શાળાકીય પ્રવૃત્તિઓ</th>
+           <th>સત્ર-૧</th>
+           <th>સત્ર-૨</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr>
+           <td>૧. મને ગમતી શાળાકીય પ્રવૃત્તિઓ</td>
+           <td><textarea aria-label="ગમતી પ્રવૃત્તિઓ સત્ર ૧"></textarea></td>
+           <td><textarea aria-label="ગમતી પ્રવૃત્તિઓ સત્ર ૨"></textarea></td>
+          </tr>
+          <tr>
+           <td>૨. મને મુશ્કેલ લાગતી શાળાકીય પ્રવૃત્તિઓ</td>
+           <td><textarea aria-label="મુશ્કેલ પ્રવૃત્તિઓ સત્ર ૧"></textarea></td>
+           <td><textarea aria-label="મુશ્કેલ પ્રવૃત્તિઓ સત્ર ૨"></textarea></td>
+          </tr>
+          <tr>
+           <td>૩. મારા મિત્રો સાથે કરવી ગમતી શાળાકીય પ્રવૃત્તિઓ</td>
+           <td><textarea aria-label="મિત્રો સાથેની પ્રવૃત્તિઓ સત્ર ૧"></textarea></td>
+           <td><textarea aria-label="મિત્રો સાથેની પ્રવૃત્તિઓ સત્ર ૨"></textarea></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <h2 class="hpc-heading" style="margin-top:30px">સહાધ્યાયી મૂલ્યાંકન</h2>
+       <div class="hpc-table-wrap">
+        <table class="hpc-peer-table">
+         <thead>
+          <tr>
+           <th>સહાધ્યાયીનો પ્રતિભાવ</th>
+           <th>સત્ર-૧</th>
+           <th>સત્ર-૨</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr>
+           <td>૧. કાર્ય / પ્રવૃત્તિ દરમિયાન અન્યને મદદ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr>
+           <td>૨. અન્ય વિદ્યાર્થી સાથે પ્રવૃત્તિ કરવાનું તથા રમવાનું પસંદ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+          <tr>
+           <td>૩. જરૂર પડે ત્યારે અન્યને વસ્તુઓ આપી મદદ કરે છે.</td>
+           <td></td>
+           <td></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <div class="hpc-field" style="margin-top:18px">
+        <label for="hpc-peer-name">પ્રતિભાવ આપનાર મિત્રનું નામ :</label><input id="hpc-peer-name">
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૯ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="10" aria-labelledby="hpc-p10">
+       <h2 id="hpc-p10" class="hpc-heading">વિદ્યાર્થીનો પોર્ટફોલિયો</h2>
+       <p>નોંધ : વર્ષ દરમિયાન વિદ્યાર્થીએ કરેલ વિવિધ પ્રવૃત્તિઓ પૈકી નમૂનારૂપ પ્રવૃત્તિઓનો સંગ્રહ.</p>
+       <div class="hpc-panel">
+        <h3 class="hpc-section-title">વિદ્યાર્થીનો પોર્ટફોલિયો અલગથી નિભાવવાનો રહેશે.</h3><label class="hpc-area-label" for="hpc-portfolio">પ્રવૃત્તિઓની નોંધ</label>
+        <div class="hpc-draw" style="min-height:320px">
+         <textarea id="hpc-portfolio" placeholder="પ્રવૃત્તિઓની નોંધ લખો…"></textarea><input class="hpc-upload hpc-no-print" type="file" accept="image/*,.pdf" aria-label="પોર્ટફોલિયો નમૂનો પસંદ કરો"><span class="hpc-upload-name hpc-no-print" aria-live="polite"></span>
+        </div>
+       </div>
+       <h2 class="hpc-heading" style="margin-top:26px">સહી અને તારીખ</h2>
+       <div class="hpc-table-wrap">
+        <table>
+         <thead>
+          <tr>
+           <th>સત્ર</th>
+           <th>માતાપિતા / વાલી</th>
+           <th>વર્ગ શિક્ષક</th>
+           <th>આચાર્યશ્રી</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr>
+           <td>સત્ર-૧</td>
+           <td><input class="hpc-signature-input" aria-label="સત્ર ૧ વાલીની સહી અને તારીખ" placeholder="નામ / સહી / તારીખ"></td>
+           <td><input class="hpc-signature-input" aria-label="સત્ર ૧ શિક્ષકની સહી અને તારીખ" placeholder="નામ / સહી / તારીખ"></td>
+           <td><input class="hpc-signature-input" aria-label="સત્ર ૧ આચાર્યની સહી અને તારીખ" placeholder="નામ / સહી / તારીખ"></td>
+          </tr>
+          <tr>
+           <td>સત્ર-૨</td>
+           <td><input class="hpc-signature-input" aria-label="સત્ર ૨ વાલીની સહી અને તારીખ" placeholder="નામ / સહી / તારીખ"></td>
+           <td><input class="hpc-signature-input" aria-label="સત્ર ૨ શિક્ષકની સહી અને તારીખ" placeholder="નામ / સહી / તારીખ"></td>
+           <td><input class="hpc-signature-input" aria-label="સત્ર ૨ આચાર્યની સહી અને તારીખ" placeholder="નામ / સહી / તારીખ"></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૧૦ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet" data-page="11" aria-labelledby="hpc-p11">
+       <h2 id="hpc-p11" class="hpc-heading">હોલિસ્ટિક પ્રોગ્રેસ કાર્ડ (સર્વગ્રાહી પ્રગતિ કાર્ડ)</h2>
+       <div class="hpc-panel">
+        <ul class="hpc-info-list">
+         <li>આ કાર્ડમાં વિદ્યાર્થીનું સ્વમૂલ્યાંકન, શિક્ષક દ્વારા મૂલ્યાંકન, સહાધ્યાયી દ્વારા મૂલ્યાંકન તથા વાલીનો પ્રતિભાવ — એમ ચારેય બાબતોનું સંયોજન છે.</li>
+         <li>શિક્ષકે વિદ્યાર્થીઓમાં ક્ષમતા (competencies) વિકસાવવાની પ્રગતિ આધારિત તેમજ અનુભવજન્ય શિક્ષણ દ્વારા શિક્ષણના ધ્યેયનું અવલોકન કરવાનું છે.</li>
+         <li>આપવામાં આવેલ માર્ગદર્શક મુજબ વિદ્યાર્થીના શીખવાના સ્તરને ધ્યાનમાં રાખી દરેક સત્રના અંત સુધીમાં આ કાર્ડ ભરવાનું રહેશે.</li>
+         <li>વધુ માર્ગદર્શન માટે HPC શિક્ષક માર્ગદર્શિકાનો અભ્યાસ કરવો હિતાવહ રહેશે.</li>
+        </ul>
+       </div>
+       <h3 class="hpc-section-title" style="text-align:center;margin-top:25px">ભાગ-(B) ક્ષમતા આધારિત મૂલ્યાંકન માપદંડ</h3>
+       <div class="hpc-table-wrap">
+        <table>
+         <thead>
+          <tr>
+           <th style="width:34%">સ્તર</th>
+           <th>અર્થઘટન</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr>
+           <td><strong>Beginner (આરંભ) 〰</strong></td>
+           <td>વિદ્યાર્થીને ક્ષમતા અને તેના આધારિત નિષ્પત્તિ સિદ્ધ કરવા શિક્ષકની તેમજ સહાધ્યાયીની વધુ પડતી મદદની જરૂર પડે છે.</td>
+          </tr>
+          <tr>
+           <td><strong>Proficient (પર્વત) △</strong></td>
+           <td>વિદ્યાર્થીને ક્ષમતા અને તેના આધારિત નિષ્પત્તિ સિદ્ધ કરવા શિક્ષકની તેમજ સહાધ્યાયીની થોડી મદદની જરૂર પડે છે.</td>
+          </tr>
+          <tr>
+           <td><strong>Advanced (આકાશ) ☆</strong></td>
+           <td>વિદ્યાર્થી જાતે જ ક્ષમતા અને તેના આધારિત નિષ્પત્તિ સિદ્ધ કરી શકે છે.</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+       <p>નોંધ : શિક્ષકે ક્ષમતાના મૂલ્યાંકન માટે ખાનામાં લાગુ પડતી નિશાની કરવાની રહેશે.</p>
+       <p class="hpc-foot">ધોરણ-૧ : સર્વગ્રાહી પ્રગતિ કાર્ડ · ૧૧ / ૧૨</p>
+      </section>
+      <section class="hpc-sheet hpc-cover" data-page="12" aria-labelledby="hpc-p12">
+       <div class="hpc-wave" aria-hidden="true"></div>
+       <h2 id="hpc-p12" class="hpc-heading" style="margin:36px 15px">સર્વગ્રાહી પ્રગતિ કાર્ડ · સંદર્ભ</h2>
+       <div class="hpc-panel" style="max-width:680px;margin:22px auto;text-align:left">
+        <h3 class="hpc-section-title">શૈક્ષણિક સંદર્ભો</h3>
+        <p>National Education Policy 2020 — Government of India</p>
+        <p>National Curriculum Framework for Foundational Stage 2022</p>
+        <p>રાજ્ય અભ્યાસક્રમનું માળખું : પાયાનો તબક્કો — ગુજરાત રાજ્ય, 2024</p>
+        <p>સંદર્ભ : PARAKH-NCERT તેમજ CBSE દ્વારા તૈયાર થયેલ HPC</p>
+       </div>
+       <div class="hpc-logo-row" style="margin-top:45px">
+        <div class="hpc-logo" role="img" aria-label="GCERT અધિકૃત logo માટેનું સ્થાન">
+         <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="#e8f4f5" stroke="#164b68" stroke-width="2"></circle><path d="M11 29q7-7 13 0 6-7 13 0v8q-7-5-13 1-6-6-13-1z" fill="#f3b744" stroke="#164b68" stroke-width="1.5"></path><path d="M24 10v14m-7-8 7-6 7 6" fill="none" stroke="#164b68" stroke-width="2"></path>
+         </svg><span>GCERT</span><small>અહીં અધિકૃત logo મૂકો</small><small>ગાંધીનગર, ગુજરાત</small>
+        </div>
+        <div class="hpc-logo" role="img" aria-label="ભારત સરકાર અધિકૃત logo માટેનું તટસ્થ સ્થાન">
+         <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="#fff6e8" stroke="#704037" stroke-width="2"></circle><path d="M13 34h22M17 29h14M20 14h8v15h-8zM16 14h16M24 10v4" fill="none" stroke="#704037" stroke-width="2.5" stroke-linecap="round"></path>
+         </svg><span>ભારત સરકાર</span><small>અહીં અધિકૃત logo મૂકો</small>
+        </div>
+        <div class="hpc-logo" role="img" aria-label="સમગ્ર શિક્ષા રંગીન ચિહ્ન અને Samagra Shiksha શબ્દચિહ્ન">
+         <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M24 6v36M6 24h36" stroke="#166b87" stroke-width="6" stroke-linecap="round"></path><path d="M11 11l26 26M37 11 11 37" stroke="#eaa336" stroke-width="5" stroke-linecap="round"></path><circle cx="24" cy="24" r="5" fill="#087d61"></circle>
+         </svg><span>સમગ્ર શિક્ષા</span><small>Samagra Shiksha</small><small>ગાંધીનગર, ગુજરાત</small>
+        </div>
+       </div>
+       <p class="hpc-foot">પાછળનું આવરણ · ૧૨ / ૧૨</p>
+       <div class="hpc-wave hpc-bottom" aria-hidden="true"></div>
+      </section>
+     </div>
+     <p class="hpc-note hpc-no-print">PDF બનાવવા માટે “બધાં પાનાં PDF માટે” દબાવી print windowમાં “Save as PDF” પસંદ કરો. પસંદ કરેલી સ્થાનિક files આપમેળે PDFમાં ઉમેરાતી નથી; જરૂરી નોંધ ઉપરના ફોર્મમાં લખો.</p>
+    </div>
+   </main>
+  </div>
+  <script src="db.js"></script>
+  <script>
+(function () {
+  "use strict";
+  const root = document.getElementById("hpc-app");
+  if (!root) return;
+  const studentSelect = document.getElementById("hpc-student-select");
+  const pageParams = new URLSearchParams(window.location.search);
+  const session = pageParams.get("session") === "sem2" ? "sem2" : "sem1";
+  let roster = [];
+
+  const titles = [
+    "આવરણ","મારા વિશે","ચિત્ર અને પરિવાર","ક્ષમતાઓ C-1 થી C-4",
+    "ક્ષમતાઓ C-5 થી C-8","ક્ષમતાઓ C-9 થી C-10","ક્ષમતાઓ C-11 થી C-13",
+    "શિક્ષક અને વાલી","સ્વ અને સહાધ્યાયી","પોર્ટફોલિયો અને સહી",
+    "મૂલ્યાંકન માર્ગદર્શિકા","સંદર્ભ અને સંસ્થાઓ"
+  ];
+  const pages = Array.from(root.querySelectorAll(".hpc-sheet"));
+  let current = 1;
+  let printing = false;
+  let resetPending = false;
+
+  function byId(id) { return root.querySelector("#" + id); }
+  function message(text) { byId("hpc-status").textContent = text; }
+
+  function draftKey() {
+    return "parinam-hpc-std1-" + session + "-" + studentSelect.value;
+  }
+
+  function legacyDraftKey() {
+    return "parinam-hpc-std1-" + studentSelect.value;
+  }
+
+  function formFields() {
+    return Array.from(root.querySelectorAll(".hpc-sheet input, .hpc-sheet textarea, .hpc-sheet select"))
+      .filter(control => control.type !== "file");
+  }
+
+  function saveDraft() {
+    try {
+      const values = formFields().map(control => ({
+        value: control.value,
+        checked: control.checked
+      }));
+      localStorage.setItem(draftKey(), JSON.stringify(values));
+      message("ફેરફારો આપમેળે સાચવાયા.");
+    } catch (error) {
+      message("ફેરફાર સાચવી શકાયા નથી: " + error.message);
+    }
+  }
+
+  function loadDraft() {
+    const fields = formFields();
+    fields.forEach(control => {
+      if (control.type === "radio" || control.type === "checkbox") control.checked = false;
+      else control.value = "";
+    });
+
+    const selectedStudent = roster.find(student => student.key === studentSelect.value);
+    if (selectedStudent && selectedStudent.name) byId("hpc-name").value = selectedStudent.name;
+
+    try {
+      const saved = localStorage.getItem(draftKey()) ||
+        (session === "sem1" ? localStorage.getItem(legacyDraftKey()) : null);
+      if (saved) {
+        const values = JSON.parse(saved);
+        if (!Array.isArray(values)) throw new Error("સાચવેલ કાર્ડનું ફોર્મેટ ખોટું છે.");
+        fields.forEach((control, index) => {
+          const value = values[index];
+          if (!value) return;
+          if (control.type === "radio" || control.type === "checkbox") control.checked = Boolean(value.checked);
+          else control.value = value.value == null ? "" : String(value.value);
+        });
+      }
+      message("ફેરફારો આપમેળે સાચવાય છે.");
+    } catch (error) {
+      message("સાચવેલ HPC કાર્ડ વાંચી શકાયું નથી: " + error.message);
+    }
+  }
+
+  async function loadStudentRoster() {
+    try {
+      await openDB();
+      const students = await getStudents("1");
+      const manualOption = studentSelect.querySelector('option[value="manual"]');
+      studentSelect.replaceChildren(manualOption);
+      roster = students.map((student, index) => {
+        const identity = student.id || student.gr || student.roll || student.uid || student.name || index + 1;
+        return {
+          key: "student-" + identity,
+          name: student.name || "",
+          roll: student.roll || ""
+        };
+      });
+      roster.forEach(student => {
+        const option = document.createElement("option");
+        option.value = student.key;
+        option.textContent = [student.roll, student.name].filter(Boolean).join(" - ") || "વિદ્યાર્થી";
+        studentSelect.append(option);
+      });
+      const requestedStudent = pageParams.get("student");
+      if (requestedStudent && roster.some(student => student.key === requestedStudent)) {
+        studentSelect.value = requestedStudent;
+      }
+      loadDraft();
+    } catch (error) {
+      message("વિદ્યાર્થી યાદી લોડ થઈ નથી: " + error.message + " (મેન્યુઅલ રેકોર્ડ વાપરી શકો છો.)");
+    }
+  }
+
+  function showPage(number) {
+    current = Math.max(1, Math.min(pages.length, Number(number) || 1));
+    pages.forEach((page, index) => page.classList.toggle("hpc-active", index + 1 === current));
+    root.querySelectorAll(".hpc-nav-button").forEach((button, index) => {
+      const active = index + 1 === current;
+      button.classList.toggle("hpc-active", active);
+      if (active) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    });
+    byId("hpc-page-jump").value = current;
+    byId("hpc-indicator").textContent = current + " / 12";
+    byId("hpc-prev").disabled = current === 1;
+    byId("hpc-next").disabled = current === pages.length;
+  }
+
+  function printState(active) {
+    root.classList.toggle("hpc-print-ready", active);
+    pages.forEach((page, index) => page.classList.toggle("hpc-print-selected", active && index + 1 === current));
+  }
+
+  function fitPagesToA4() {
+    const pageHeightPx = 281 * 96 / 25.4;
+    const originalStyles = pages.map(page => page.getAttribute("style"));
+
+    try {
+      pages.forEach((page, index) => {
+        page.style.cssText = [
+          "display:block!important",
+          "position:absolute!important",
+          "left:-100000px!important",
+          "top:0!important",
+          "visibility:hidden!important",
+          "width:194mm!important",
+          "min-height:0!important",
+          "height:auto!important",
+          "max-height:none!important",
+          "padding:5mm 4mm 11mm!important",
+          "margin:0!important",
+          "overflow:visible!important",
+          "zoom:1!important",
+          "transform:none!important"
+        ].join(";");
+
+        const contentHeight = page.scrollHeight;
+        const contentWidth = page.scrollWidth;
+        const scale = Math.min(1, pageHeightPx / contentHeight, page.clientWidth / contentWidth);
+        page.setAttribute("style", originalStyles[index] || "");
+        page.style.setProperty("--hpc-print-scale", String(scale));
+      });
+    } catch (error) {
+      pages.forEach((page, index) => {
+        if (originalStyles[index] === null) page.removeAttribute("style");
+        else page.setAttribute("style", originalStyles[index]);
+        page.style.removeProperty("--hpc-print-scale");
+      });
+      message("A4 પાનાંનું માપ ગોઠવી શકાયું નથી: " + error.message);
+    }
+  }
+
+  function finishPrint() {
+    printing = false;
+    printState(false);
+    root.classList.remove("hpc-print-current", "hpc-print-all");
+    pages.forEach(page => page.style.removeProperty("--hpc-print-scale"));
+    [byId("hpc-print-current"), byId("hpc-print-all"), byId("hpc-pdf")].forEach(button => button.disabled = false);
+  }
+
+  function printPages(all, pdf) {
+    if (printing) return;
+    if (typeof window.print !== "function") {
+      message("આ browserમાં છાપવાની સુવિધા ઉપલબ્ધ નથી. કૃપા કરીને browserનું Print મેનુ વાપરો.");
+      return;
+    }
+    printing = true;
+    root.classList.toggle("hpc-print-all", all);
+    root.classList.toggle("hpc-print-current", !all);
+    [byId("hpc-print-current"), byId("hpc-print-all"), byId("hpc-pdf")].forEach(button => button.disabled = true);
+    message(pdf ? "PDF માટે print windowમાં “Save as PDF” પસંદ કરો." : "છાપવાનું સંવાદ ખૂલી રહ્યું છે…");
+    printState(true);
+    try {
+      window.print();
+    } catch (_) {
+      message("છાપવાનું શરૂ ન થયું. કૃપા કરીને browserનું Print મેનુ વાપરો.");
+      finishPrint();
+    }
+  }
+
+  function searchPages() {
+    const query = byId("hpc-search").value.trim().toLocaleLowerCase();
+    if (!query) return;
+    const hit = pages.findIndex((page, index) =>
+      titles[index].toLocaleLowerCase().includes(query) ||
+      page.textContent.toLocaleLowerCase().includes(query)
+    );
+    if (hit < 0) message("કોઈ મેળ મળ્યો નથી.");
+    else showPage(hit + 1);
+  }
+
+  function initHPC() {
+    if (root.dataset.hpcInitialized === "true") return;
+    root.dataset.hpcInitialized = "true";
+
+    const nav = byId("hpc-nav");
+    titles.forEach((title, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "hpc-nav-button";
+      button.setAttribute("aria-label", "પાનું " + (index + 1) + ": " + title);
+      const thumb = document.createElement("span");
+      thumb.className = "hpc-thumb";
+      thumb.textContent = String(index + 1);
+      const label = document.createElement("span");
+      label.textContent = title;
+      button.append(thumb, label);
+      button.addEventListener("click", () => showPage(index + 1));
+      nav.append(button);
+    });
+
+    /* Only empty rating cells receive controls; repeated initialization cannot duplicate them. */
+    root.querySelectorAll(".hpc-competencies tr[data-code]").forEach(row => {
+      row.querySelectorAll("td:nth-last-child(-n+2)").forEach((cell, index) => {
+        const select = document.createElement("select");
+        select.className = "hpc-rating";
+        select.setAttribute("aria-label", row.dataset.code + ", સત્ર " + (index + 1) + "નું મૂલ્યાંકન");
+        [["","— પસંદ કરો —"],["beginner","〰 શરૂઆત"],["proficient","△ પ્રગતિ"],["advanced","☆ નિપુણ"]].forEach(([value, label]) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = label;
+          select.append(option);
+        });
+        cell.append(select);
+      });
+    });
+
+    root.querySelectorAll(".hpc-peer-table tbody tr").forEach((row, rowIndex) => {
+      Array.from(row.cells).slice(1).forEach((cell, sessionIndex) => {
+        const wrap = document.createElement("div");
+        wrap.className = "hpc-smiles";
+        [["🙁","ઓછી"],["😊","સારી"],["😐","હજુ શીખું છું"]].forEach(([symbol, label]) => {
+          const choice = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = "hpc-peer-" + rowIndex + "-" + sessionIndex;
+          input.value = label;
+          input.setAttribute("aria-label", label + " — સત્ર " + (sessionIndex + 1));
+          choice.append(input, document.createTextNode(symbol));
+          choice.title = label;
+          wrap.append(choice);
+        });
+        cell.append(wrap);
+      });
+    });
+
+    byId("hpc-prev").addEventListener("click", () => showPage(current - 1));
+    byId("hpc-next").addEventListener("click", () => showPage(current + 1));
+    byId("hpc-jump-form").addEventListener("submit", event => {
+      event.preventDefault();
+      showPage(byId("hpc-page-jump").value);
+    });
+    byId("hpc-search-button").addEventListener("click", searchPages);
+    byId("hpc-search").addEventListener("keydown", event => {
+      if (event.key === "Enter") { event.preventDefault(); searchPages(); }
+    });
+    byId("hpc-print-current").addEventListener("click", () => printPages(false, false));
+    byId("hpc-print-all").addEventListener("click", () => printPages(true, false));
+    byId("hpc-pdf").addEventListener("click", () => printPages(true, true));
+
+    root.addEventListener("input", event => {
+      if (event.target.closest(".hpc-sheet")) saveDraft();
+    });
+    root.addEventListener("change", event => {
+      if (event.target === studentSelect) loadDraft();
+      else if (event.target.closest(".hpc-sheet")) saveDraft();
+    });
+    root.querySelectorAll(".hpc-upload").forEach(upload => {
+      upload.addEventListener("change", () => {
+        upload.nextElementSibling.textContent = upload.files && upload.files[0] ? upload.files[0].name : "";
+      });
+    });
+
+    byId("hpc-reset").addEventListener("click", () => {
+      if (!resetPending) {
+        resetPending = true;
+        byId("hpc-reset").querySelector("[data-template-id='reset-normal']").hidden = true;
+        byId("hpc-reset").querySelector("[data-template-id='reset-confirm']").hidden = false;
+        return;
+      }
+      root.querySelectorAll(".hpc-sheet input, .hpc-sheet textarea, .hpc-sheet select").forEach(control => {
+        if (control.type === "radio" || control.type === "checkbox") control.checked = false;
+        else control.value = "";
+      });
+      root.querySelectorAll(".hpc-upload-name").forEach(label => { label.textContent = ""; });
+      resetPending = false;
+      byId("hpc-reset").querySelector("[data-template-id='reset-normal']").hidden = false;
+      byId("hpc-reset").querySelector("[data-template-id='reset-confirm']").hidden = true;
+      try {
+        localStorage.removeItem(draftKey());
+        message("ફોર્મ સાફ થયું.");
+      } catch (error) {
+        message("ફોર્મ સાફ થયું, પરંતુ સાચવેલ નકલ કાઢી શકાઈ નથી: " + error.message);
+      }
+    });
+
+    window.addEventListener("beforeprint", () => {
+      if (!root.classList.contains("hpc-print-current") && !root.classList.contains("hpc-print-all")) {
+        root.classList.add("hpc-print-all");
+      }
+      printState(true);
+      fitPagesToA4();
+    });
+    window.addEventListener("afterprint", finishPrint);
+    byId("hpc-session-label").textContent = session === "sem2" ? "દ્વિતીય સત્ર" : "પ્રથમ સત્ર";
+    const now = new Date();
+    const startYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+    byId("hpc-academic-year").textContent = startYear + "–" + (startYear + 1);
+    byId("hpc-cover-year").textContent = startYear + "-" + (startYear + 1);
+    showPage(1);
+    loadStudentRoster();
+  }
+
+  window.initHPC = initHPC;
+  initHPC();
+})();
+</script>
+</body></html>

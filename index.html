@@ -48,11 +48,11 @@
         <div class="std-label">Balvatika</div>
         <div class="std-status">Coming Soon</div>
     </div>
-    <div class="std-card disabled" onclick="comingSoon('ધોરણ 1')">
+    <div class="std-card active" onclick="openStd1()">
         <div class="icon">1️⃣</div>
         <div class="std-number">1</div>
         <div class="std-label">ધોરણ ૧</div>
-        <div class="std-status">Coming Soon</div>
+        <div class="std-status">✅ Active</div>
     </div>
 
     <!-- ✅ ધોરણ ૨ — હવે ACTIVE (અલગ home_std2.html) -->
@@ -107,8 +107,11 @@
 </div>
 
 <script>
-    // Std 3-8 → home.html (જૂનું, અકબંધ)
+    // Std 3-8 → home.html
     function openStd(std) { window.location.href = 'home.html?std=' + std; }
+
+    // Std 1 and 2 have dedicated dashboards.
+    function openStd1() { window.location.href = 'home_std1.html'; }
 
     // Std 2 → home_std2.html (નવું, અલગ સંપૂર્ણ)
     function openStd2() { window.location.href = 'home_std2.html'; }

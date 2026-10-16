@@ -579,12 +579,12 @@
          TOP NAV
          ============================================================ -->
     <div class="top-nav">
-        <button class="nav-btn" onclick="window.location.href='index.html'">◀ ધોરણ બદલો</button>
+        <button class="nav-btn" onclick="window.location.href='index.html'">🏠 મુખ્ય પેજ</button>
         <div class="std-title">
             <span class="icon-big">📚</span>
             <span>ધોરણ <span id="stdLabel">-</span> નું ડેશબોર્ડ</span>
         </div>
-        <button class="nav-btn" onclick="showPromoteDialog()">🎓 આગલા વર્ષે પ્રમોટ</button>
+        <button class="nav-btn" id="promoteButton" onclick="showPromoteDialog()">🎓 આગલા વર્ષે પ્રમોટ</button>
     </div>
 
     <!-- ============================================================
@@ -689,8 +689,13 @@
 
     window.onload = function() {
         currentStd = getUrlParam('std', '8');
+        if (currentStd === '1') {
+            window.location.replace('home_std1.html');
+            return;
+        }
         document.getElementById('stdLabel').innerText = currentStd;
         document.title = 'ધોરણ ' + currentStd + ' - ડેશબોર્ડ';
+        document.getElementById('promoteButton').hidden = ['1', '2'].includes(currentStd);
     };
 
     function go(page) {

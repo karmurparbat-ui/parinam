@@ -11,6 +11,9 @@
 body{font-family:'Rasa',sans-serif;background:linear-gradient(135deg,#f5e6d3,#fce4d0);margin:0;padding:14px;font-size:15px;}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
 .topbar a{color:#8B4513;text-decoration:none;font-weight:600;padding:8px 14px;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);font-size:.9em;}
+.topbar a.home-return{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:9px 16px;border:2px solid #f4b942;border-radius:9px;background:linear-gradient(180deg,#245b8e,#12375c);color:#fff;font-weight:800;box-shadow:0 4px 0 #0b2239,0 6px 12px rgba(16,45,76,.22);}
+.topbar a.home-return:hover{background:linear-gradient(180deg,#3473aa,#194a78);transform:translateY(-1px);}
+.topbar a.home-return:focus-visible{outline:3px solid #d47700;outline-offset:3px;}
 .title{font-family:'Shrikhand',cursive;color:#8B4513;font-size:1.3em;}
 .panel{background:#fff;border-radius:14px;padding:14px;box-shadow:0 6px 16px rgba(139,69,19,.15);margin-bottom:14px;}
 .panel h3{font-family:'Shrikhand',cursive;color:#8B4513;margin:0 0 10px;font-size:1.15em;}
@@ -50,9 +53,9 @@ td input,td select.info{border:1px solid #ddd;border-radius:4px;padding:4px 6px;
 <body>
 
 <div class="topbar">
-  <a href="home_std2.html">← ડેશબોર્ડ</a>
+  <a class="home-return" href="home_std2.html">🏠 ડેશબોર્ડ</a>
   <div class="title">ધોરણ ૨ — ડેટા એન્ટ્રી</div>
-  <a href="index.html">🏠 મુખ્ય</a>
+  <a class="home-return" href="index.html">🏠 મુખ્ય પેજ</a>
 </div>
 
 <!-- વિદ્યાર્થી માહિતી -->

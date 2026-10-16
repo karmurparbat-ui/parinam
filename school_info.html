@@ -28,7 +28,9 @@
         .form-table input[type="file"] { font-size: 14px; }
         .btn { padding: 12px 25px; border: 1px solid #000; border-radius: 8px; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s ease; box-shadow: 3px 3px 0px rgba(0,0,0,0.4); }
         .btn:active { transform: translate(3px, 3px); box-shadow: none; }
-        .btn-home { background-color: #000; color: #fff; width: 180px; height: 60px; display: flex; justify-content: center; align-items: center; }
+        .btn-home { background: linear-gradient(180deg,#245b8e,#12375c); color: #fff; width: 100%; min-height: 54px; border: 2px solid #f4b942; border-radius: 10px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 0 #0b2239,0 6px 12px rgba(16,45,76,.22); }
+        .btn-home:hover { background: linear-gradient(180deg,#3473aa,#194a78); }
+        .btn-home:focus-visible { outline: 3px solid #d47700; outline-offset: 3px; }
         .btn-save { background-color: #4B854B; color: #fff; margin-top: 15px; width: 100%; }
         .sidebar { display: flex; flex-direction: column; gap: 10px; width: 200px; }
         .img-preview { max-width: 120px; max-height: 70px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; display: none; }
@@ -77,7 +79,7 @@
     </div>
     <div class="sidebar">
         <div class="std-badge">ધોરણ : <span id="stdSide">-</span></div>
-        <button class="btn btn-home" onclick="goHome()">Home</button>
+        <button class="btn btn-home" onclick="goHome()">🏠 ડેશબોર્ડ પર પાછા</button>
         <button class="btn btn-save" onclick="saveSchoolInfo()">માહિતી સેવ કરો</button>
     </div>
 </div>
@@ -87,9 +89,10 @@
 
     document.getElementById('stdSide').innerText = currentStd;
 
-    // ✅ Home button — Std 2 હોય તો home_std2, બાકીના home.html
+    // ✅ Return to the dashboard for the selected grade.
     function goHome() {
-        if (isStd2) window.location.href = 'home_std2.html';
+        if (String(currentStd) === '1') window.location.href = 'home_std1.html';
+        else if (isStd2) window.location.href = 'home_std2.html';
         else window.location.href = 'home.html?std=' + currentStd;
     }
 

@@ -9,6 +9,9 @@
 body { font-family:'Rasa',sans-serif; background:linear-gradient(135deg,#f5e6d3,#fce4d0); margin:0; padding:20px; min-height:100vh; }
 .topbar { max-width:1400px; margin:0 auto 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
 .topbar a { color:#8B4513; text-decoration:none; font-weight:600; padding:10px 18px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+.topbar a.home-return { min-height:46px; display:inline-flex; align-items:center; justify-content:center; padding:10px 18px; border:2px solid #f4b942; border-radius:10px; background:linear-gradient(180deg,#173f68,#102d4c); color:#fff; font-weight:800; box-shadow:0 4px 0 #0b2239,0 7px 16px rgba(16,45,76,.28); }
+.topbar a.home-return:hover { background:linear-gradient(180deg,#245b8e,#173f68); transform:translateY(-1px); }
+.topbar a.home-return:focus-visible { outline:3px solid #d47700; outline-offset:3px; }
 .header { text-align:center; margin-bottom:24px; }
 .header h1 { font-family:'Shrikhand',cursive; color:#8B4513; margin:0; font-size:2.4em; text-shadow:2px 2px 0 #fff, 4px 4px 10px rgba(0,0,0,.15); }
 .header .sub { font-size:1.15em; color:#A0522D; margin-top:6px; font-weight:600; }
@@ -29,7 +32,7 @@ body { font-family:'Rasa',sans-serif; background:linear-gradient(135deg,#f5e6d3,
 <body>
 
 <div class="topbar">
-  <a href="index.html">← મુખ્ય પેજ</a>
+  <a class="home-return" href="index.html">🏠 મુખ્ય પેજ</a>
   <a href="school_info.html?std=2">🏫 શાળાકીય માહિતી</a>
 </div>
 

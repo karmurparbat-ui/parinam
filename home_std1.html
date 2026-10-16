@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ધોરણ ૧ — ડેશબોર્ડ</title>
+<link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Rasa:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="db.js"></script>
+<style>
+body { font-family:'Rasa',sans-serif; background:linear-gradient(135deg,#f5e6d3,#fce4d0); margin:0; padding:20px; min-height:100vh; }
+.topbar { max-width:1400px; margin:0 auto 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+.topbar a { color:#8B4513; text-decoration:none; font-weight:600; padding:10px 18px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+.topbar a.home-return { min-height:46px; display:inline-flex; align-items:center; justify-content:center; padding:10px 18px; border:2px solid #f4b942; border-radius:10px; background:linear-gradient(180deg,#173f68,#102d4c); color:#fff; font-weight:800; box-shadow:0 4px 0 #0b2239,0 7px 16px rgba(16,45,76,.28); }
+.topbar a.home-return:hover { background:linear-gradient(180deg,#245b8e,#173f68); transform:translateY(-1px); }
+.topbar a.home-return:focus-visible { outline:3px solid #d47700; outline-offset:3px; }
+.header { text-align:center; margin-bottom:24px; }
+.header h1 { font-family:'Shrikhand',cursive; color:#8B4513; margin:0; font-size:2.4em; text-shadow:2px 2px 0 #fff, 4px 4px 10px rgba(0,0,0,.15); }
+.header .sub { font-size:1.15em; color:#A0522D; margin-top:6px; font-weight:600; }
+.grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; max-width:1400px; margin:0 auto; }
+.col { background:#fff; border-radius:18px; padding:18px; box-shadow:0 10px 24px rgba(139,69,19,.18), inset 0 1px 0 #fff; }
+.col h2 { font-family:'Shrikhand',cursive; color:#8B4513; margin:0 0 14px; text-align:center; font-size:1.35em; border-bottom:3px solid #f0d0a0; padding-bottom:10px; }
+.btn { display:block; width:100%; padding:14px; margin:10px 0; border:none; border-radius:12px; font-family:'Rasa',sans-serif; font-size:1.05em; font-weight:600; color:#fff; cursor:pointer; text-align:center; text-decoration:none; box-shadow:0 5px 0 #7a2f0f, 0 8px 16px rgba(0,0,0,.2); transition:.15s; }
+.btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 7px 0 #7a2f0f, 0 10px 20px rgba(0,0,0,.25); }
+.btn:active:not(:disabled) { transform:translateY(2px); box-shadow:0 3px 0 #7a2f0f; }
+.btn.orange { background:linear-gradient(180deg,#FF8C42,#E55A1E); }
+.btn.brown { background:linear-gradient(180deg,#A0522D,#7B3417); }
+.btn.green { background:linear-gradient(180deg,#4CAF50,#2E7D32); box-shadow:0 5px 0 #1B5E20,0 8px 16px rgba(0,0,0,.2); }
+.btn.blue { background:linear-gradient(180deg,#4A90D9,#2E6BA8); box-shadow:0 5px 0 #1B4A7A,0 8px 16px rgba(0,0,0,.2); }
+.btn.purple { background:linear-gradient(180deg,#9B59B6,#6D3E8A); box-shadow:0 5px 0 #4A2A5E,0 8px 16px rgba(0,0,0,.2); }
+.btn:disabled { opacity:.55; cursor:not-allowed; }
+.student-picker { display:block; width:100%; padding:11px; margin:10px 0; border:1px solid #d5b99a; border-radius:10px; font:inherit; color:#57351e; background:#fffaf4; }
+.notice { min-height:1.5em; margin:10px 0; color:#8b4513; font-weight:600; }
+@media (max-width:900px) { .grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="home-return" href="index.html">🏠 મુખ્ય પેજ</a>
+  <a href="school_info.html?std=1">🏫 શાળાકીય માહિતી</a>
+</div>
+
+<div class="header">
+  <h1>ધોરણ ૧ — ડેશબોર્ડ</h1>
+  <div class="sub">શ્રી કોરાડા વાડી પ્રાથમિક શાળા</div>
+</div>
+
+<div class="grid">
+  <div class="col">
+    <h2>📋 માહિતી</h2>
+    <a class="btn orange" href="school_info.html?std=1">🏫 શાળાકીય માહિતી</a>
+    <a class="btn brown" href="marks_entry.html?std=1">👦 વિદ્યાર્થી માહિતી + એન્ટ્રી</a>
+    <p id="studentNotice" class="notice" role="status" aria-live="polite"></p>
+  </div>
+
+  <div class="col">
+    <h2>📗 પ્રથમ સત્ર</h2>
+    <a class="btn purple" href="covers.html?std=1&amp;exam=Sem1">🎨 પ્રથમ સત્ર કવર પેજ</a>
+    <a class="btn green" href="result.html?std=1&amp;exam=Sem1">📊 પ્રથમ સત્ર પરિણામ</a>
+    <a class="btn blue" href="marksheet.html?std=1&amp;exam=Sem1">📜 પ્રથમ સત્ર માર્કશીટ</a>
+    <a class="btn green" href="patrak_f.html?std=1&amp;exam=Sem1">📋 પ્રગતિ પત્રક (પત્રક F)</a>
+    <a class="btn purple" href="patrak_b.html?std=1&amp;exam=Sem1">🎯 પત્રક-B : વ્યક્તિત્વ વિકાસ</a>
+    <label for="hpcStudentSem1">HPC માટે વિદ્યાર્થી પસંદ કરો:</label>
+    <select id="hpcStudentSem1" class="student-picker">
+      <option value="">— વિદ્યાર્થી પસંદ કરો —</option>
+    </select>
+    <button type="button" class="btn blue hpc-open" data-session="sem1" disabled>📘 પ્રથમ સત્ર HPC કાર્ડ</button>
+  </div>
+
+  <div class="col">
+    <h2>📕 દ્વિતીય સત્ર (વાર્ષિક)</h2>
+    <a class="btn purple" href="covers.html?std=1&amp;exam=Sem2">🎨 દ્વિતીય સત્ર કવર પેજ</a>
+    <a class="btn green" href="result.html?std=1&amp;exam=Annual">📊 વાર્ષિક પરિણામ</a>
+    <a class="btn blue" href="marksheet.html?std=1&amp;exam=Annual">📜 વાર્ષિક માર્કશીટ</a>
+    <a class="btn green" href="patrak_f.html?std=1&amp;exam=Annual">📋 પ્રગતિ પત્રક (પત્રક F)</a>
+    <a class="btn purple" href="patrak_b.html?std=1&amp;exam=Annual">🎯 પત્રક-B : વ્યક્તિત્વ વિકાસ</a>
+    <label for="hpcStudentSem2">HPC માટે વિદ્યાર્થી પસંદ કરો:</label>
+    <select id="hpcStudentSem2" class="student-picker">
+      <option value="">— વિદ્યાર્થી પસંદ કરો —</option>
+    </select>
+    <button type="button" class="btn blue hpc-open" data-session="sem2" disabled>📘 દ્વિતીય સત્ર HPC કાર્ડ</button>
+  </div>
+</div>
+
+<script>
+  async function loadHpcStudents() {
+    const notice = document.getElementById('studentNotice');
+    const selects = [
+      document.getElementById('hpcStudentSem1'),
+      document.getElementById('hpcStudentSem2')
+    ];
+
+    try {
+      await openDB();
+      const students = await getStudents('1');
+      students.forEach((student, index) => {
+        const identity = student.id || student.gr || student.roll || student.uid || student.name || index + 1;
+        const value = 'student-' + identity;
+        const label = [student.roll, student.name].filter(Boolean).join(' - ') || 'વિદ્યાર્થી';
+        selects.forEach(select => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          select.append(option);
+        });
+      });
+      notice.textContent = students.length
+        ? 'દરેક સત્ર માટે HPC કાર્ડ ખોલતાં પહેલાં વિદ્યાર્થી પસંદ કરો.'
+        : 'HPC કાર્ડ માટે પહેલાં વિદ્યાર્થી માહિતી + એન્ટ્રીમાં વિદ્યાર્થીઓ ઉમેરો.';
+    } catch (error) {
+      notice.textContent = 'વિદ્યાર્થી યાદી લોડ થઈ નથી: ' + error.message;
+      console.error('ધોરણ ૧ના વિદ્યાર્થીઓ લોડ થઈ શક્યા નથી:', error);
+    }
+  }
+
+  document.querySelectorAll('.hpc-open').forEach(button => {
+    const select = document.getElementById(button.dataset.session === 'sem1' ? 'hpcStudentSem1' : 'hpcStudentSem2');
+    select.addEventListener('change', () => {
+      button.disabled = !select.value;
+    });
+    button.addEventListener('click', () => {
+      if (!select.value) return;
+      const params = new URLSearchParams({
+        student: select.value,
+        session: button.dataset.session
+      });
+      window.location.href = 'hpc_std1.html?' + params.toString();
+    });
+  });
+
+  loadHpcStudents();
+</script>
+</body>
+</html>

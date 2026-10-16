@@ -19,6 +19,9 @@
         .btn { padding: 8px 15px; border: 1px solid #000; border-radius: 5px; font-family: 'Noto Sans Gujarati', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0px rgba(0,0,0,0.4); }
         .btn:active { transform: translate(2px, 2px); box-shadow: none; }
         .btn-black { background-color: #000; color: #fff; }
+        .btn.home-return { min-height:44px; padding:9px 16px; border:2px solid #f4b942; border-radius:9px; background:linear-gradient(180deg,#245b8e,#12375c); color:#fff; font-weight:800; box-shadow:0 4px 0 #0b2239,0 6px 12px rgba(16,45,76,.22); }
+        .btn.home-return:hover { background:linear-gradient(180deg,#3473aa,#194a78); }
+        .btn.home-return:focus-visible { outline:3px solid #d47700; outline-offset:3px; }
         .btn-green { background-color: #4B854B; color: #fff; }
         .btn-blue { background-color: #2D72B8; color: #fff; }
         .btn-orange { background-color: #F26C23; color: #fff; }
@@ -237,7 +240,7 @@
         <input type="file" id="ctsImportInput" accept=".xls,.xlsx" style="display:none">
         <input type="file" id="excelImportInput" accept=".xlsx,.xls" style="display:none">
         <button class="btn btn-orange" onclick="exportEntryExcel()">📤 Excel Export</button>
-        <button class="btn btn-black" onclick="window.location.href='home.html?std=' + currentStd">Home</button>
+        <button class="btn btn-black home-return" onclick="window.location.href='home.html?std=' + currentStd">🏠 ડેશબોર્ડ</button>
     </div>
 </div>
 

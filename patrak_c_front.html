@@ -75,6 +75,9 @@
             background: #FFD700;
             color: #1A237E;
         }
+        .control-btn.home-return { min-height: 44px; padding: 8px 16px; border: 2px solid #FFD700; border-radius: 9px; background: linear-gradient(180deg,#245b8e,#12375c); color: #fff; font-size: 14px; box-shadow: 0 4px 0 #0b2239,0 6px 12px rgba(0,0,0,.25); }
+        .control-btn.home-return:hover { background: linear-gradient(180deg,#3473aa,#194a78); color: #fff; }
+        .control-btn.home-return:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
         
         /* ============ A4 PAGE ============ */
         .page {
@@ -422,7 +425,7 @@
         ધોરણ : <span id="ctrlStd">-</span> |
         પરીક્ષા : <span id="ctrlExam">-</span>
     </div>
-    <button class="control-btn" onclick="window.location.href='home.html?std=' + currentStd">🏠 Home</button>
+    <button class="control-btn home-return" onclick="window.location.href='home.html?std=' + currentStd">🏠 ડેશબોર્ડ</button>
     <button class="control-btn primary" onclick="window.print()">🖨 પ્રિન્ટ / PDF</button>
 </div>
 

@@ -16,7 +16,9 @@
         .panel-note { font-size: 12px; line-height: 1.8; color: #63748a; }
         .badge { padding: 10px; border-radius: 8px; background: #edf2fa; text-align: center; font-weight: 700; font-size: 14px; }
         .btn { min-height: 44px; padding: 10px 12px; border: none; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; }
-        .btn-home { background: #233c5c; color: #fff; }
+        .btn-home { min-height: 48px; border: 2px solid #f4b942; border-radius: 10px; background: linear-gradient(180deg,#245b8e,#12375c); color: #fff; font-size: 14px; box-shadow: 0 4px 0 #0b2239,0 6px 12px rgba(16,45,76,.22); }
+        .btn-home:hover { background: linear-gradient(180deg,#3473aa,#194a78); }
+        .btn-home:focus-visible { outline: 3px solid #d47700; outline-offset: 3px; }
         .btn-print { background: #e46b24; color: #fff; }
         .btn:disabled { opacity: .5; cursor: not-allowed; }
         button:focus-visible, a:focus-visible { outline: 3px solid #d98c27; outline-offset: 2px; }
@@ -62,7 +64,7 @@
         <aside class="control-panel" aria-label="કવર નિયંત્રણ">
             <h1>પરિણામ ફાઈલનાં કવર</h1>
             <div class="badge" id="classBadge"></div>
-            <a class="btn btn-home" id="homeLink">ડેશબોર્ડ</a>
+            <a class="btn btn-home home-return" id="homeLink">🏠 ડેશબોર્ડ પર પાછા</a>
             <p class="panel-note">શાળાની માહિતીમાંથી વિગતો આપમેળે ભરાય છે. માહિતી બદલવા માટે <a id="schoolLink">શાળાની માહિતી</a> ખોલો.</p>
             <nav class="cover-list" id="coverList" aria-label="કવર પસંદ કરો"></nav>
             <button class="btn btn-print" id="printButton" disabled>બધા કવર પ્રિન્ટ / PDF</button>
@@ -198,9 +200,11 @@
         }
 
         new ResizeObserver(fitPreviews).observe(container);
-        document.getElementById('homeLink').href = currentStd === '2'
-            ? 'home_std2.html'
-            : `home.html?std=${encodeURIComponent(currentStd)}`;
+        document.getElementById('homeLink').href = currentStd === '1'
+            ? 'home_std1.html'
+            : currentStd === '2'
+                ? 'home_std2.html'
+                : `home.html?std=${encodeURIComponent(currentStd)}`;
         document.getElementById('schoolLink').href = `school_info.html?std=${encodeURIComponent(currentStd)}`;
         printButton.addEventListener('click', () => window.print());
         window.addEventListener('load', async () => {
