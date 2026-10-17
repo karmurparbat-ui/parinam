@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>પરિણામ — Account</title>
+    <link rel="stylesheet" href="/saas.css">
+    <script src="/saas-ui.js" defer></script>
+</head>
+<body data-page="account">
+<main class="auth">
+    <h1>મારું Account</h1>
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+    <section class="card">
+        <h2 id="account-name"></h2>
+        <p id="account-details"></p>
+        <p id="account-state"></p>
+        <a class="button" id="continue-link" href="/index.html">Software ખોલો</a>
+        <button id="check-approval" class="secondary">Approval / renewal ફરી તપાસો</button>
+    </section>
+    <section class="card">
+        <h2>Password બદલો</h2>
+        <form id="password-form">
+            <label>હાલનો password <input name="currentPassword" type="password" autocomplete="current-password" required maxlength="128"></label>
+            <label>નવો password <input name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="128"></label>
+            <label>નવો password ફરીથી <input name="confirmPassword" type="password" autocomplete="new-password" required minlength="12" maxlength="128"></label>
+            <button type="submit">Password બદલો અને Logout કરો</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

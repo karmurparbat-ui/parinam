@@ -950,43 +950,69 @@
     return "parinam-hpc-std1-" + session + "-" + studentSelect.value;
   }
 
-  function legacyDraftKey() {
-    return "parinam-hpc-std1-" + studentSelect.value;
-  }
-
   function formFields() {
     return Array.from(root.querySelectorAll(".hpc-sheet input, .hpc-sheet textarea, .hpc-sheet select"))
       .filter(control => control.type !== "file");
   }
 
-  function saveDraft() {
-    try {
-      const values = formFields().map(control => ({
-        value: control.value,
-        checked: control.checked
-      }));
-      localStorage.setItem(draftKey(), JSON.stringify(values));
-      message("ફેરફારો આપમેળે સાચવાયા.");
-    } catch (error) {
-      message("ફેરફાર સાચવી શકાયા નથી: " + error.message);
+  let draftTimer;
+  let pendingDraft = null;
+  let draftSave = Promise.resolve();
+  let draftInFlight = 0;
+  window.addEventListener("beforeunload", event => {
+    if (pendingDraft || draftInFlight) {
+      event.preventDefault();
+      event.returnValue = "";
     }
+  });
+
+  function flushDraft() {
+    clearTimeout(draftTimer);
+    if (!pendingDraft) return draftSave;
+    const snapshot = pendingDraft;
+    pendingDraft = null;
+    draftInFlight++;
+    const work = draftSave.catch(() => {}).then(async () => {
+      await cloudWrite('draft', await window.draftStorageKey(snapshot.key), snapshot.values);
+      message("ફેરફારો server પર સાચવાયા.");
+    });
+    draftSave = work.catch(error => {
+      if (!pendingDraft) pendingDraft = snapshot;
+      message("ફેરફાર સાચવી શકાયા નથી: " + error.message + " — પેજ બંધ કરતાં પહેલાં ફરી પ્રયત્ન કરો.");
+      throw error;
+    }).finally(() => { draftInFlight--; });
+    return draftSave;
   }
 
-  function loadDraft() {
+  function saveDraft() {
+    pendingDraft = {
+      key: draftKey(),
+      values: formFields().map(control => ({ value: control.value, checked: control.checked }))
+    };
+    message("ફેરફારો સાચવવાના બાકી છે...");
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(() => {
+      flushDraft().catch(error => message("ફેરફાર સાચવી શકાયા નથી: " + error.message));
+    }, 600);
+  }
+
+  async function loadDraft() {
     const fields = formFields();
-    fields.forEach(control => {
-      if (control.type === "radio" || control.type === "checkbox") control.checked = false;
-      else control.value = "";
-    });
-
-    const selectedStudent = roster.find(student => student.key === studentSelect.value);
-    if (selectedStudent && selectedStudent.name) byId("hpc-name").value = selectedStudent.name;
-
+    let loaded = false;
+    fields.forEach(control => { control.disabled = true; });
+    studentSelect.disabled = true;
     try {
-      const saved = localStorage.getItem(draftKey()) ||
-        (session === "sem1" ? localStorage.getItem(legacyDraftKey()) : null);
-      if (saved) {
-        const values = JSON.parse(saved);
+      await flushDraft();
+      fields.forEach(control => {
+        if (control.type === "radio" || control.type === "checkbox") control.checked = false;
+        else control.value = "";
+      });
+
+      const selectedStudent = roster.find(student => student.key === studentSelect.value);
+      if (selectedStudent && selectedStudent.name) byId("hpc-name").value = selectedStudent.name;
+
+      const values = await cloudRead('draft', await window.draftStorageKey(draftKey()));
+      if (values) {
         if (!Array.isArray(values)) throw new Error("સાચવેલ કાર્ડનું ફોર્મેટ ખોટું છે.");
         fields.forEach((control, index) => {
           const value = values[index];
@@ -995,9 +1021,13 @@
           else control.value = value.value == null ? "" : String(value.value);
         });
       }
-      message("ફેરફારો આપમેળે સાચવાય છે.");
+      message("ફેરફારો server પર આપમેળે સાચવાય છે.");
+      loaded = true;
     } catch (error) {
       message("સાચવેલ HPC કાર્ડ વાંચી શકાયું નથી: " + error.message);
+    } finally {
+      fields.forEach(control => { control.disabled = !loaded; });
+      studentSelect.disabled = false;
     }
   }
 
@@ -1025,7 +1055,7 @@
       if (requestedStudent && roster.some(student => student.key === requestedStudent)) {
         studentSelect.value = requestedStudent;
       }
-      loadDraft();
+      await loadDraft();
     } catch (error) {
       message("વિદ્યાર્થી યાદી લોડ થઈ નથી: " + error.message + " (મેન્યુઅલ રેકોર્ડ વાપરી શકો છો.)");
     }
@@ -1132,6 +1162,7 @@
   function initHPC() {
     if (root.dataset.hpcInitialized === "true") return;
     root.dataset.hpcInitialized = "true";
+    formFields().forEach(control => { control.disabled = true; });
 
     const nav = byId("hpc-nav");
     titles.forEach((title, index) => {
@@ -1211,11 +1242,18 @@
       });
     });
 
-    byId("hpc-reset").addEventListener("click", () => {
+    byId("hpc-reset").addEventListener("click", async () => {
       if (!resetPending) {
         resetPending = true;
         byId("hpc-reset").querySelector("[data-template-id='reset-normal']").hidden = true;
         byId("hpc-reset").querySelector("[data-template-id='reset-confirm']").hidden = false;
+        return;
+      }
+      try {
+        await flushDraft();
+        await cloudWrite('draft', await window.draftStorageKey(draftKey()), null);
+      } catch (error) {
+        message("ફોર્મ સાફ કરી શકાયું નથી: " + error.message);
         return;
       }
       root.querySelectorAll(".hpc-sheet input, .hpc-sheet textarea, .hpc-sheet select").forEach(control => {
@@ -1226,12 +1264,7 @@
       resetPending = false;
       byId("hpc-reset").querySelector("[data-template-id='reset-normal']").hidden = false;
       byId("hpc-reset").querySelector("[data-template-id='reset-confirm']").hidden = true;
-      try {
-        localStorage.removeItem(draftKey());
-        message("ફોર્મ સાફ થયું.");
-      } catch (error) {
-        message("ફોર્મ સાફ થયું, પરંતુ સાચવેલ નકલ કાઢી શકાઈ નથી: " + error.message);
-      }
+      message("ફોર્મ અને server પરની નકલ સાફ થયાં.");
     });
 
     window.addEventListener("beforeprint", () => {

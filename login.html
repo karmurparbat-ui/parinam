@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>પરિણામ — School Login</title>
+    <link rel="stylesheet" href="/saas.css">
+    <script src="/saas-ui.js" defer></script>
+</head>
+<body data-page="login">
+<main class="auth">
+    <h1>શાળા સ્માર્ટ પરિણામ</h1>
+    <p>દરેક શાળાનું સુરક્ષિત, અલગ પરિણામ સંચાલન</p>
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+    <section class="card" id="login-card">
+        <h2>Login</h2>
+        <form id="login-form">
+            <label>Email <input name="email" type="email" autocomplete="username" required maxlength="254"></label>
+            <label>Password <input name="password" type="password" autocomplete="current-password" required maxlength="128"></label>
+            <button type="submit">Login કરો</button>
+        </form>
+        <p><button type="button" class="secondary" id="show-register">નવી શાળા નોંધાવો</button></p>
+        <p class="muted">Password ભૂલ્યા? શિક્ષક Principalનો સંપર્ક કરે; Principal Super Adminનો સંપર્ક કરે. Email reset/OTP હાલ ઉપલબ્ધ નથી.</p>
+    </section>
+    <section class="card" id="register-card" hidden>
+        <h2>નવી શાળાની નોંધણી</h2>
+        <form id="register-form">
+            <label>શાળાનું નામ <input name="schoolName" required maxlength="200" autocomplete="organization"></label>
+            <label>Principalનું નામ <input name="name" required maxlength="120" autocomplete="name"></label>
+            <label>Email <input name="email" type="email" autocomplete="username" required maxlength="254"></label>
+            <label>Password (ઓછામાં ઓછા 12 અક્ષર) <input name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="128"></label>
+            <label>Password ફરી દાખલ કરો <input name="confirmPassword" type="password" autocomplete="new-password" required minlength="12" maxlength="128"></label>
+            <p class="muted">નોંધણી પછી Super Admin approval અને validity આપશે. ત્યાર પછી શાળા software વાપરી શકશે. Online payment હાલ નથી.</p>
+            <button type="submit">નોંધણી મોકલો</button>
+            <button type="button" class="secondary" id="show-login">Login પર પાછા</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

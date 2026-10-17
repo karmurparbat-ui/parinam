@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { EventEmitter } = require('node:events');
 const waModule = require('../whatsapp');
-const app = require('../server');
+const { fixture } = require('./saas-helpers.cjs');
 
 const originalSend = waModule.sendWhatsAppMessage;
 const calls = [];
@@ -13,26 +13,29 @@ const png = fs.readFileSync(path.join(__dirname, '..', 'frame.png'));
 const image = 'data:image/png;base64,' + png.toString('base64');
 let server;
 let baseUrl;
+let environment;
+let auth;
 
 before(async () => {
     waModule.sendWhatsAppMessage = async (...args) => {
         calls.push(args);
         return { success: true };
     };
-    server = app.listen(0, '127.0.0.1');
-    await new Promise(resolve => server.once('listening', resolve));
-    baseUrl = `http://127.0.0.1:${server.address().port}`;
+    environment = await fixture();
+    server = environment.server;
+    baseUrl = environment.base;
+    auth = await environment.login('principal@example.test');
 });
 
 after(async () => {
     waModule.sendWhatsAppMessage = originalSend;
-    await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+    await environment.close();
 });
 
 async function post(body) {
     return fetch(`${baseUrl}/api/whatsapp/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: auth.headers,
         body: JSON.stringify(body)
     });
 }
@@ -106,7 +109,7 @@ test('status reports the session error instead of showing a connected session', 
     const original = waModule.getWhatsAppStatus;
     waModule.getWhatsAppStatus = () => ({ connected: false, error: 'Session storage failed' });
     try {
-        const response = await fetch(`${baseUrl}/api/whatsapp/status`);
+        const response = await fetch(`${baseUrl}/api/whatsapp/status`, { headers: auth.headers });
         assert.deepEqual(await response.json(), { connected: false, error: 'Session storage failed' });
     } finally {
         waModule.getWhatsAppStatus = original;
@@ -119,7 +122,7 @@ test('QR endpoint recognizes an already connected session without waiting for a 
     waModule.getWhatsAppSession = async () => ({});
     waModule.getWhatsAppStatus = () => ({ connected: true, error: null });
     try {
-        const response = await fetch(`${baseUrl}/api/whatsapp/qr`);
+        const response = await fetch(`${baseUrl}/api/whatsapp/qr`, { headers: auth.headers });
         assert.deepEqual(await response.json(), { success: true, connected: true });
     } finally {
         waModule.getWhatsAppSession = originalGet;
@@ -137,7 +140,7 @@ test('QR encoding errors are handled in the request rather than an unawaited tim
     waModule.qrCodes.school1 = 'test QR';
     qrcode.toDataURL = async () => { throw new Error('QR encoding failed'); };
     try {
-        const response = await fetch(`${baseUrl}/api/whatsapp/qr`);
+        const response = await fetch(`${baseUrl}/api/whatsapp/qr`, { headers: auth.headers });
         assert.equal(response.status, 500);
         assert.equal((await response.json()).error, 'QR encoding failed');
     } finally {

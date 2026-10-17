@@ -1,75 +1,50 @@
-// std2_db.js — ધોરણ ૨ માટે અલગ IndexedDB (Std 3-8 થી પૂરી છૂટી)
-const STD2_DB_NAME = 'SchoolResultDB_Std2';
-const STD2_DB_VERSION = 1;
-let _s2db = null;
-
-function openStd2DB() {
-  return new Promise((res, rej) => {
-    if (_s2db) return res(_s2db);
-    const req = indexedDB.open(STD2_DB_NAME, STD2_DB_VERSION);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('students')) {
-        const st = db.createObjectStore('students', { keyPath: 'id' });
-        st.createIndex('std', 'std', { unique: false });
-      }
-      if (!db.objectStoreNames.contains('school'))
-        db.createObjectStore('school', { keyPath: 'id' });
-      if (!db.objectStoreNames.contains('settings'))
-        db.createObjectStore('settings', { keyPath: 'key' });
-    };
-    req.onsuccess = () => { _s2db = req.result; res(_s2db); };
-    req.onerror = () => rej(req.error);
-  });
+// Std 2 uses school-scoped server records separate from the other standards.
+let std2Students = null;
+let std2Writes = Promise.resolve();
+async function openStd2DB() {
+  const account = await window.schoolReady;
+  if (!account) throw new Error('પહેલાં school login કરો.');
+  return account;
 }
 
 async function s2GetAllStudents(std = 2) {
-  const db = await openStd2DB();
-  return new Promise(res => {
-    const tx = db.transaction('students', 'readonly');
-    const idx = tx.objectStore('students').index('std');
-    const r = idx.getAll(std);
-    r.onsuccess = () => res(r.result || []);
-    r.onerror = () => res([]);
+  const students = (await cloudRead('std2students', '2')) || [];
+  std2Students = structuredClone(students);
+  return students.filter(student => Number(student.std) === Number(std));
+}
+
+function changeStd2Students(update) {
+  const work = std2Writes.then(async () => {
+    if (std2Students === null) std2Students = (await cloudRead('std2students', '2')) || [];
+    const students = update(structuredClone(std2Students));
+    await cloudWrite('std2students', '2', students);
+    std2Students = students;
+    return true;
+  });
+  std2Writes = work.catch(() => {});
+  return work;
+}
+
+function s2SaveStudent(student) {
+  const snapshot = structuredClone(student);
+  return changeStd2Students(students => {
+    const index = students.findIndex(item => item.id === student.id);
+    if (index === -1) students.push(snapshot);
+    else students[index] = snapshot;
+    return students;
   });
 }
 
-async function s2SaveStudent(s) {
-  const db = await openStd2DB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction('students', 'readwrite');
-    const r = tx.objectStore('students').put(s);
-    r.onsuccess = () => res();
-    r.onerror = () => rej(r.error);
-  });
-}
-
-async function s2DeleteStudent(id) {
-  const db = await openStd2DB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction('students', 'readwrite');
-    const r = tx.objectStore('students').delete(id);
-    r.onsuccess = () => res();
-    r.onerror = () => rej(r.error);
-  });
+function s2DeleteStudent(id) {
+  return changeStd2Students(students => students.filter(student => student.id !== id));
 }
 
 async function s2GetSchool() {
-  const db = await openStd2DB();
-  return new Promise(res => {
-    const tx = db.transaction('school', 'readonly');
-    const r = tx.objectStore('school').get('main');
-    r.onsuccess = () => res(r.result || null);
-    r.onerror = () => res(null);
-  });
+  const info = await cloudRead('std2school', '2');
+  const account = await window.schoolReady;
+  return { schoolName: account.schoolName, ...(info || {}) };
 }
 
-async function s2SaveSchool(data) {
-  const db = await openStd2DB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction('school', 'readwrite');
-    const r = tx.objectStore('school').put({ id: 'main', ...data });
-    r.onsuccess = () => res();
-    r.onerror = () => rej(r.error);
-  });
+function s2SaveSchool(data) {
+  return cloudWrite('std2school', '2', { ...data, id: 'main' });
 }

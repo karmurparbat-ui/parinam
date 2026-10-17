@@ -583,7 +583,7 @@
 
     function renderSchoolInfo() {
         const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
-        const { village, taluka, district } = getSchoolAddressParts(schoolInfo);
+        let { village, taluka, district } = getSchoolAddressParts(schoolInfo);
         if (!village) village = '---';
         if (!taluka) taluka = '---';
         if (!district) district = '---';
@@ -613,7 +613,7 @@
             <div class="info-pair">
                 <span class="lbl">${item.lbl}</span>
                 <span class="sep">:</span>
-                <span class="val" title="${item.val}">${item.val}</span>
+                <span class="val" title="${escapeHTML(item.val)}">${escapeHTML(item.val)}</span>
             </div>
         `;
 
@@ -625,7 +625,7 @@
 
         document.getElementById('schoolInfoBox').innerHTML = html;
 
-        document.getElementById('footPlace').innerText = schoolInfo.resultPlace || 'કોરાડા';
+        document.getElementById('footPlace').innerText = schoolInfo.resultPlace || '---';
         document.getElementById('footDate').innerText = resultDate;
     }
 

@@ -336,6 +336,7 @@
 <script>
     let students = [];
     let schoolInfo = {};
+    function schoolInfoForHTML() { return htmlRecord(schoolInfo); }
     let subjects = [];
     let examType = 'Annual';
     let currentPairIndex = 0;
@@ -477,7 +478,7 @@
             const frontPage = document.createElement('div');
             frontPage.className = 'a4-page';
             frontPage.innerHTML = `
-                <div class="page-label">આગળ (Front) — ${pair[0]?.name || ''}${pair[1] ? ' + ' + pair[1].name : ''}</div>
+                <div class="page-label">આગળ (Front) — ${escapeHTML(pair[0]?.name || '')}${pair[1] ? ' + ' + escapeHTML(pair[1].name) : ''}</div>
                 ${buildTableHalf(pair[0])}
                 ${pair[1] ? `
                     <div class="cut-line"><span class="scissors">✂</span></div>
@@ -492,7 +493,7 @@
             const backPage = document.createElement('div');
             backPage.className = 'a4-page';
             backPage.innerHTML = `
-                <div class="page-label">પાછળ (Back) — ${pair[0]?.name || ''}${pair[1] ? ' + ' + pair[1].name : ''}</div>
+                <div class="page-label">પાછળ (Back) — ${escapeHTML(pair[0]?.name || '')}${pair[1] ? ' + ' + escapeHTML(pair[1].name) : ''}</div>
                 ${buildProgressHalf(pair[0])}
                 ${pair[1] ? `
                     <div class="cut-line"><span class="scissors">✂</span></div>
@@ -508,6 +509,8 @@
 
     function buildTableHalf(student) {
         if (!student) return '';
+        student = htmlRecord(student);
+        const schoolInfo = schoolInfoForHTML();
         const calc = getStudentTotal(student);
         const result = getResultStatus(student);
         const resultClass = (result === 'PASS') ? 'pass' : 'fail';
@@ -577,7 +580,7 @@
         if (examType === 'Sem1' && schoolInfo.exam1Date) resultDate = formatDate(schoolInfo.exam1Date);
         else if (schoolInfo.exam2Date) resultDate = formatDate(schoolInfo.exam2Date);
 
-        const schoolOpening = schoolInfo.schoolOpeningDate || '09-06-2026 07:00 AM';
+        const schoolOpening = schoolInfo.schoolOpeningDate || '---';
         const teacherSign = schoolInfo.teacherSign ? `<img src="${schoolInfo.teacherSign}">` : '';
         const principalSign = schoolInfo.principalSign ? `<img src="${schoolInfo.principalSign}">` : '';
 
@@ -619,7 +622,7 @@
                     <div class="item"><span class="lbl">હાજરી :</span><span class="val">${totalDays} માંથી ${presentDays}</span></div>
                 </div>
                 <div class="tbl-place-date">
-                    <div>સ્થળ : <strong>${schoolInfo.resultPlace || 'કોરાડા'}</strong></div>
+                    <div>સ્થળ : <strong>${schoolInfo.resultPlace || '---'}</strong></div>
                     <div>તારીખ : <strong>${resultDate}</strong></div>
                     <div>શાળા ઉઘડવાની : <strong>${schoolOpening}</strong></div>
                 </div>
@@ -634,11 +637,13 @@
 
     function buildProgressHalf(student) {
         if (!student) return '';
+        student = htmlRecord(student);
+        const schoolInfo = schoolInfoForHTML();
         const { village, taluka, district } = getSchoolAddressParts(schoolInfo);
-        const districtName = district || 'દેવભૂમિ દ્વારકા';
+        const districtName = district || '---';
         const studentPhotoSrc = student.photo || 'saraswati.png';
         const photoStyle = student.photo ? 'border:1.5px solid #1B5E20; border-radius:3px;' : '';
-        const sessionYear = schoolInfo.sessionYear || "2025-'26";
+        const sessionYear = schoolInfo.sessionYear || '---';
 
         return `
             <div class="half-page prg-page">

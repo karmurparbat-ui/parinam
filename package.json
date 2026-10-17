@@ -5,7 +5,11 @@
   "main": "db.js",
   "scripts": {
     "test": "node --test",
-    "start": "node server.js"
+    "start": "node server.js",
+    "admin:create": "node manage-admin.js"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   },
   "repository": {
     "type": "git",

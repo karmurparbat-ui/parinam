@@ -113,6 +113,7 @@
 <script>
     let students = [];
     let schoolInfo = {};
+    function schoolInfoForHTML() { return htmlRecord(schoolInfo); }
     let examType = 'Annual';
     let subjects = [];
     const STUDENTS_PER_PAGE = 35;
@@ -208,6 +209,7 @@
     }
 
     function getSchoolHeader() {
+        const schoolInfo = schoolInfoForHTML();
         const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
         const examLabel = (examType === 'Sem1')
             ? `પ્રથમ સત્ર પરિણામ ${schoolInfo.sessionYear || "2025-'26"}`
@@ -226,6 +228,7 @@
     }
 
     function getSignatures() {
+        const schoolInfo = schoolInfoForHTML();
         return `
             <div class="signatures">
                 <div class="sig-box"><div class="line">વર્ગ શિક્ષકની સહી</div></div>
@@ -320,6 +323,7 @@
 
         let bodyHTML = '';
         studentList.forEach((student) => {
+            student = htmlRecord(student);
             let row = '<tr>';
             row += `<td class="val">${student.roll || ''}</td>`;
             row += `<td class="val student-name"><span class="student-name-text">${student.name || ''}</span></td>`;
@@ -349,6 +353,7 @@
 
         let bodyHTML = '';
         studentList.forEach((student) => {
+            student = htmlRecord(student);
             let row = '<tr>';
             row += `<td class="val">${student.roll || ''}</td>`;
             row += buildSubjectCells(student, subjectGroup, isAnnual);
@@ -386,6 +391,7 @@
 
         let bodyHTML = '';
         studentList.forEach((student) => {
+            student = htmlRecord(student);
             const calc = getStudentTotal(student);
             const overallGrade = getGrade(calc.pct);
             const gc = (overallGrade === 'E') ? 'grade-F' : 'grade-A';

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>પરિણામ — શાળા સંચાલન</title>
+    <link rel="stylesheet" href="/saas.css">
+    <script src="/saas-ui.js" defer></script>
+</head>
+<body data-page="school">
+<main>
+    <h1>Principal — શાળા સંચાલન</h1>
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+    <p id="school-details"></p>
+    <section class="card">
+        <h2>શિક્ષક ઉમેરો</h2>
+        <p>શિક્ષક તમામ ધોરણના વિદ્યાર્થી, ગુણ, પરિણામ, print અને WhatsApp વાપરી શકે છે. School settings અને account management ફક્ત Principal કરી શકે છે.</p>
+        <form id="teacher-form">
+            <div class="grid">
+                <label>નામ <input name="name" required maxlength="120"></label>
+                <label>Email <input name="email" type="email" required maxlength="254" autocomplete="off"></label>
+                <label>પ્રારંભિક password <input name="password" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></label>
+            </div>
+            <button type="submit">શિક્ષક બનાવો</button>
+        </form>
+    </section>
+    <section class="card">
+        <h2>શિક્ષકો</h2>
+        <div id="teachers"></div>
+    </section>
+    <section class="card">
+        <h2>Backup અને જૂનો ડેટા Import</h2>
+        <p>જૂનો browser ડેટા આપમેળે કોઈ શાળા સાથે જોડાતો નથી. ફક્ત આ શાળાનો જ ડેટા import કરો. Import માત્ર ખાલી recordsમાં થશે; હાલનો server ડેટા overwrite નહીં થાય.</p>
+        <p class="muted">Browser import માત્ર એ જ browser અને origin (જેમ કે localhost:3001)ના જૂના ડેટાને વાંચી શકે છે. બીજા domain પર લઈ જવા પહેલાં અહીં import કરીને JSON backup download કરો.</p>
+        <div class="actions">
+            <button id="export-data">શાળાનો JSON Backup</button>
+            <button id="import-browser" class="secondary">આ browserનો જૂનો ડેટા Import</button>
+        </div>
+        <label>પરિણામ JSON Backup ફાઇલ <input id="import-file" type="file" accept=".json,application/json"></label>
+        <button id="import-json" class="secondary">Backup Import કરો</button>
+    </section>
+</main>
+</body>
+</html>

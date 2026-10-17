@@ -41,7 +41,7 @@
 <div class="main-container">
     <div class="form-container">
         <table class="form-table">
-            <tr><td colspan="2" class="title-row"><input type="text" id="schoolName" value="શ્રી કોરાડા વાડી પ્રાથમિક શાળા"></td></tr>
+            <tr><td colspan="2" class="title-row"><input type="text" id="schoolName" placeholder="શાળાનું નામ"></td></tr>
             <tr><td class="label-col">શાળાનો લોગો :</td><td class="value-col">
                 <input type="file" id="schoolLogoInput" accept="image/*" onchange="uploadImage(event, 'schoolLogo')">
                 <img id="previewLogo" class="img-preview" src="">
@@ -54,7 +54,7 @@
                 <input type="file" id="teacherSignInput" accept="image/*" onchange="uploadImage(event, 'teacherSign')">
                 <img id="previewTeacher" class="img-preview" src="">
             </td></tr>
-            <tr><td class="label-col">શાળાકીય સત્ર :</td><td class="value-col"><input type="text" id="sessionYear" value="2025-'26"></td></tr>
+            <tr><td class="label-col">શાળાકીય સત્ર :</td><td class="value-col"><input type="text" id="sessionYear"></td></tr>
             <tr><td class="label-col">પરીક્ષા પ્રકાર (પરિણામ માટે) :</td><td class="value-col">
                 <select id="examType">
                     <option value="Sem1">પ્રથમ સત્ર (Sem 1)</option>
@@ -63,17 +63,17 @@
             </td></tr>
             <tr><td class="label-col">ધોરણ :</td><td class="value-col"><input type="text" id="std" value="8"></td></tr>
             <tr><td class="label-col">વર્ગ :</td><td class="value-col"><input type="text" id="class" value="A"></td></tr>
-            <tr class="highlight-row"><td class="label-col">શાળાનો ડાયસ કોડ :</td><td class="value-col"><input type="text" id="diceCode" value="24290201802"></td></tr>
-            <tr><td class="label-col">મુકામ :</td><td class="value-col"><input type="text" id="village" value="કોરાડા"></td></tr>
-            <tr><td class="label-col">તાલુકો :</td><td class="value-col"><input type="text" id="taluka" value="ઢ્રારકા"></td></tr>
-            <tr><td class="label-col">જિલ્લો :</td><td class="value-col"><input type="text" id="district" value="દેવ. ઢ્રારકા"></td></tr>
-            <tr><td class="label-col">નગર/જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ :</td><td class="value-col"><input type="text" id="educationCommittee" value="દેવ. ધ્રારકા જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ"></td></tr>
-            <tr><td class="label-col">પે. સેન્ટર શાળા :</td><td class="value-col"><input type="text" id="centerSchool" value="શ્રી ઢ્રારકા તાલુકા શાળા -૨"></td></tr>
-            <tr><td class="label-col">સી.આર.સી. :</td><td class="value-col"><input type="text" id="crc" value="બરડિયા"></td></tr>
-            <tr><td class="label-col">વર્ગ શિક્ષકનું નામ :</td><td class="value-col"><input type="text" id="teacherName" value="પરબત કરમુર"></td></tr>
-            <tr><td class="label-col">પરિણામ સ્થળ :</td><td class="value-col"><input type="text" id="resultPlace" value="કોરાડા"></td></tr>
-            <tr><td class="label-col">પ્રથમ પરીક્ષા પરિણામ તારીખ :</td><td class="value-col"><input type="date" id="exam1Date" value="2025-11-15"></td></tr>
-            <tr><td class="label-col">વાર્ષિક પરીક્ષા પરિણામ તારીખ :</td><td class="value-col"><input type="date" id="exam2Date" value="2026-05-02"></td></tr>
+            <tr class="highlight-row"><td class="label-col">શાળાનો ડાયસ કોડ :</td><td class="value-col"><input type="text" id="diceCode"></td></tr>
+            <tr><td class="label-col">મુકામ :</td><td class="value-col"><input type="text" id="village"></td></tr>
+            <tr><td class="label-col">તાલુકો :</td><td class="value-col"><input type="text" id="taluka"></td></tr>
+            <tr><td class="label-col">જિલ્લો :</td><td class="value-col"><input type="text" id="district"></td></tr>
+            <tr><td class="label-col">નગર/જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ :</td><td class="value-col"><input type="text" id="educationCommittee"></td></tr>
+            <tr><td class="label-col">પે. સેન્ટર શાળા :</td><td class="value-col"><input type="text" id="centerSchool"></td></tr>
+            <tr><td class="label-col">સી.આર.સી. :</td><td class="value-col"><input type="text" id="crc"></td></tr>
+            <tr><td class="label-col">વર્ગ શિક્ષકનું નામ :</td><td class="value-col"><input type="text" id="teacherName"></td></tr>
+            <tr><td class="label-col">પરિણામ સ્થળ :</td><td class="value-col"><input type="text" id="resultPlace"></td></tr>
+            <tr><td class="label-col">પ્રથમ પરીક્ષા પરિણામ તારીખ :</td><td class="value-col"><input type="date" id="exam1Date"></td></tr>
+            <tr><td class="label-col">વાર્ષિક પરીક્ષા પરિણામ તારીખ :</td><td class="value-col"><input type="date" id="exam2Date"></td></tr>
             <tr><td class="label-col">વાર્ષિક પરિણામ માટે કુલ કાર્ય દિવસો :</td><td class="value-col"><input type="number" id="totalDays" value="232"></td></tr>
         </table>
     </div>
@@ -138,26 +138,25 @@
         }
 
         if (data) {
-            const addressParts = getSchoolAddressParts({
-                ...data,
-                address: data.address || 'ગું. કોરાડા, તા.ઢ્રારકા, જિ. દેવ. ઢ્રારકા'
-            });
-            document.getElementById('schoolName').value = data.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
-            document.getElementById('sessionYear').value = data.sessionYear || "2025-'26";
+            const addressParts = getSchoolAddressParts(data);
+            const now = new Date();
+            const startYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+            document.getElementById('schoolName').value = data.schoolName || '';
+            document.getElementById('sessionYear').value = data.sessionYear || startYear + '-' + (startYear + 1);
             document.getElementById('examType').value = data.examType || "Annual";
             document.getElementById('std').value = data.std || currentStd;
             document.getElementById('class').value = data.class || 'A';
-            document.getElementById('diceCode').value = data.diceCode || '24290201802';
+            document.getElementById('diceCode').value = data.diceCode || '';
             document.getElementById('village').value = addressParts.village;
             document.getElementById('taluka').value = addressParts.taluka;
             document.getElementById('district').value = addressParts.district;
-            document.getElementById('educationCommittee').value = data.educationCommittee || 'દેવ. ધ્રારકા જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ';
-            document.getElementById('centerSchool').value = data.centerSchool || 'શ્રી ઢ્રારકા તાલુકા શાળા -૨';
-            document.getElementById('crc').value = data.crc || 'બરડિયા';
-            document.getElementById('teacherName').value = data.teacherName || 'પરબત કરમુર';
-            document.getElementById('resultPlace').value = data.resultPlace || 'કોરાડા';
-            document.getElementById('exam1Date').value = data.exam1Date || '2025-11-15';
-            document.getElementById('exam2Date').value = data.exam2Date || '2026-05-02';
+            document.getElementById('educationCommittee').value = data.educationCommittee || '';
+            document.getElementById('centerSchool').value = data.centerSchool || '';
+            document.getElementById('crc').value = data.crc || '';
+            document.getElementById('teacherName').value = data.teacherName || '';
+            document.getElementById('resultPlace').value = data.resultPlace || '';
+            document.getElementById('exam1Date').value = data.exam1Date || '';
+            document.getElementById('exam2Date').value = data.exam2Date || '';
             document.getElementById('totalDays').value = data.totalDays || '232';
 
             if (data.schoolLogo)     { uploadedImages.schoolLogo = data.schoolLogo;         document.getElementById('previewLogo').src = data.schoolLogo;             document.getElementById('previewLogo').style.display = 'block'; }

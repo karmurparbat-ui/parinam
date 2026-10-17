@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>પરિણામ — Super Admin</title>
+    <link rel="stylesheet" href="/saas.css">
+    <script src="/saas-ui.js" defer></script>
+</head>
+<body data-page="admin">
+<main>
+    <h1>Super Admin Panel</h1>
+    <p>શાળા approval, block, validity અને manual renewal. શાળાનો વિદ્યાર્થી ડેટા અહીં edit થતો નથી.</p>
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+    <div id="summary" class="stats"></div>
+    <label>શાળા / Principal Email શોધો <input id="school-search" type="search"></label>
+    <label>Status <select id="school-filter"><option value="">બધી શાળા</option><option value="pending">Approval બાકી</option><option value="active">Active</option><option value="blocked">Blocked</option><option value="expired">Expired</option></select></label>
+    <button id="refresh">ફરી લોડ કરો</button>
+    <div id="schools"></div>
+</main>
+</body>
+</html>

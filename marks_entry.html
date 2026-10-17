@@ -603,6 +603,8 @@
     // CREATE ROW
     // ============================================================
     function createRow(data = {}, index = 0) {
+        const originalPhoto = data.photo;
+        data = htmlRecord(data);
         const tr = document.createElement('tr');
         let html = `
             <td class="sticky-col s1">${index + 1}</td>
@@ -649,7 +651,7 @@
             <td><input type="text" class="inp-pen" value="${data.pen || ''}"></td>
         `;
         tr.innerHTML = html;
-        if (data.photo) tr.dataset.photo = data.photo;
+        if (originalPhoto) tr.dataset.photo = originalPhoto;
 
         setTimeout(() => {
             attachAutoResize(tr);

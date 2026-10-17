@@ -106,6 +106,7 @@
     let students = [];
     let currentStudentIndex = 0;
     let schoolInfo = {};
+    function schoolInfoForHTML() { return htmlRecord(schoolInfo); }
     let examType = 'Annual';
     let subjects = [];
 
@@ -261,6 +262,8 @@
     // MARKSHEET HTML GENERATOR
     // ============================================================
     function getMarksheetHTML(student) {
+        student = htmlRecord(student);
+        const schoolInfo = schoolInfoForHTML();
         let tableBodyHTML = '';
         let grandTotal = 0, totalObtained = 0;
         let subjectNumber = 0;
@@ -352,10 +355,10 @@
             <div class="header-container">
                 <div class="header-left">${logoImg}</div>
                 <div class="header-center">
-                    <h2>${schoolInfo.educationCommittee || 'દેવ. ધ્રારકા જિલ્લા પ્રાથમિક શિક્ષણ સમિતિ'}</h2>
+                    <h2>${schoolInfo.educationCommittee || 'પ્રાથમિક શિક્ષણ સમિતિ'}</h2>
                     <h1>${schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા'}</h1>
-                    <h3>${formatSchoolAddress(schoolInfo, 'મુ. કોરાડા, તા. ઢ્રારકા, જિ. દેવ. ઢ્રારકા')}</h3>
-                    <div class="session-badge">${examTitle} મૂલ્યાંકન : ${schoolInfo.sessionYear || "2025-'26"}</div>
+                    <h3>${formatSchoolAddress(schoolInfo, '---')}</h3>
+                    <div class="session-badge">${examTitle} મૂલ્યાંકન : ${schoolInfo.sessionYear || '---'}</div>
                 </div>
                 <div class="header-right">${studentPhoto}</div>
             </div>
@@ -387,7 +390,7 @@
                 <div class="summary-center">મેળવેલ કુલ ગુણ : ${Math.round(totalObtained)} / ${grandTotal}</div>
             </div>
             <div class="signatures">
-                <div class="sig-left">સ્થળ : <span>${schoolInfo.resultPlace || 'કોરાડા'}</span><br>તારીખ : <span>${examType === 'Sem1' ? (schoolInfo.exam1Date || '15/11/2025') : (schoolInfo.exam2Date || '02/05/2026')}</span></div>
+                <div class="sig-left">સ્થળ : <span>${schoolInfo.resultPlace || '---'}</span><br>તારીખ : <span>${examType === 'Sem1' ? (schoolInfo.exam1Date || '---') : (schoolInfo.exam2Date || '---')}</span></div>
                 <div class="sig-note">નોધ : ______________</div>
                 <div class="signature-box">${teacherSign}વર્ગ શિક્ષકની સહી</div>
                 <div class="signature-box">${principalSign}આચાર્યની સહી</div>

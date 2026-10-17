@@ -309,9 +309,9 @@ function renderInfo(){
       <td class="rollCol">${i+1}</td>
       <td class="nameCol"><input value="${esc(s.name)}" onchange="upd(${i},'name',this.value)"></td>
       <td><input value="${esc(s.gr)}" onchange="upd(${i},'gr',this.value)" style="width:70px"></td>
-      <td><input type="date" value="${s.dob||''}" onchange="upd(${i},'dob',this.value)"></td>
+      <td><input type="date" value="${esc(s.dob||'')}" onchange="upd(${i},'dob',this.value)"></td>
       <td><input value="${esc(s.address)}" onchange="upd(${i},'address',this.value)"></td>
-      <td><input type="number" value="${s.attendance||''}" onchange="upd(${i},'attendance',this.value)" style="width:60px"></td>
+      <td><input type="number" value="${esc(s.attendance||'')}" onchange="upd(${i},'attendance',this.value)" style="width:60px"></td>
       <td><input value="${esc(s.mother)}" onchange="upd(${i},'mother',this.value)"></td>
       <td><input value="${esc(s.contact)}" onchange="upd(${i},'contact',this.value)" style="width:100px"></td>
       <td><input value="${esc(s.uid)}" onchange="upd(${i},'uid',this.value)" style="width:110px"></td>

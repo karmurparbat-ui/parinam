@@ -1,32 +1,36 @@
 const express = require('express');
-const cors = require('cors');
 const path = require('path');
+const fs = require('node:fs');
 const qrcode = require('qrcode');
 const waModule = require('./whatsapp.js');
+const { openStore } = require('./saas-store');
+const { installSaas } = require('./saas-api');
 
+function createApp({ store = openStore() } = {}) {
 const app = express();
-app.use(cors());
+app.disable('x-powered-by');
+if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
+app.locals.store = store;
+app.use((req, res, next) => {
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Referrer-Policy', 'same-origin');
+    res.set('X-Frame-Options', 'DENY');
+    next();
+});
+app.use(['/api/auth', '/api/admin', '/api/school/teachers'], express.json({ limit: '8kb' }));
 app.use(express.json({ limit: '50mb' }));
-
-// 🔒 સિક્યોરિટી: WhatsApp સેશન ફોલ્ડરને બ્રાઉઝરમાંથી એક્સેસ ન થાય તે માટે બ્લોક કરો
-app.use('/whatsapp_sessions', (req, res) => res.status(404).end());
+installSaas(app, store);
 
 app.get('/vendor/html2canvas.min.js', (req, res) => {
     res.sendFile(require.resolve('html2canvas/dist/html2canvas.min.js'));
 });
 
-// 👉 તમારું ફ્રન્ટએન્ડ (HTML, JS, CSS, Images) સર્વ કરવા માટે
-// ધારો કે બધી ફાઇલો આ જ ફોલ્ડરમાં છે
-app.use(express.static(__dirname));
-
 // ============================================================
 // WhatsApp API Routes
 // ============================================================
-// હાલમાં એક જ શાળા માટે 'school1' વાપરીએ છીએ. SaaS માં આ ડાયનેમિક થશે.
-const BUSINESS_ID = 'school1';
-
 // 1. QR Code મેળવવા
 app.get('/api/whatsapp/qr', async (req, res) => {
+    const BUSINESS_ID = req.account.school_id;
     try {
         await waModule.getWhatsAppSession(BUSINESS_ID);
         const startedAt = Date.now();
@@ -55,13 +59,13 @@ app.get('/api/whatsapp/qr', async (req, res) => {
 
 // 2. Status ચેક કરવા (Connected છે કે નહીં)
 app.get('/api/whatsapp/status', (req, res) => {
-    res.json(waModule.getWhatsAppStatus(BUSINESS_ID));
+    res.json(waModule.getWhatsAppStatus(req.account.school_id));
 });
 
 // 3. Reset કરવા (Disconnect)
 app.post('/api/whatsapp/reset', async (req, res) => {
     try {
-        await waModule.resetWhatsAppSession(BUSINESS_ID);
+        await waModule.resetWhatsAppSession(req.account.school_id);
         res.json({ message: 'WhatsApp session reset થઈ ગયું.' });
     } catch (error) {
         console.error('WhatsApp reset failed:', error);
@@ -99,7 +103,7 @@ app.post('/api/whatsapp/send', async (req, res) => {
         media = { buffer, mimetype: `image/${match[1]}` };
     }
     try {
-        const result = await waModule.sendWhatsAppMessage(BUSINESS_ID, normalizedPhone, message, media);
+        const result = await waModule.sendWhatsAppMessage(req.account.school_id, normalizedPhone, message, media);
         if (!result.success) {
             return res.status(502).json({ error: result.error });
         }
@@ -110,15 +114,67 @@ app.post('/api/whatsapp/send', async (req, res) => {
     }
 });
 
-// ============================================================
-// Server ચાલુ કરો
-// ============================================================
+app.use('/api', (req, res) => res.status(404).json({ error: 'API મળી નથી.' }));
+
+const pages = new Set([
+    'index.html', 'home.html', 'home_std1.html', 'home_std2.html', 'hpc_std1.html',
+    'covers.html', 'marksheet.html', 'marks_entry.html', 'marks_entry_std2.html',
+    'patrak_b.html', 'patrak_c_front.html', 'patrak_f.html', 'patrak_std2.html',
+    'result.html', 'school_info.html', 'whatsapp_setup.html',
+    'login.html', 'admin.html', 'school_admin.html', 'account.html'
+]);
+const assets = new Set([
+    'db.js', 'std2_db.js', 'std2_config.js', 'names_dictionary.js', 'whatsapp_result.js',
+    'auth-client.js', 'saas-ui.js', 'saas.css', 'responsive.css', 'frame.png', 'saraswati.png', 'saraswati2.png'
+]);
+app.get('/', (req, res) => res.redirect('/index.html'));
+app.get('/{*file}', (req, res, next) => {
+    const file = req.path.slice(1);
+    if (pages.has(file)) {
+        if (req.query.std !== undefined && !/^[1-8]$/.test(req.query.std)) return res.status(400).send('માન્ય ધોરણ પસંદ કરો.');
+        if (req.query.exam !== undefined && !['Sem1', 'Sem2', 'Annual'].includes(req.query.exam)) return res.status(400).send('માન્ય પરીક્ષા પસંદ કરો.');
+        if (file !== 'login.html') {
+            if (!req.account) return res.redirect('/login.html');
+            const account = req.account;
+            if (file === 'admin.html' && account.role !== 'admin') return res.redirect('/index.html');
+            if (account.role === 'admin' && !['admin.html', 'account.html'].includes(file)) return res.redirect('/admin.html');
+            if (account.role !== 'admin' && file !== 'account.html') {
+                if (account.school_status !== 'active' || !account.valid_until || account.valid_until < Date.now()) return res.redirect('/account.html');
+                if (['school_admin.html', 'school_info.html'].includes(file) && account.role !== 'principal') {
+                    return res.status(403).send('આ પેજ ફક્ત Principal માટે છે. ધોરણના ડેશબોર્ડ પર પાછા જાઓ.');
+                }
+            }
+        }
+        res.set('Cache-Control', 'no-store');
+        return fs.readFile(path.join(__dirname, file), 'utf8', (error, html) => {
+            if (error) return next(error);
+            res.type('html').send(html.replace(/<head>/i, '<head><script src="/auth-client.js"></script><link rel="stylesheet" href="/responsive.css">'));
+        });
+    }
+    if (assets.has(file) || /^cover-design\/(?:templates\.json|(?:previews|backgrounds|overlays)\/[a-zA-Z0-9_-]+\.(?:png|jpg|jpeg))$/.test(file)) {
+        return res.sendFile(path.join(__dirname, file));
+    }
+    next();
+});
+app.use((req, res) => res.status(404).send('Not found'));
+app.use((error, req, res, next) => {
+    if (res.headersSent) return next(error);
+    const status = error.status || 500;
+    if (status >= 500) console.error('Request failed:', error);
+    res.status(status).json({ error: status >= 500 ? 'સર્વરમાં ભૂલ થઈ છે. ફરી પ્રયત્ન કરો અથવા Adminનો સંપર્ક કરો.' : error.message });
+});
+return app;
+}
+
 const PORT = process.env.PORT || 3001; // પોર્ટ 3001 (જો 3000 પર બીજું ચાલતું હોય તો)
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
-        console.log(`📱 WhatsApp setup: http://localhost:${PORT}/whatsapp_setup.html`);
+    if (fs.existsSync(path.join(__dirname, '.env'))) process.loadEnvFile(path.join(__dirname, '.env'));
+    const app = createApp();
+    const port = process.env.PORT || PORT;
+    app.listen(port, () => {
+        console.log(`🚀 Server running on http://localhost:${port}`);
+        console.log(`School login: http://localhost:${port}/login.html`);
     });
 }
 
-module.exports = app;
+module.exports = { createApp };

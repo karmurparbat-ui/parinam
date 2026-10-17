@@ -291,6 +291,7 @@
 
     let students = [];
     let schoolInfo = {};
+    function schoolInfoForHTML() { return htmlRecord(schoolInfo); }
     let autoSaveTimer = null;
     let isSaving = false;
     let currentSem = (urlExam === 'Annual' || urlExam === 'Sem2') ? 'sem2' : 'sem1';
@@ -410,8 +411,9 @@
         // BODY
         let b = '';
         students.forEach((s) => {
+            s = htmlRecord(s);
             const d = distributions[s.roll] || {};
-            const cats = d[currentSem] || new Array(CAT_COUNT).fill(0);
+            const cats = htmlRecord(d[currentSem]) || new Array(CAT_COUNT).fill(0);
             const total = cats.reduce((a, b) => a + b, 0);
 
             b += '<tr data-roll="' + s.roll + '">';
@@ -669,6 +671,7 @@
     }
 
     function buildPrintPage(chunk, sem, pageNum, totalPages, semLabel) {
+        const schoolInfo = schoolInfoForHTML();
         const schoolName = schoolInfo.schoolName || 'શ્રી કોરાડા વાડી પ્રાથમિક શાળા';
         const sessionYear = schoolInfo.sessionYear || "2025-'26";
         const cls = schoolInfo.class || 'A';
@@ -695,8 +698,9 @@
         // Body
         let bodyRows = '';
         chunk.forEach((s) => {
+            s = htmlRecord(s);
             const d = distributions[s.roll] || {};
-            const cats = (d[sem] && d[sem].length === CAT_COUNT) ? d[sem] : new Array(CAT_COUNT).fill(0);
+            const cats = (d[sem] && d[sem].length === CAT_COUNT) ? htmlRecord(d[sem]) : new Array(CAT_COUNT).fill(0);
             const total = cats.reduce((a, b) => a + b, 0);
             const nameFontSize = getFittedNameFontSize(s.name);
             bodyRows += '<tr>';

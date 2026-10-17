@@ -280,7 +280,7 @@
                 <h3><span class="num">9</span>⚙️ સામાન્ય સમસ્યાઓ</h3>
                 <ul>
                     <li><strong>તારીખ ખોટી દેખાય:</strong> DD-MM-YYYY format વાપરો</li>
-                    <li><strong>Data ગુમ:</strong> Browser closed કરો તો IndexedDB માં સેવ રહે — ફરી ખોલો</li>
+                    <li><strong>Data:</strong> શાળાના accountમાં server પર સેવ થાય છે. બીજા ઉપકરણમાં પણ એ જ શાળાથી login કરો. Principal શાળા સંચાલનમાંથી backup લઈ શકે છે.</li>
                     <li><strong>Fonts દેખાય નહીં:</strong> Internet connection check કરો</li>
                     <li><strong>WhatsApp ન જાય:</strong> server.js ચાલુ રાખો અને 📱 WhatsApp લોગિન પેજ પર QR સ્કેન કરો</li>
                     <li><strong>Excel Import fail:</strong> Column headers standard રાખો</li>
@@ -346,44 +346,8 @@
         if (!confirm(msg)) return;
 
         try {
-            await openDB();
-            const stamp = new Date().toISOString().slice(0, 10);
-            const stds = ['3', '4', '5', '6', '7', '8'];
-            for (const s of stds) {
-                const oldStudents = await getStudents(s);
-                const oldInfo = await getSchoolInfoDB(s);
-                await saveHistory('std' + s + '_' + stamp, { students: oldStudents, info: oldInfo });
-            }
-            const allData = {};
-            for (const s of stds) allData[s] = await getStudents(s);
-            const cleanStudent = (s, newStd) => ({
-                std: newStd, roll: s.roll || '', name: s.name || '', photo: s.photo || '',
-                dob: s.dob || '', gr: s.gr || '', attendance: '',
-                caste: s.caste || 'OBC', gender: s.gender || 'M', divyang: s.divyang || 'No',
-                marks: new Array(42).fill(0), patrakB1: 0, patrakB2: 0,
-                patrakB1Cats: null, patrakB2Cats: null,
-                address: s.address || '', motherName: s.motherName || '',
-                contact: s.contact || '', uid: s.uid || '', pen: s.pen || ''
-            });
-            const newStd4 = allData['3'].map(s => cleanStudent(s, '4'));
-            const newStd5 = allData['4'].map(s => cleanStudent(s, '5'));
-            const newStd6 = allData['5'].map(s => cleanStudent(s, '6'));
-            const newStd7 = allData['6'].map(s => cleanStudent(s, '7'));
-            const newStd8 = allData['7'].map(s => cleanStudent(s, '8'));
-            await saveStudents(newStd4, '4');
-            await saveStudents(newStd5, '5');
-            await saveStudents(newStd6, '6');
-            await saveStudents(newStd7, '7');
-            await saveStudents(newStd8, '8');
-            await saveStudents([], '3');
-            alert('✅ પ્રમોશન સફળ!\n\n' +
-                `• 3 → 4: ${newStd4.length}\n` +
-                `• 4 → 5: ${newStd5.length}\n` +
-                `• 5 → 6: ${newStd6.length}\n` +
-                `• 6 → 7: ${newStd7.length}\n` +
-                `• 7 → 8: ${newStd8.length}\n` +
-                `• 8 પાસ આઉટ: ${allData['8'].length}\n\n` +
-                `(જૂનો ડેટા History માં સેવ)`);
+            const result = await schoolApi('/api/school/promote', { method: 'POST', body: '{}' });
+            alert('✅ ' + result.message);
         } catch (err) {
             console.error(err);
             alert('❌ પ્રમોશનમાં ભૂલ: ' + err.message);

@@ -33,12 +33,11 @@ window.createWhatsAppResultSender = function (options) {
         let connected = false;
         let message;
         try {
-            const response = await fetch('/api/whatsapp/status', { cache: 'no-store' });
-            const data = await response.json();
+            const data = await schoolApi('/api/whatsapp/status');
             connected = Boolean(data.connected);
             message = data.error ? '🔴 ' + data.error : (connected ? '🟢 WhatsApp Connected' : '🔴 WhatsApp Connected નથી');
         } catch (error) {
-            message = '🔴 સર્વર ચાલુ નથી (node server.js)';
+            message = '🔴 ' + error.message;
         } finally {
             checkingStatus = false;
         }
@@ -113,19 +112,14 @@ window.createWhatsAppResultSender = function (options) {
         }
         const message = captionFor(student, template);
         const image = await capture(student);
-        let response;
         try {
-            response = await fetch('/api/whatsapp/send', {
+            await schoolApi('/api/whatsapp/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone, message, image })
             });
         } catch (error) {
-            throw new Error('સર્વર સાથે જોડાણ નથી. server.js ચાલુ છે તેની ખાતરી કરો. ' + error.message);
-        }
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || 'પરિણામની image મોકલી શકાઈ નથી.');
+            throw new Error('પરિણામ મોકલી શકાયું નથી: ' + error.message);
         }
     }
 
