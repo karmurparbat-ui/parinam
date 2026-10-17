@@ -1,0 +1,36 @@
+{
+  "name": "std-8-result",
+  "version": "1.0.0",
+  "description": "",
+  "main": "db.js",
+  "scripts": {
+    "test": "node --test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karmurparbat-ui/parinam.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/karmurparbat-ui/parinam/issues"
+  },
+  "homepage": "https://github.com/karmurparbat-ui/parinam#readme",
+  "dependencies": {
+    "@whiskeysockets/baileys": "github:kobie3717/Baileys#fix/disconnect-reason-handling",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "html2canvas": "^1.4.1",
+    "pino": "^10.4.0",
+    "qrcode": "^1.5.4"
+  },
+  "allowScripts": {
+    "protobufjs@7.6.6": true,
+    "@whiskeysockets/baileys@6.7.22": true,
+    "github:kobie3717/Baileys#9135b5b777b50292956df47b9e7a5d96be9690b5": true,
+    "github:kobie3717/Baileys#f9cbd27836f9f75976f7f7409b4f39e23d4fc363": true
+  }
+}

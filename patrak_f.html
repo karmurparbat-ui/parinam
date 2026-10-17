@@ -6,6 +6,8 @@
     <title>પ્રગતિ પત્રક (પત્રક F) — Landscape 2/પેજ</title>
     <link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Rasa:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="db.js"></script>
+    <script src="/vendor/html2canvas.min.js"></script>
+    <script src="whatsapp_result.js"></script>
     <script>
         const currentStd = getUrlParam('std', '8');
         const urlExam = getUrlParam('exam', 'Annual');
@@ -325,9 +327,9 @@
         </div>
         <button class="btn btn-orange" onclick="bulkPDF()">📄 Bulk PDF</button>
         <button class="btn btn-blue" onclick="bulkPrint()">🖨 Bulk Prints</button>
-        <button class="btn btn-green" onclick="sendWhatsappCurrent()">💬 WhatsApp (Current)</button>
-        <button class="btn btn-green" onclick="sendWhatsappBulk()">💬 WhatsApp (Bulk)</button>
-        <button class="btn btn-white small-btn" onclick="editWhatsappMessage()">✏️ SMS Edit</button>
+        <button class="btn btn-green" onclick="sendWhatsappCurrent()">💬 WhatsApp Image (Current Pair)</button>
+        <small>Current Pair: હાલના પેજના બંને વિદ્યાર્થીને તેમનું પોતાનું પરિણામ અલગથી જશે.</small>
+        <button class="btn btn-green" onclick="sendWhatsappBulk()">💬 WhatsApp Image (Bulk)</button>
     </div>
 </div>
 
@@ -336,7 +338,6 @@
     let schoolInfo = {};
     let subjects = [];
     let examType = 'Annual';
-    let customWhatsappMsg = '';
     let currentPairIndex = 0;
     let pairs = [];
 
@@ -712,44 +713,31 @@
         bulkPrint();
     }
 
-    function sendWhatsappCurrent() {
-        const pair = pairs[currentPairIndex];
-        if (!pair || pair.length === 0) { alert('કોઈ વિદ્યાર્થી નથી.'); return; }
-        pair.forEach((student, idx) => {
-            if (!student || !student.contact) return;
-            setTimeout(() => {
-                let phone = student.contact.replace(/\D/g, '');
-                if (phone.length === 10) phone = '91' + phone;
-                const calc = getStudentTotal(student);
-                const result = getResultStatus(student);
-                let msg = customWhatsappMsg || 
-                    `*${schoolInfo.schoolName || 'શાળા'}*\n*ધોરણ:* ${currentStd}\n*વિદ્યાર્થી:* ${student.name}\n*ટકાવારી:* ${calc.pct.toFixed(2)}%\n*પરિણામ:* ${result}\n*વધુ માહિતી માટે શાળાનો સંપર્ક કરો.*`;
-                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-            }, idx * 500);
-        });
-    }
-    
-    function sendWhatsappBulk() {
-        if (!confirm(`બધા ${students.length} વિદ્યાર્થીને WhatsApp મેસેજ મોકલવા છે?`)) return;
-        students.forEach((s, i) => {
-            if (s.contact) {
-                setTimeout(() => {
-                    let phone = s.contact.replace(/\D/g, '');
-                    if (phone.length === 10) phone = '91' + phone;
-                    const calc = getStudentTotal(s);
-                    const result = getResultStatus(s);
-                    let msg = customWhatsappMsg || 
-                        `*${schoolInfo.schoolName || 'શાળા'}*\n*ધોરણ:* ${currentStd}\n*વિદ્યાર્થી:* ${s.name}\n*ટકાવારી:* ${calc.pct.toFixed(2)}%\n*પરિણામ:* ${result}\n*વધુ માહિતી માટે શાળાનો સંપર્ક કરો.*`;
-                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-                }, i * 2000);
-            }
-        });
-    }
-    
-    function editWhatsappMessage() {
-        let m = prompt("WhatsApp મેસેજ બદલો:", customWhatsappMsg);
-        if (m !== null) customWhatsappMsg = m;
-    }
+    const whatsappSender = createWhatsAppResultSender({
+        getStudents: () => students,
+        getCurrentStudents: () => pairs[currentPairIndex] || [],
+        getMessageValues: student => ({
+            name: student.name || '',
+            school: schoolInfo.schoolName || 'શાળા',
+            std: currentStd,
+            exam: document.getElementById('examTypeDisplay').textContent,
+            percentage: getStudentTotal(student).pct.toFixed(2),
+            result: getResultStatus(student)
+        }),
+        createReport: student => {
+            const report = document.createElement('div');
+            report.className = 'a4-page';
+            report.dataset.whatsappReport = '';
+            report.style.cssText = 'height:auto;min-height:210mm;overflow:visible;box-shadow:none;';
+            report.innerHTML = buildProgressHalf(student) + buildTableHalf(student);
+            report.querySelectorAll('.half-page').forEach(half => {
+                half.style.cssText = 'min-width:0;overflow:visible;';
+            });
+            return report;
+        }
+    });
+    function sendWhatsappCurrent() { return whatsappSender.sendCurrent(); }
+    function sendWhatsappBulk() { return whatsappSender.sendBulk(); }
 </script>
 
 </body>

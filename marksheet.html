@@ -6,6 +6,8 @@
     <title>માર્કશીટ</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="db.js"></script>
+    <script src="/vendor/html2canvas.min.js"></script>
+    <script src="whatsapp_result.js"></script>
     <script>
         const currentStd = getUrlParam('std', '8');
     </script>
@@ -94,9 +96,8 @@
         </div>
         <button class="btn btn-orange" onclick="bulkPDF()">Bulk PDF (Save as PDF)</button>
         <button class="btn btn-blue" onclick="bulkPrint()">Bulk Prints (All)</button>
-        <button class="btn btn-green" onclick="sendWhatsappCurrent()">Send Whatsapp (Current)</button>
-        <button class="btn btn-green" onclick="sendWhatsappBulk()">Send Whatsapp (Bulk)</button>
-        <button class="btn btn-white small-btn" onclick="editWhatsappMessage()">Whatsapp sms speed Edit</button>
+        <button class="btn btn-green" onclick="sendWhatsappCurrent()">WhatsApp Image (Current)</button>
+        <button class="btn btn-green" onclick="sendWhatsappBulk()">WhatsApp Image (Bulk)</button>
     </div>
 </div>
 <div id="bulk-print-container"></div>
@@ -105,7 +106,6 @@
     let students = [];
     let currentStudentIndex = 0;
     let schoolInfo = {};
-    let customWhatsappMsg = "";
     let examType = 'Annual';
     let subjects = [];
 
@@ -444,30 +444,27 @@
     // ============================================================
     // WHATSAPP
     // ============================================================
-    function sendWhatsappCurrent(index = currentStudentIndex) {
-        const student = students[index];
-        if (!student || !student.contact) { alert('સંપર્ક નંબર નથી.'); return; }
-        let phone = String(student.contact).replace(/\D/g, '');
-        if (phone.length === 10) phone = '91' + phone;
-        if (!/^\d{11,15}$/.test(phone)) {
-            alert('માન્ય સંપર્ક નંબર દાખલ કરો: ' + (student.name || 'વિદ્યાર્થી'));
-            return;
+    const whatsappSender = createWhatsAppResultSender({
+        getStudents: () => students,
+        getCurrentStudents: () => students[currentStudentIndex] ? [students[currentStudentIndex]] : [],
+        getMessageValues: student => ({
+            name: student.name || '',
+            school: schoolInfo.schoolName || 'શાળા',
+            std: currentStd,
+            exam: document.getElementById('examTypeDisplay').textContent,
+            percentage: getStudentTotal(student).pct.toFixed(2),
+            result: getResultStatus(student)
+        }),
+        createReport: student => {
+            const report = document.createElement('div');
+            report.className = 'marksheet-area';
+            report.dataset.whatsappReport = '';
+            report.innerHTML = getMarksheetHTML(student);
+            return report;
         }
-        const calc = getStudentTotal(student);
-        const result = getResultStatus(student);
-        let msg = customWhatsappMsg || `*${schoolInfo.schoolName || 'શાળા'}*\n*ધોરણ:* ${currentStd}\n*વિદ્યાર્થી:* ${student.name}\n*ટકાવારી:* ${calc.pct.toFixed(2)}%\n*પરિણામ:* ${result}\n*વધુ માહિતી માટે શાળાનો સંપર્ક કરો.*`;
-        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-    function sendWhatsappBulk() {
-        alert("એક પછી એક WhatsApp મેસેજ ખુલશે (2 સેકન્ડના અંતરાલમાં).");
-        students.forEach((s, i) => {
-            if (s.contact) setTimeout(() => { sendWhatsappCurrent(i); }, i * 2000);
-        });
-    }
-    function editWhatsappMessage() {
-        let m = prompt("WhatsApp મેસેજ બદલો:", customWhatsappMsg);
-        if (m !== null) customWhatsappMsg = m;
-    }
+    });
+    function sendWhatsappCurrent() { return whatsappSender.sendCurrent(); }
+    function sendWhatsappBulk() { return whatsappSender.sendBulk(); }
 </script>
 </body>
 </html>

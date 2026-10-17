@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <title>WhatsApp Setup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans Gujarati', sans-serif; background: #eef1f5; text-align: center; padding: 40px 20px; }
+        .card { background: #fff; max-width: 400px; margin: auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h2 { color: #1A237E; margin-bottom: 5px; }
+        p { color: #555; font-size: 14px; }
+        #qrBox { min-height: 250px; display: flex; justify-content: center; align-items: center; margin: 20px 0; }
+        #qrBox img { width: 250px; height: 250px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
+        button { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin: 5px; font-family: inherit; transition: 0.2s; }
+        .btn-blue { background: #2D72B8; color: #fff; }
+        .btn-blue:hover { background: #1f5691; }
+        .btn-red { background: #D22B2B; color: #fff; }
+        .btn-red:hover { background: #a92020; }
+        .status { margin-top: 15px; font-weight: 700; padding: 10px; border-radius: 8px; }
+        .connected { color: #1B5E20; background: #C8E6C9; }
+        .disconnected { color: #B71C1C; background: #FFCDD2; }
+        a { display: inline-block; margin-top: 20px; color: #2D72B8; text-decoration: none; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>📱 WhatsApp Connect</h2>
+        <p>તમારા ફોનમાંથી WhatsApp ખોલો → Settings → Linked Devices → Link a Device → QR સ્કેન કરો.</p>
+        <p>એક જ server ચાલુ રાખો. Reset પૂરો થયા પછી જ નવો QR સ્કેન કરો. Session સાચવવામાં ભૂલ આવે તો folderની permission અને OneDrive sync તપાસો.</p>
+        
+        <div id="qrBox">
+            <button class="btn-blue" onclick="loadQR()">QR કોડ મેળવો</button>
+        </div>
+
+        <div id="status" class="status disconnected">🔴 Disconnected</div>
+
+        <button class="btn-red" id="resetButton" onclick="resetSession()">Reset / Disconnect</button>
+        <br>
+        <a href="index.html" id="backLink">← મુખ્ય પેજ પર પાછા જાઓ</a>
+    </div>
+
+    <script>
+        let pollInterval;
+        let polling = false;
+        let loadingQR = false;
+        let resetting = false;
+        let operationVersion = 0;
+        let lastQRAt = 0;
+
+        function showStatus(message, connected = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + (connected ? 'connected' : 'disconnected');
+        }
+
+        async function request(url, options) {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'WhatsApp સર્વરમાં ભૂલ.');
+            return data;
+        }
+
+        async function loadQR() {
+            if (loadingQR || resetting) return;
+            loadingQR = true;
+            lastQRAt = Date.now();
+            const version = ++operationVersion;
+            const qrBox = document.getElementById('qrBox');
+            qrBox.innerHTML = '⏳ QR બની રહ્યો છે... થોડી વાર થાઓ...';
+            try {
+                const data = await request('/api/whatsapp/qr');
+                if (version !== operationVersion) return;
+                if (data.connected) {
+                    qrBox.textContent = 'સફળતાપૂર્વક કનેક્ટ થયું!';
+                    showStatus('Connected! હવે મેસેજ મોકલી શકો છો.', true);
+                } else if (data.success && data.qr) {
+                    qrBox.innerHTML = `<img src="${data.qr}" alt="QR Code">`;
+                } else {
+                    qrBox.textContent = data.message || 'QR લોડ થયો નથી. પેજ refresh કરીને ફરી પ્રયત્ન કરો.';
+                }
+                startPolling();
+            } catch (err) {
+                if (version === operationVersion) {
+                    qrBox.textContent = err.message;
+                    showStatus(err.message);
+                }
+            } finally {
+                loadingQR = false;
+            }
+        }
+
+        async function checkStatus() {
+            if (polling || resetting) return;
+            polling = true;
+            const version = operationVersion;
+            try {
+                const data = await request('/api/whatsapp/status');
+                if (version !== operationVersion) return;
+                showStatus(data.error || (data.connected ? 'Connected! હવે મેસેજ મોકલી શકો છો.' : 'Disconnected / Connecting...'), data.connected);
+                if (data.connected) {
+                    document.getElementById('qrBox').textContent = 'સફળતાપૂર્વક કનેક્ટ થયું!';
+                } else if (!data.error && !loadingQR && Date.now() - lastQRAt > 20000) {
+                    // WhatsApp QR changes about every 20 seconds, so keep showing the latest one.
+                    loadQR();
+                }
+            } catch (error) {
+                if (version === operationVersion) showStatus('સર્વર સાથે જોડાણ નથી: ' + error.message);
+            } finally {
+                polling = false;
+            }
+        }
+
+        function startPolling() {
+            clearInterval(pollInterval);
+            pollInterval = setInterval(checkStatus, 3000);
+        }
+
+        async function resetSession() {
+            if (resetting) return;
+            if (!confirm('શું તમે ખરેખર WhatsApp ડિસ્કનેક્ટ કરવા માંગો છો?')) return;
+            resetting = true;
+            operationVersion++;
+            clearInterval(pollInterval);
+            document.getElementById('resetButton').disabled = true;
+            showStatus('Session બંધ કરીને ફાઇલો સાચવવાની પ્રક્રિયા પૂરી થઈ રહી છે...');
+            try {
+                await request('/api/whatsapp/reset', { method: 'POST' });
+                location.reload();
+            } catch (error) {
+                showStatus('Reset નિષ્ફળ: ' + error.message);
+            } finally {
+                resetting = false;
+                document.getElementById('resetButton').disabled = false;
+                startPolling();
+            }
+        }
+
+        window.onload = async () => {
+            if (window.opener) {
+                const backLink = document.getElementById('backLink');
+                backLink.textContent = '← આ ટેબ બંધ કરી પરિણામ પેજ પર પાછા જાઓ';
+                backLink.addEventListener('click', event => {
+                    event.preventDefault();
+                    window.close();
+                });
+            }
+            await checkStatus();
+            startPolling();
+        };
+    </script>
+</body>
+</html>
